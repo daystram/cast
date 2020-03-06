@@ -17,7 +17,7 @@ export default class HybridPlayer extends React.Component {
       flvjs: {
         mediaDataSource: {
           isLive: true,
-          cors: true,
+          cors: false,
           withCredentials: false,
         },
       },

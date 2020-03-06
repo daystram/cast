@@ -5,8 +5,8 @@ import {HybridPlayer} from "./components/player";
 function App() {
   return (
     <HybridPlayer
-      url={"https://storage.googleapis.com/cast-uploaded-videos/HASH03/manifest.mpd"}
-      live={false}/>
+      url={"http://cast.daystram.com/api/test_stream"}
+      live={true}/>
   );
 }
 
