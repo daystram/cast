@@ -73,11 +73,12 @@ deploy_dev:backend:
     SERVICE_NAME: dev-cast-be
   before_script:
     - . scripts/init_deploy.sh
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASS $CI_REGISTRY
   script:
     - echo $CONFIG_BACKEND | base64 -d > ./config/app.conf
-    - docker pull $CI_REGISTRY_IMAGE/backend:latest || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE/backend:latest --tag $CI_REGISTRY_IMAGE/backend:latest cast-be/
-    - docker push $CI_REGISTRY_IMAGE/backend:latest
+    - docker pull $CI_REGISTRY_IMAGE:dev-cast-be || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-be --tag $CI_REGISTRY_IMAGE:dev-cast-be cast-be/
+    - docker push $CI_REGISTRY_IMAGE:dev-cast-be
     - ssh $HOST "make update SERVICE=$SERVICE_NAME"
   except:
     refs:
@@ -104,11 +105,12 @@ deploy_dev:ingest:
     SERVICE_NAME: dev-cast-is
   before_script:
     - . scripts/init_deploy.sh
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - echo $CONFIG_INGEST | base64 -d > ./config/app.conf
-    - docker pull $CI_REGISTRY_IMAGE/ingest:latest || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE/ingest:latest --tag $CI_REGISTRY_IMAGE/ingest:latest cast-is/
-    - docker push $CI_REGISTRY_IMAGE/backend:latest
+    - docker pull $CI_REGISTRY_IMAGE:dev-cast-is || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-is --tag $CI_REGISTRY_IMAGE/ingest:dev-cast-is cast-is/
+    - docker push $CI_REGISTRY_IMAGE:dev-cast-is
     - ssh $HOST "make update SERVICE=$SERVICE_NAME"
   except:
     refs:
@@ -135,10 +137,11 @@ deploy_dev:frontend:
     SERVICE_NAME: dev-cast-fe
   before_script:
     - . scripts/init_deploy.sh
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - docker pull $CI_REGISTRY_IMAGE/frontend:latest || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE/frontend:latest --tag $CI_REGISTRY_IMAGE/frontend:latest cast-fe/
-    - docker push $CI_REGISTRY_IMAGE/frontend:latest
+    - docker pull $CI_REGISTRY_IMAGE:dev-cast-fe || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-fe --tag $CI_REGISTRY_IMAGE:dev-cast-fe cast-fe/
+    - docker push $CI_REGISTRY_IMAGE:dev-cast-fe
     - ssh $HOST "make update SERVICE=$SERVICE_NAME"
   except:
     refs:
@@ -165,11 +168,12 @@ deploy_prod:backend:
     SERVICE_NAME: prod-cast-be
   before_script:
     - . scripts/init_deploy.sh
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - echo $CONFIG_BACKEND | base64 -d > ./config/app.conf
-    - docker pull $CI_REGISTRY_IMAGE/backend:latest || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE/backend:latest --tag $CI_REGISTRY_IMAGE/backend:latest cast-be/
-    - docker push $CI_REGISTRY_IMAGE/backend:latest
+    - docker pull $CI_REGISTRY_IMAGE:cast-be || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:cast-be --tag $CI_REGISTRY_IMAGE:cast-be cast-be/
+    - docker push $CI_REGISTRY_IMAGE:cast-be
     - ssh $HOST "make update SERVICE=$SERVICE_NAME"
   only:
     refs:
@@ -195,11 +199,12 @@ deploy_prod:ingest:
     SERVICE_NAME: prod-cast-is
   before_script:
     - . scripts/init_deploy.sh
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - echo $CONFIG_INGEST | base64 -d > ./config/app.conf
-    - docker pull $CI_REGISTRY_IMAGE/ingest:latest || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE/ingest:latest --tag $CI_REGISTRY_IMAGE/ingest:latest cast-is/
-    - docker push $CI_REGISTRY_IMAGE/ingest:latest
+    - docker pull $CI_REGISTRY_IMAGE:cast-is || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:cast-is --tag $CI_REGISTRY_IMAGE:cast-is cast-is/
+    - docker push $CI_REGISTRY_IMAGE:cast-is
     - ssh $HOST "make update SERVICE=$SERVICE_NAME"
   only:
     refs:
@@ -225,10 +230,11 @@ deploy_prod:frontend:
     SERVICE_NAME: prod-cast-fe
   before_script:
     - . scripts/init_deploy.sh
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - docker pull $CI_REGISTRY_IMAGE/frontend:latest || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE/frontend:latest --tag $CI_REGISTRY_IMAGE/frontend:latest cast-fe/
-    - docker push $CI_REGISTRY_IMAGE/frontend:latest
+    - docker pull $CI_REGISTRY_IMAGE:cast-fe || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:cast-fe --tag $CI_REGISTRY_IMAGE:cast-fe cast-fe/
+    - docker push $CI_REGISTRY_IMAGE:cast-fe
     - ssh $HOST "make update SERVICE=$SERVICE_NAME"
   only:
     refs:
