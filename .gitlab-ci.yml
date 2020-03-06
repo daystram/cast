@@ -73,7 +73,7 @@ deploy_dev:backend:
     SERVICE_NAME: dev-cast-be
   before_script:
     - . scripts/init_deploy.sh
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASS $CI_REGISTRY
+    - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
   script:
     - echo $CONFIG_BACKEND | base64 -d > ./config/app.conf
     - docker pull $CI_REGISTRY_IMAGE:dev-cast-be || true
@@ -105,7 +105,7 @@ deploy_dev:ingest:
     SERVICE_NAME: dev-cast-is
   before_script:
     - . scripts/init_deploy.sh
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
   script:
     - echo $CONFIG_INGEST | base64 -d > ./config/app.conf
     - docker pull $CI_REGISTRY_IMAGE:dev-cast-is || true
@@ -137,7 +137,7 @@ deploy_dev:frontend:
     SERVICE_NAME: dev-cast-fe
   before_script:
     - . scripts/init_deploy.sh
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
   script:
     - docker pull $CI_REGISTRY_IMAGE:dev-cast-fe || true
     - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-fe --tag $CI_REGISTRY_IMAGE:dev-cast-fe cast-fe/
@@ -168,7 +168,7 @@ deploy_prod:backend:
     SERVICE_NAME: prod-cast-be
   before_script:
     - . scripts/init_deploy.sh
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
   script:
     - echo $CONFIG_BACKEND | base64 -d > ./config/app.conf
     - docker pull $CI_REGISTRY_IMAGE:cast-be || true
@@ -199,7 +199,7 @@ deploy_prod:ingest:
     SERVICE_NAME: prod-cast-is
   before_script:
     - . scripts/init_deploy.sh
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
   script:
     - echo $CONFIG_INGEST | base64 -d > ./config/app.conf
     - docker pull $CI_REGISTRY_IMAGE:cast-is || true
@@ -230,7 +230,7 @@ deploy_prod:frontend:
     SERVICE_NAME: prod-cast-fe
   before_script:
     - . scripts/init_deploy.sh
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
   script:
     - docker pull $CI_REGISTRY_IMAGE:cast-fe || true
     - docker build --cache-from $CI_REGISTRY_IMAGE:cast-fe --tag $CI_REGISTRY_IMAGE:cast-fe cast-fe/
