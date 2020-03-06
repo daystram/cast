@@ -1,0 +1,236 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  GOPATH: ${CI_PROJECT_DIR}/go
+  GOPROJECT: gitlab.com/daystram/cast
+
+build:backend:
+  image: daystram/go-builder:1.13
+  stage: build
+  script:
+    - . scripts/init_backend.sh
+    - dep ensure
+    - go build
+  artifacts:
+    name: "$CI_COMMIT_REF_NAME-backend"
+    paths:
+      - ${GOPATH}/src/${GOPROJECT}/cast-be
+      - ${GOPATH}/src/${GOPROJECT}/vendor/
+  only:
+    changes:
+      - cast-be/**/*
+
+build:ingest:
+  image: daystram/go-builder:1.13
+  stage: build
+  script:
+    - . scripts/init_ingest.sh
+    - dep ensure
+    - go build
+  artifacts:
+    name: "$CI_COMMIT_REF_NAME-ingest"
+    paths:
+      - ${GOPATH}/src/${GOPROJECT}/cast-is
+      - ${GOPATH}/src/${GOPROJECT}/vendor/
+  only:
+    changes:
+      - cast-is/**/*
+
+build:frontend:
+  image: node:12.10.0-buster
+  stage: build
+  script:
+    - . scripts/init_frontend.sh
+    - yarn install
+    - yarn build
+  artifacts:
+    name: "$CI_COMMIT_REF_NAME-frontend"
+    paths:
+      - build/
+      - cast-fe/node_modules/
+  only:
+    changes:
+      - cast-fe/**/*
+
+deploy_dev:backend:
+  image: docker:git
+  stage: deploy
+  tags:
+    - docker
+  environment:
+    name: dev/$CI_COMMIT_REF_NAME
+  dependencies: []
+  services:
+    - name: docker:dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+    SERVICE_NAME: dev-cast-be
+  before_script:
+    - . scripts/init_deploy.sh
+  script:
+    - echo $CONFIG_BACKEND | base64 -d > ./config/app.conf
+    - docker pull $CI_REGISTRY_IMAGE/backend:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE/backend:latest --tag $CI_REGISTRY_IMAGE/backend:latest cast-be/
+    - docker push $CI_REGISTRY_IMAGE/backend:latest
+    - ssh $HOST "make update SERVICE=$SERVICE_NAME"
+  except:
+    refs:
+      - master
+      - staging
+  when: manual
+
+deploy_dev:ingest:
+  image: docker:git
+  stage: deploy
+  tags:
+    - docker
+  environment:
+    name: dev/$CI_COMMIT_REF_NAME
+  dependencies: []
+  services:
+    - name: docker:dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+    SERVICE_NAME: dev-cast-is
+  before_script:
+    - . scripts/init_deploy.sh
+  script:
+    - echo $CONFIG_INGEST | base64 -d > ./config/app.conf
+    - docker pull $CI_REGISTRY_IMAGE/ingest:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE/ingest:latest --tag $CI_REGISTRY_IMAGE/ingest:latest cast-is/
+    - docker push $CI_REGISTRY_IMAGE/backend:latest
+    - ssh $HOST "make update SERVICE=$SERVICE_NAME"
+  except:
+    refs:
+      - master
+      - staging
+  when: manual
+
+deploy_dev:frontend:
+  image: docker:git
+  stage: deploy
+  tags:
+    - docker
+  environment:
+    name: dev/$CI_COMMIT_REF_NAME
+  dependencies: []
+  services:
+    - name: docker:dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+    SERVICE_NAME: dev-cast-fe
+  before_script:
+    - . scripts/init_deploy.sh
+  script:
+    - docker pull $CI_REGISTRY_IMAGE/frontend:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE/frontend:latest --tag $CI_REGISTRY_IMAGE/frontend:latest cast-fe/
+    - docker push $CI_REGISTRY_IMAGE/frontend:latest
+    - ssh $HOST "make update SERVICE=$SERVICE_NAME"
+  except:
+    refs:
+      - master
+      - staging
+  when: manual
+
+deploy_prod:backend:
+  image: docker:git
+  stage: deploy
+  tags:
+    - docker
+  environment:
+    name: production
+  dependencies: []
+  services:
+    - name: docker:dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+    SERVICE_NAME: prod-cast-be
+  before_script:
+    - . scripts/init_deploy.sh
+  script:
+    - echo $CONFIG_BACKEND | base64 -d > ./config/app.conf
+    - docker pull $CI_REGISTRY_IMAGE/backend:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE/backend:latest --tag $CI_REGISTRY_IMAGE/backend:latest cast-be/
+    - docker push $CI_REGISTRY_IMAGE/backend:latest
+    - ssh $HOST "make update SERVICE=$SERVICE_NAME"
+  only:
+    refs:
+      - master
+  when: manual
+
+deploy_prod:ingest:
+  image: docker:git
+  stage: deploy
+  tags:
+    - docker
+  environment:
+    name: production
+  dependencies: []
+  services:
+    - name: docker:dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+    SERVICE_NAME: prod-cast-is
+  before_script:
+    - . scripts/init_deploy.sh
+  script:
+    - echo $CONFIG_INGEST | base64 -d > ./config/app.conf
+    - docker pull $CI_REGISTRY_IMAGE/ingest:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE/ingest:latest --tag $CI_REGISTRY_IMAGE/ingest:latest cast-is/
+    - docker push $CI_REGISTRY_IMAGE/ingest:latest
+    - ssh $HOST "make update SERVICE=$SERVICE_NAME"
+  only:
+    refs:
+      - master
+  when: manual
+
+deploy_prod:frontend:
+  image: docker:git
+  stage: deploy
+  tags:
+    - docker
+  environment:
+    name: production
+  dependencies: []
+  services:
+    - name: docker:dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+    SERVICE_NAME: prod-cast-fe
+  before_script:
+    - . scripts/init_deploy.sh
+  script:
+    - docker pull $CI_REGISTRY_IMAGE/frontend:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE/frontend:latest --tag $CI_REGISTRY_IMAGE/frontend:latest cast-fe/
+    - docker push $CI_REGISTRY_IMAGE/frontend:latest
+    - ssh $HOST "make update SERVICE=$SERVICE_NAME"
+  only:
+    refs:
+      - master
+  when: manual
