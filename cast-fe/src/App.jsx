@@ -1,12 +1,15 @@
 import React from 'react';
 import './App.css';
-import {HybridPlayer} from "./components/player";
+import {BrowserRouter} from 'react-router-dom'
+import Routes from './Routes'
+import Navigation from "./components/Navigation";
 
 function App() {
   return (
-    <HybridPlayer
-      url={"http://cast.daystram.com/api/test_stream"}
-      live={true}/>
+    <BrowserRouter>
+      <Navigation/>
+      <Routes/>
+    </BrowserRouter>
   );
 }
 
