@@ -4,27 +4,17 @@ import 'video.js/dist/video-js.css'
 import 'videojs-flvjs-es6'
 import 'videojs-contrib-quality-levels'
 import 'videojs-http-source-selector'
+import './player.css'
 
-export default class HybridPlayer extends React.Component {
+class HybridPlayer extends React.Component {
   componentDidMount() {
-    let options = {
-      autoplay: this.props.live || false,
-      controls: true,
-      sources: [{
-        src: this.props.url,
-        type: this.props.live ? 'video/x-flv' : 'application/dash+xml',
-      }],
-      flvjs: {
-        mediaDataSource: {
-          isLive: true,
-          cors: false,
-          withCredentials: false,
-        },
-      },
-      smoothQualityChange: true
-    };
-    this.player = videojs(this.videoNode, options);
-    this.player.httpSourceSelector();
+    this.initPlayer()
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.props.url !== prevProps.url) {
+      this.updatePlayer();
+    }
   }
 
   componentWillUnmount() {
@@ -33,13 +23,59 @@ export default class HybridPlayer extends React.Component {
     }
   }
 
+  initPlayer() {
+    let options = {
+      fluid: true,
+      responsive: true,
+      aspectRatio: "16:9",
+      // liveui: true,
+      preload: true,
+      controls: true,
+      flvjs: {
+        mediaDataSource: {
+          isLive: true,
+          cors: true,     // TODO: NOTICE!
+          withCredentials: false,
+        },
+      },
+      smoothQualityChange: true,
+      autoplay: this.props.live,
+      poster: this.props.thumbnail,
+      sources: [{
+        src: this.props.url,
+        type: this.props.live ? 'video/x-flv' : 'application/dash+xml',
+      }]
+    };
+    this.player = videojs(this.videoNode, options);
+    this.player.httpSourceSelector();
+  }
+
+  updatePlayer() {
+    if (!this.player.paused()) this.player.pause();
+    this.player.poster(this.props.thumbnail);
+    this.player.src({
+      src: this.props.url,
+      type: this.props.live ? 'video/x-flv' : 'application/dash+xml',
+    });
+    this.player.autoplay(this.props.live);
+    this.player.load();
+  }
+
   render() {
     return (
       <div>
-        <div data-vjs-player>
+        <div data-vjs-player style={style.player}>
           <video ref={node => this.videoNode = node} className="video-js"/>
         </div>
       </div>
     )
   }
 }
+
+let style = {
+  player: {
+    borderRadius: 8
+  },
+};
+
+export default HybridPlayer
