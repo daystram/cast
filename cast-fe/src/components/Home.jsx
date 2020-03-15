@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
-import {Container, Row, Col, Card} from "react-bootstrap";
+import {Container, Row, Col} from "react-bootstrap";
 import Cast from "./Cast"
-import Navigation from "./Navigation"
 import Sidebar from "./Sidebar";
 
 class Home extends Component {

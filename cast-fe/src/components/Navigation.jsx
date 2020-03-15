@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {useHistory} from 'react-router-dom';
 import {Button, FormControl, InputGroup, Nav, Navbar} from "react-bootstrap";
 import logo from './logo.svg'

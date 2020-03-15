@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import {Container, Row, Col, Card, Image, Badge, FormControl, InputGroup, Button} from "react-bootstrap";
 import Cast from "./Cast"
-import Navigation from "./Navigation"
 import Sidebar from "./Sidebar";
 import {HybridPlayer} from "./player";
 import abbreviate from "../helper/abbreviate";
@@ -25,7 +24,7 @@ class Scene extends Component {
       IDLIVE1: {
         _id: "IDLIVE1",
         thumbnail: "https://picsum.photos/seed/cast1/640/360", // TODO: Will not be given
-        url: "http://cast.daystram.com/api/test_stream", // TODO: Will not be given
+        url: "/api/test_stream", // TODO: Will not be given
         title: "Livestream 1 Title",
         isLive: true,
         views: 5690,
@@ -43,7 +42,7 @@ class Scene extends Component {
       IDLIVE2: {
         _id: "IDLIVE2",
         thumbnail: "https://picsum.photos/seed/cast4/640/360", // TODO: Will not be given
-        url: "http://cast.daystram.com/api/test_stream2", // TODO: Will not be given
+        url: "/api/test_stream2", // TODO: Will not be given
         title: "Livestream 2 Title",
         isLive: true,
         views: 9876,
