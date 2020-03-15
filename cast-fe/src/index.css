@@ -4,9 +4,62 @@
 
 body {
     margin: 0 36px;
+    overflow: overlay;
 }
 
 .material-icons {
     font-size: 22px;
     vertical-align: sub;
 }
+
+.btn-primary, .btn-primary:focus, .btn-primary:disabled {
+    background-color: #E84409;
+    color: white;
+    border-color: #E84409;
+}
+
+.btn-primary:focus {
+    box-shadow: 0 0 0 0.2rem rgba(232, 68, 9, 0.5);
+}
+
+.btn-outline-primary, .btn-outline-primary:focus {
+    color: #E84409;
+    border-color: #E84409;
+}
+
+.btn-outline-primary:focus {
+    box-shadow: 0 0 0 0.2rem rgba(232, 68, 9, 0.5);
+}
+
+.btn-primary:hover {
+    background-color: #db4109;
+    border-color: #E84409;
+}
+
+.btn-outline-primary:hover {
+    background-color: #E84409;
+    border-color: #E84409;
+    color: white;
+}
+
+.btn-primary:active, .btn-outline-primary:active {
+    background-color: #cf490a !important;
+    border-color: #cf490a !important;
+    box-shadow: 0 0 0 0.2rem rgba(232, 68, 9, 0.5) !important;
+}
+
+.form-control:focus {
+    border-color: #E84409;
+    box-shadow: 0 0 0 0.2rem rgba(232, 68, 9, 0.5) !important;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 8px;
+    padding-right: 8px;
+}
+
