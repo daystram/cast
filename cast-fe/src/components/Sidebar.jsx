@@ -33,7 +33,7 @@ let style = {
     textDecoration: "none"
   },
   nav_item_current: {
-    color: "blue",
+    color: "#E84409",
     fontSize: 18,
     textDecoration: "none"
   }

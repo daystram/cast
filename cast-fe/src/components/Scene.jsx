@@ -224,7 +224,7 @@ class Scene extends Component {
                   <InputGroup style={style.comment_input}>
                     <FormControl type="text" placeholder="Comment"/>
                     <InputGroup.Append>
-                      <Button variant="outline-info"><i className="material-icons">send</i></Button>
+                      <Button variant="outline-primary"><i className="material-icons">send</i></Button>
                     </InputGroup.Append>
                   </InputGroup>
                 </Col>
@@ -243,7 +243,7 @@ class Scene extends Component {
                   <InputGroup style={style.live_chat_input}>
                     <FormControl type="text" placeholder="Chat"/>
                     <InputGroup.Append>
-                      <Button variant="outline-info"><i className="material-icons">send</i></Button>
+                      <Button variant="outline-primary"><i className="material-icons">send</i></Button>
                     </InputGroup.Append>
                   </InputGroup>
                 </Card.Body>
