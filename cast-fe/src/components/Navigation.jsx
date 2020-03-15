@@ -11,18 +11,19 @@ function Navigation() {
         <img
           src={logo}
           height="30"
-          className="d-inline-block align-top"
+          className="d-inline-block align-top cast-logo"
           alt="cast"
         /></Navbar.Brand>
       <Nav className="m-auto">
         <InputGroup inline>
           <FormControl type="text" placeholder="Search"/>
           <InputGroup.Append>
-            <Button variant="outline-info"><i className="material-icons">search</i></Button>
+            <Button variant="outline-primary"><i className="material-icons">search</i></Button>
           </InputGroup.Append>
         </InputGroup>
       </Nav>
-      <Button variant="outline-info">Sign Up</Button>
+      <Button variant="outline-primary" size="sm" style={{marginRight: 8}} onClick={() => history.push("/login")}>Log In</Button>
+      <Button variant="primary" size="sm" onClick={() => history.push("/signup")}>Sign Up</Button>
     </Navbar>
   )
 }
