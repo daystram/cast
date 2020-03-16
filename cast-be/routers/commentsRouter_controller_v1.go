@@ -7,10 +7,30 @@ import (
 
 func init() {
 
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:LiveController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:LiveController"],
+        beego.ControllerComments{
+            Method: "PlayLive",
+            Router: `/:username`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("username", param.InPath),
+			),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:PingController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:PingController"],
         beego.ControllerComments{
             Method: "GetAll",
             Router: `/`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoController"],
+        beego.ControllerComments{
+            Method: "GetDetails",
+            Router: `/details`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -31,26 +51,8 @@ func init() {
 
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoController"],
         beego.ControllerComments{
-            Method: "PlayLive",
-            Router: `/live`,
-            AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoController"],
-        beego.ControllerComments{
             Method: "Search",
             Router: `/search`,
-            AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoController"],
-        beego.ControllerComments{
-            Method: "PlayVideo",
-            Router: `/video`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,

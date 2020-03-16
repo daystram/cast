@@ -2,6 +2,7 @@ package routers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"gitlab.com/daystram/cast/cast-be/handlers"
 
 	"github.com/astaxie/beego"
+	"github.com/nareix/joy4/format"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -17,13 +19,20 @@ import (
 func init() {
 	conf.InitializeAppConfig()
 
+	// Init MongoDB
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	db, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.AppConfig.MongoDBURI))
 	if err != nil {
 		log.Fatalf("Failed connecting to mongoDB at %s\n", conf.AppConfig.MongoDBURI)
 	}
+	fmt.Printf("[Initialization] MongoDB connected\n")
+
+	// Init RTMP UpLink
+	format.RegisterAll()
 
 	h := handlers.NewHandler(handlers.Component{DB: db})
+	h.CreateRTMPUpLink()
+	fmt.Printf("[Initialization] Initialization completed\n")
 
 	nsPublic := beego.NewNamespace("api/v1",
 		beego.NSNamespace("/ping",
@@ -39,6 +48,11 @@ func init() {
 		beego.NSNamespace("/ws",
 			beego.NSInclude(
 				&v1.WebSocketController{Handler: h},
+			),
+		),
+		beego.NSNamespace("/live",
+			beego.NSInclude(
+				&v1.LiveController{Handler: h},
 			),
 		),
 	)
