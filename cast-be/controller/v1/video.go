@@ -36,16 +36,9 @@ func (c *VideoController) Search() {
 
 }
 
-// @Title Play Live
+// @Title Get Details
 // @Success 200 {object} models.Object
-// @router /live [get]
-func (c *VideoController) PlayLive() {
-
-}
-
-// @Title Play Video
-// @Success 200 {object} models.Object
-// @router /video [get]
-func (c *VideoController) PlayVideo() {
+// @router /details [get]
+func (c *VideoController) GetDetails() {
 
 }
