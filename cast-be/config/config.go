@@ -10,6 +10,8 @@ type Config struct {
 	JWTSecret string
 	Debug     bool
 
+	RTMPPort int
+
 	MongoDBURI  string
 	MongoDBName string
 }
@@ -26,6 +28,11 @@ func InitializeAppConfig() {
 	// Debug
 	if AppConfig.Debug, err = beego.AppConfig.Bool("debug"); err != nil {
 		panic("debug is missing in app.conf")
+	}
+
+	// RTMP Port
+	if AppConfig.RTMPPort, err = beego.AppConfig.Int("rtmp_port"); err != nil {
+		AppConfig.RTMPPort = 1935
 	}
 
 	// MongoDB URI
