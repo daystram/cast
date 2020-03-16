@@ -51,6 +51,36 @@
   version = "v1.10.3"
 
 [[projects]]
+  branch = "master"
+  digest = "1:21fc964c64ba904c2183017dc0f6ee0ca6943198a1001d08eb9414e3c6b1296c"
+  name = "github.com/nareix/joy4"
+  packages = [
+    "av",
+    "av/avutil",
+    "av/pktque",
+    "av/pubsub",
+    "codec",
+    "codec/aacparser",
+    "codec/fake",
+    "codec/h264parser",
+    "format",
+    "format/aac",
+    "format/flv",
+    "format/flv/flvio",
+    "format/mp4",
+    "format/mp4/mp4io",
+    "format/rtmp",
+    "format/rtsp",
+    "format/rtsp/sdp",
+    "format/ts",
+    "format/ts/tsio",
+    "utils/bits",
+    "utils/bits/pio",
+  ]
+  pruneopts = "UT"
+  revision = "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
+
+[[projects]]
   digest = "1:9e1d37b58d17113ec3cb5608ac0382313c5b59470b94ed97d0976e69c7022314"
   name = "github.com/pkg/errors"
   packages = ["."]
@@ -190,6 +220,13 @@
     "github.com/astaxie/beego",
     "github.com/astaxie/beego/context/param",
     "github.com/astaxie/beego/plugins/cors",
+    "github.com/nareix/joy4/av/avutil",
+    "github.com/nareix/joy4/av/pubsub",
+    "github.com/nareix/joy4/format",
+    "github.com/nareix/joy4/format/flv",
+    "github.com/nareix/joy4/format/rtmp",
+    "go.mongodb.org/mongo-driver/bson",
+    "go.mongodb.org/mongo-driver/bson/primitive",
     "go.mongodb.org/mongo-driver/mongo",
     "go.mongodb.org/mongo-driver/mongo/options",
   ]
