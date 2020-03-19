@@ -34,30 +34,29 @@ class HybridPlayer extends React.Component {
       flvjs: {
         mediaDataSource: {
           isLive: true,
-          cors: false,     // TODO: NOTICE!
+          cors: true,     // TODO: NOTICE!
           withCredentials: false,
         },
       },
       smoothQualityChange: true,
       autoplay: this.props.live,
       poster: this.props.thumbnail,
-      sources: [{
-        src: this.props.url,
-        type: this.props.live ? 'video/x-flv' : 'application/dash+xml',
-      }]
     };
     this.player = videojs(this.videoNode, options);
     this.player.httpSourceSelector();
   }
 
   updatePlayer() {
-    if (!this.player.paused()) this.player.pause();
+    this.player.pause();
+    if (!this.props.url) return;
     this.player.poster(this.props.thumbnail);
     this.player.src({
       src: this.props.url,
       type: this.props.live ? 'video/x-flv' : 'application/dash+xml',
     });
     this.player.autoplay(this.props.live);
+    if (this.props.live) this.player.play();
+    else this.player.pause();
     this.player.load();
   }
 
