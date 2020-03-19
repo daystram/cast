@@ -1,93 +1,69 @@
 import React, {Component} from 'react';
-import {Container, Row, Col} from "react-bootstrap";
+import {Col, Container, Row, Spinner} from "react-bootstrap";
 import Cast from "./Cast"
 import Sidebar from "./Sidebar";
+import axios from "axios";
 
 class Home extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      live: [],
+      vod: [],
+      loading: {
+        live: true,
+        vod: true,
+      }
+    }
+  }
+
   componentDidMount() {
     document.title = "cast";
+    this.fetchVideos("live");
+    this.fetchVideos("vod");
   }
-  render() {
-    let data = {
-      IDLIVE1: {
-        _id: "IDLIVE1",
-        thumbnail: "https://picsum.photos/seed/cast1/640/360",
-        title: "Livestream 1 Title",
-        isLive: true,
-        views: 5690,
-        author: {
-          name: "Danny August",
-          image: "https://picsum.photos/seed/profile/64/64"
-        }
-      },
-      IDLIVE2: {
-        _id: "IDLIVE2",
-        thumbnail: "https://picsum.photos/seed/cast4/640/360",
-        title: "Livestream 2 Title",
-        isLive: true,
-        views: 9876,
-        author: {
-          name: "Danny August",
-          image: "https://picsum.photos/seed/profile/64/64"
-        }
-      },
-      IDVOD1: {
-        _id: "IDVOD1",
-        thumbnail: "https://picsum.photos/seed/cast2/640/360",
-        title: "Tokyo City",
-        isLive: false,
-        views: 293840,
-        author: {
-          name: "Danny August",
-          image: "https://picsum.photos/seed/profile/64/64"
-        }
-      },
-      IDVOD2: {
-        _id: "IDVOD2",
-        thumbnail: "https://picsum.photos/seed/cast3/640/360",
-        title: "Big Buck Bunny",
-        isLive: false,
-        views: 823730,
-        author: {
-          name: "Danny August",
-          image: "https://picsum.photos/seed/profile/64/64"
-        }
+
+  fetchVideos(variant) {
+    axios.get('/video/fresh', {
+      params: {
+        variant: variant,
+        count: 8,
+        offset: 0,
       }
-    };
+    }).then((response) => {
+      this.setState({loading: {...this.state.loading, [variant]: false}});
+      if (response.data.code === 200) {
+        this.setState({[variant]: response.data.data})
+      }
+    }).catch((error) => {
+      console.log(error);
+      this.setState({loading: {...this.state.loading, [variant]: false}});
+    });
+  }
 
-    let liveSample = [];
-    for (let i = 0; i < 8; i++) {
-      liveSample.push(
-        <Col xl={3} lg={4} md={6} sm={12} style={{padding: "0 8px 16px 8px"}}>
-          <Cast video={Math.random() >= 0.5 ? data.IDLIVE1 : data.IDLIVE2}/>
-        </Col>
-      )
-    }
-    let vodSample = [];
-    for (let i = 0; i < 8; i++) {
-      vodSample.push(
-        <Col xl={3} lg={4} md={6} sm={12} style={{padding: "0 8px 16px 8px"}}>
-          <Cast video={Math.random() >= 0.5 ? data.IDVOD1 : data.IDVOD2}/>
-        </Col>
-      )
-    }
-
+  render() {
     return (
       <>
         <Container fluid style={style.content_container}>
           <Row>
-            <Col xs={2} style={style.sidebar_col}>
+            <Col md={2} sm={12} style={{marginBottom: 32}}>
               <Sidebar/>
             </Col>
-            <Col xs={10}>
+            <Col md={10} sm={12}>
               <h1 style={style.h1}>Live Casts</h1>
               <Row noGutters>
-                {liveSample}
+                {!this.state.loading.live && (this.state.live ? this.state.live.map(video =>
+                  <Col xl={3} lg={4} md={6} sm={12} style={{padding: "0 8px 16px 8px"}}><Cast video={video}/></Col>
+                ) :<h5 style={style.h5}>No live casts today!</h5>)}
+                {this.state.loading.live && <Spinner style={style.spinner} animation="grow" variant="primary" />}
               </Row>
               <hr/>
               <h1 style={style.h1}>Fresh Casts</h1>
               <Row noGutters>
-                {vodSample}
+                {!this.state.loading.vod && (this.state.vod ? this.state.vod.map(video =>
+                  <Col xl={3} lg={4} md={6} sm={12} style={{padding: "0 8px 16px 8px"}}><Cast video={video}/></Col>
+                ) :<h5 style={style.h5}>No fresh casts today!</h5>)}
+                {this.state.loading.vod && <Spinner style={style.spinner} animation="grow" variant="primary" />}
               </Row>
             </Col>
           </Row>
@@ -99,7 +75,16 @@ class Home extends Component {
 
 let style = {
   h1: {
-    fontFamily: "Comfortaa",
+    fontFamily: "Comfortaa"
+  },
+  h5: {
+    fontFamily: "Open Sans",
+    fontSize: 18,
+    fontStyle: "italic",
+    marginTop: 16
+  },
+  spinner: {
+    margin: "32px auto 64px auto",
   },
   content_container: {
     padding: "36px 0 0 0"
