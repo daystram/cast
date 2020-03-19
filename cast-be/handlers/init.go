@@ -1,13 +1,15 @@
 package handlers
 
 import (
-	"github.com/nareix/joy4/av/pubsub"
-	"github.com/nareix/joy4/format/rtmp"
-	data "gitlab.com/daystram/cast/cast-be/datatransfers"
-	"gitlab.com/daystram/cast/cast-be/models"
 	"net/http"
 	"sync"
 
+	data "gitlab.com/daystram/cast/cast-be/datatransfers"
+	"gitlab.com/daystram/cast/cast-be/models"
+
+	"github.com/nareix/joy4/av/pubsub"
+	"github.com/nareix/joy4/format/rtmp"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -37,12 +39,16 @@ type Entity struct {
 
 type Handler interface {
 	CreateRTMPUpLink()
+	ControlUpLinkWindow(userID primitive.ObjectID, open bool) (err error)
 	StreamLive(username string, w http.ResponseWriter, r *http.Request) (err error)
 
-	GetVideo(variant string, count, offset int) (videos []data.Video, err error)
+	CheckUniqueUserField(field, value string) (err error)
+	Register(info data.UserRegister) (err error)
+	Authenticate(info data.UserLogin) (token string, err error)
+
+	VideoList(variant string, count, offset int) (videos []data.Video, err error)
 	Search(query string, tags []string) (videos []data.Video, err error)
-	VODDetails(hash string) (videos data.Video, err error)
-	LiveDetails(username string) (videos data.Video, err error)
+	VideoDetails(hash string) (video data.Video, err error)
 }
 
 func NewHandler(component Component) Handler {
