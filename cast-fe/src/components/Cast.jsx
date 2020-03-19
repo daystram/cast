@@ -1,14 +1,15 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Badge, Image} from "react-bootstrap";
 import {useHistory} from "react-router-dom";
 import abbreviate from '../helper/abbreviate'
+import urls from "../helper/url";
 
 function Cast(props) {
   const history = useHistory();
 
   function playVideo(e) {
-    history.push("/w/" + props.video._id);
-    console.log(`Play: ${props.video._id}`)
+    if (props.onClick) props.onClick(props.video.type, props.video.hash);
+    history.push(`/w/${props.video.hash}`);
   }
 
   function viewAuthor(e) {
@@ -18,20 +19,25 @@ function Cast(props) {
 
   return (
     <div style={style.cast_card} onClick={playVideo}>
-      <Image src={props.video.thumbnail}
+      <Image src={urls().thumbnail(props.video.hash)}
              style={style.cast_thumbnail}/>
       <div style={style.cast_tag_bar}>
-        {props.video.isLive && <Badge pill style={style.cast_live_tag}>LIVE</Badge>}
+        {props.video.is_live && <Badge pill style={style.cast_live_tag}>LIVE</Badge>}
         <Badge pill
-               style={style.cast_viewer_tag}>{abbreviate(props.video.views)} {props.video.isLive ? 'viewers' : 'views'}</Badge>
+               style={style.cast_viewer_tag}>{abbreviate().number(props.video.views)} {props.video.is_live ? 'viewers' : 'views'}</Badge>
       </div>
       <div style={style.cast_detail}>
-        <Image src={props.video.author.image} height={42} width={42}
+        <Image src={urls().profile(props.video.author.username)}
+               height={42} width={42}
                style={style.profile_image} onClick={viewAuthor} roundedCircle/>
         <div style={style.cast_author_details}>
           <p style={style.cast_title}>{props.video.title}</p>
           <p style={style.cast_author} onClick={viewAuthor}>{props.video.author.name}</p>
-          <p style={style.cast_duration}>Streaming for 3 hours</p>
+          <p style={style.cast_duration}>
+            {props.video.is_live ?
+              `Streaming for ${abbreviate().time(Date.now() - new Date(props.video.created_at))}` :
+              `${abbreviate().time(Date.now() - new Date(props.video.created_at))} ago`}
+          </p>
         </div>
       </div>
     </div>
@@ -39,7 +45,9 @@ function Cast(props) {
 }
 
 let style = {
-  cast_card: {},
+  cast_card: {
+    cursor: "pointer"
+  },
   cast_thumbnail: {
     borderRadius: "8px 48px 8px 8px",
     borderWidth: 1,
