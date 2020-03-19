@@ -14,6 +14,8 @@ type Config struct {
 
 	MongoDBURI  string
 	MongoDBName string
+
+	UploadsDirectory string
 }
 
 func InitializeAppConfig() {
@@ -43,5 +45,10 @@ func InitializeAppConfig() {
 	// MongoDB DB Name
 	if AppConfig.MongoDBName = beego.AppConfig.String("mongodb_name"); AppConfig.MongoDBName == "" {
 		panic("mongodb_name is missing in app.conf")
+	}
+
+	// Uploads Directory
+	if AppConfig.UploadsDirectory = beego.AppConfig.String("uploads_dir"); AppConfig.UploadsDirectory == "" {
+		panic("uploads_dir is missing in app.conf")
 	}
 }
