@@ -1,23 +1,31 @@
 package datatransfers
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type User struct {
-	ID          primitive.ObjectID   `json:"_id" bson:"_id"`
-	Name        string
-	Username    string
-	Email       string
+	ID       primitive.ObjectID `json:"_id" bson:"_id"`
+	Name     string             `json:"name" bson:"name"`
+	Username string             `json:"username" bson:"username"`
+	Email    string             `json:"email" bson:"email"`
+	Password string             `json:"-" bson:"password"`
 	//Subscribing []primitive.ObjectID // TODO: normalize to other table
 	//Likes       []primitive.ObjectID // TODO: normalize to other table
-	CreatedAt   time.Time
+	CreatedAt time.Time `json:"created_at,omitempty" bson:"created_at"`
+}
+
+type UserItem struct {
+	Name        string `json:"name"`
+	Username    string `json:"username"`
+	Subscribers int    `json:"subscribers"`
 }
 
 type UserLogin struct {
-	UsernameEmail string `json:"user"`
-	Password      string `json:"password"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type UserRegister struct {
@@ -25,4 +33,9 @@ type UserRegister struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type UserFieldCheck struct {
+	Field string
+	Value string
 }
