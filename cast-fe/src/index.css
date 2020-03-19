@@ -12,6 +12,10 @@ body {
     vertical-align: sub;
 }
 
+.text-primary {
+    color: #E84409 !important;
+}
+
 .btn-primary, .btn-primary:focus, .btn-primary:disabled {
     background-color: #E84409;
     color: white;

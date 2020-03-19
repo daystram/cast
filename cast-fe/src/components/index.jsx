@@ -1,6 +1,7 @@
 import Home from './Home'
 import Scene from './Scene'
 import SignUp from './SignUp'
-import Login from './Login'
+import LogIn from './LogIn'
+import LogOut from './LogOut'
 
-export {Home, Scene, SignUp, Login}
+export {Home, Scene, SignUp, LogIn, LogOut}
