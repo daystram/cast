@@ -7,6 +7,7 @@ import (
 	"time"
 
 	conf "gitlab.com/daystram/cast/cast-be/config"
+	"gitlab.com/daystram/cast/cast-be/controller/middleware"
 	v1 "gitlab.com/daystram/cast/cast-be/controller/v1"
 	"gitlab.com/daystram/cast/cast-be/handlers"
 
@@ -40,14 +41,14 @@ func init() {
 				&v1.PingController{},
 			),
 		),
+		beego.NSNamespace("/auth",
+			beego.NSInclude(
+				&v1.AuthController{Handler: h},
+			),
+		),
 		beego.NSNamespace("/video",
 			beego.NSInclude(
 				&v1.VideoController{Handler: h},
-			),
-		),
-		beego.NSNamespace("/ws",
-			beego.NSInclude(
-				&v1.WebSocketController{Handler: h},
 			),
 		),
 		beego.NSNamespace("/live",
@@ -55,6 +56,24 @@ func init() {
 				&v1.LiveController{Handler: h},
 			),
 		),
+		beego.NSNamespace("/ws",
+			beego.NSInclude(
+				&v1.WebSocketController{Handler: h},
+			),
+		),
+		beego.NSNamespace("/p",
+			beego.NSBefore(middleware.AuthenticateJWT),
+			beego.NSNamespace("/video",
+				beego.NSInclude(
+					&v1.VideoControllerAuth{Handler: h},
+				),
+			), beego.NSNamespace("/live",
+				beego.NSInclude(
+					&v1.LiveControllerAuth{Handler: h},
+				),
+			),
+		),
+
 	)
 
 	beego.AddNamespace(nsPublic)
