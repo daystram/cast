@@ -1,181 +1,112 @@
 import React, {Component} from 'react';
-import {Container, Row, Col, Card, Image, Badge, FormControl, InputGroup, Button} from "react-bootstrap";
+import {Badge, Button, Card, Col, Container, FormControl, Image, InputGroup, Row, Spinner} from "react-bootstrap";
 import Cast from "./Cast"
 import Sidebar from "./Sidebar";
 import {HybridPlayer} from "./player";
 import abbreviate from "../helper/abbreviate";
+import axios from "axios";
+import urls from "../helper/url";
+import format from "../helper/format";
 
 class Scene extends Component {
   constructor(props) {
     super(props);
-    this.state = {video: this.fetchDetail(this.props.match.params._id)};
+    this.state = {
+      video: null,
+      live: {},
+      vod: {},
+      loading: {
+        current: true,
+        live: true,
+        vod: true,
+      }
+    };
+    this.incrementView = this.incrementView.bind(this)
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.props.match.params._id !== prevProps.match.params._id) {
-      this.setState({video: this.fetchDetail(this.props.match.params._id)});
+    if (this.props.match.params.hash !== prevProps.match.params.hash) {
+      this.setState({loading: {...this.state.loading, current: true}});
+      this.fetchDetail(this.props.match.params.hash);
     }
   }
 
-  fetchDetail(id) {
-    // TODO: fetch from cast-be
-    // Mock BE data
-    let detail_data = {
-      IDLIVE1: {
-        _id: "IDLIVE1",
-        thumbnail: "https://picsum.photos/seed/cast1/640/360", // TODO: Will not be given
-        url: "/api/test_stream", // TODO: Will not be given
-        title: "Livestream 1 Title",
-        isLive: true,
-        views: 5690,
-        likes: 8402,
-        isLiked: true,
-        description: "This is stream 1 description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-        CreatedAt: "March 14, 2020",
-        author: {
-          name: "Danny August",
-          image: "https://picsum.photos/seed/profile/64/64", // TODO: Will not be given
-          subscribers: 8123905,
-          isSubscribed: true
-        }
-      },
-      IDLIVE2: {
-        _id: "IDLIVE2",
-        thumbnail: "https://picsum.photos/seed/cast4/640/360", // TODO: Will not be given
-        url: "/api/test_stream2", // TODO: Will not be given
-        title: "Livestream 2 Title",
-        isLive: true,
-        views: 9876,
-        likes: 2345,
-        isLiked: true,
-        description: "This is stream 2 description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-        CreatedAt: "March 14, 2020",
-        author: {
-          name: "Danny August",
-          image: "https://picsum.photos/seed/profile/64/64", // TODO: Will not be given
-          subscribers: 8123905,
-          isSubscribed: true
-        }
-      },
-      IDVOD1: {
-        _id: "IDVOD1",
-        thumbnail: "https://picsum.photos/seed/cast2/640/360",  // TODO: Will not be given
-        url: "https://storage.googleapis.com/cast-uploaded-videos/HASH02/manifest.mpd", // TODO: Will not be given
-        title: "Tokyo City",
-        isLive: false,
-        views: 5690724,
-        likes: 91843,
-        isLiked: false,
-        description: "This is video 1 description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        CreatedAt: "March 10, 2020",
-        author: {
-          name: "Danny August",
-          image: "https://picsum.photos/seed/profile/64/64", // TODO: Will not be given
-          subscribers: 8123905,
-          isSubscribed: true
-        }
-      },
-      IDVOD2: {
-        _id: "IDVOD2",
-        thumbnail: "https://picsum.photos/seed/cast3/640/360",  // TODO: Will not be given
-        url: "https://storage.googleapis.com/cast-uploaded-videos/HASH01/manifest.mpd", // TODO: Will not be given
-        title: "Big Buck Bunny",
-        isLive: false,
-        views: 823730,
-        likes: 43223,
-        isLiked: false,
-        description: "This is video 2 description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-        CreatedAt: "March 5, 2020",
-        author: {
-          name: "Danny August",
-          image: "https://picsum.photos/seed/profile/64/64", // TODO: Will not be given
-          subscribers: 8123905,
-          isSubscribed: true
-        }
+  componentDidMount() {
+    this.fetchDetail(this.props.match.params.hash);
+    this.fetchVideos("live");
+    this.fetchVideos("vod");
+  }
+
+  incrementView(variant, hash) {
+    if (this.props.match.params.hash !== hash && variant === "vod") {
+      let updated = this.state[variant][hash];
+      updated.views++;
+      this.setState({[variant]: {...this.state[variant], [hash]: updated}})
+    }
+  }
+
+  fetchVideos(variant) {
+    axios.get('/video/fresh', {
+      params: {
+        variant: variant,
+        count: 8,
+        offset: 0,
       }
-    };
-    let detail = detail_data[id];
-    document.title = `${detail.title} - ${detail.author.name} | cast`;
-    return detail
+    }).then((response) => {
+      this.setState({loading: {...this.state.loading, [variant]: false}});
+      if (response.data.code === 200) {
+        this.setState({
+          [variant]: response.data.data.reduce((map, obj) => {
+            map[obj.hash] = obj;
+            return map
+          }, {})
+        })
+      }
+    }).catch((error) => {
+      console.log(error);
+      this.setState({loading: {...this.state.loading, [variant]: false}});
+    });
+  }
+
+  fetchDetail(hash) {
+    axios.get('/video/details', {
+      params: {
+        hash: hash,
+      }
+    }).then((response) => {
+      this.setState({loading: {...this.state.loading, current: false}});
+      if (response.data.code === 200) {
+        let data = response.data.data;
+        this.setState({video: data, [data.type]: {...this.state[data.type], [data.hash]: data}});
+        document.title = `${data.title} - ${data.author.name} | cast`;
+      }
+    }).catch((error) => {
+      console.log(error);
+      this.setState({loading: {...this.state.loading, current: false}});
+    });
   }
 
   render() {
-    let data = {
-      IDLIVE1: {
-        _id: "IDLIVE1",
-        thumbnail: "https://picsum.photos/seed/cast1/640/360",
-        title: "Livestream 1 Title",
-        isLive: true,
-        views: 5690,
-        author: {
-          name: "Danny August",
-          image: "https://picsum.photos/seed/profile/64/64"
-        }
-      },
-      IDLIVE2: {
-        _id: "IDLIVE2",
-        thumbnail: "https://picsum.photos/seed/cast4/640/360",
-        title: "Livestream 2 Title",
-        isLive: true,
-        views: 9876,
-        author: {
-          name: "Danny August",
-          image: "https://picsum.photos/seed/profile/64/64"
-        }
-      },
-      IDVOD1: {
-        _id: "IDVOD1",
-        thumbnail: "https://picsum.photos/seed/cast2/640/360",
-        title: "Tokyo City",
-        isLive: false,
-        views: 293840,
-        author: {
-          name: "Danny August",
-          image: "https://picsum.photos/seed/profile/64/64"
-        }
-      },
-      IDVOD2: {
-        _id: "IDVOD2",
-        thumbnail: "https://picsum.photos/seed/cast3/640/360",
-        title: "Big Buck Bunny",
-        isLive: false,
-        views: 823730,
-        author: {
-          name: "Danny August",
-          image: "https://picsum.photos/seed/profile/64/64"
-        }
-      }
-    };
-
-    let liveSample = [];
-    for (let i = 0; i < 8; i++) {
-      liveSample.push(
-        <Row noGutters style={{padding: "0 0 16px 0"}}>
-          <Cast video={Math.random() >= 0.5 ? data.IDLIVE1 : data.IDLIVE2}/>
-        </Row>
-      )
-    }
-    let vodSample = [];
-    for (let i = 0; i < 8; i++) {
-      vodSample.push(
-        <Row noGutters style={{padding: "0 0 16px 0"}}>
-          <Cast video={Math.random() >= 0.5 ? data.IDVOD1 : data.IDVOD2}/>
-        </Row>
-      )
-    }
     return (
       <>
         <Container fluid style={style.content_container}>
           <Row>
-            <Col xl={2} md={12}>
+            <Col xl={{span: 2, order: 1}} sm={{span: 6, order: 2}} xs={{span: 12, order: 2}}>
               <Sidebar/>
               <div style={style.cast_list}>
-                {liveSample}
+                {this.state.live && Object.values(this.state.live).map(video =>
+                  <Row noGutters style={{padding: "0 0 16px 0"}}>
+                    <Cast video={video} onClick={(a, b) => this.incrementView(a, b)}/>
+                  </Row>
+                )}
+                {this.state.loading.live && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
               </div>
             </Col>
-            <Col xl md={12}>
-              <HybridPlayer url={this.state.video.url} thumbnail={this.state.video.thumbnail}
-                            live={this.state.video.isLive}/>
+            <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 1}}>
+              <HybridPlayer
+                url={this.state.video && (this.state.video.is_live ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}
+                thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}
+                live={this.state.video && this.state.video.is_live}/>
               <div style={style.cast_tag_bar}>
                 <div>
                   <Badge pill style={style.cast_tag}>tag</Badge>
@@ -185,34 +116,37 @@ class Scene extends Component {
                   <span style={style.cast_attrib}><i className="material-icons">share</i>{" "}share</span>
                   <span style={style.cast_attrib}>
                     <i className="material-icons">thumb_up</i>
-                    {" "}{abbreviate(this.state.video.likes)} likes
+                    {" "}{(this.state.video && abbreviate().number(this.state.video.likes)) || 0} likes
                   </span>
                   <span style={style.cast_attrib}>
                     <i className="material-icons">remove_red_eye</i>
-                    {" "}{abbreviate(this.state.video.views)} {this.state.video.isLive ? 'viewers' : 'views'}
+                    {" "}{(this.state.video && abbreviate().number(this.state.video.views)) || 0} {this.state.video && (this.state.video.is_live ? 'viewers' : 'views')}
                   </span>
                 </div>
               </div>
-              <h1 style={style.title}>{this.state.video.title}</h1>
-              <p>{this.state.video.CreatedAt}</p>
+              <h1 style={style.title}>{this.state.video && this.state.video.title}</h1>
+              <p style={{marginTop: 4}}>{this.state.video && format().date(this.state.video.created_at)}</p>
               <div style={style.author_bar}>
                 <div style={style.author_profile}>
-                  <Image src={this.state.video.author.image} height={42} width={42}
-                         style={style.profile_image} onClick={this.viewAuthor} roundedCircle/>
+                  <Image src={this.state.video && urls().profile(this.state.video.author.username)} height={42}
+                         width={42}
+                         style={style.profile_image} roundedCircle/>
                   <div style={style.cast_author_details}>
-                    <p style={style.cast_author_name} onClick={this.viewAuthor}>{this.state.video.author.name}</p>
-                    <p style={style.cast_author_sub}>{abbreviate(this.state.video.author.subscribers)} subscribers</p>
+                    <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
+                    <p
+                      style={style.cast_author_sub}>{(this.state.video && abbreviate().number(this.state.video.author.subscribers)) || 0} subscribers</p>
                   </div>
                 </div>
                 <div>
                   <Button style={style.tip_button}><i className="material-icons">attach_money</i></Button>
-                  <Button style={style.sub_button} disabled={this.state.video.author.isSubscribed}>SUBSCRIBE</Button>
+                  <Button style={style.sub_button}
+                          disabled={this.state.video && this.state.video.author.isSubscribed}>SUBSCRIBE</Button>
                 </div>
               </div>
               <Row noGutters>
                 <Col xl={1} sm={0}/>
                 <Col>
-                  <div style={style.description}>{this.state.video.description}</div>
+                  <div style={style.description}>{this.state.video && this.state.video.description}</div>
                 </Col>
                 <Col xl={1} sm={0}/>
               </Row>
@@ -227,12 +161,62 @@ class Scene extends Component {
                       <Button variant="outline-primary"><i className="material-icons">send</i></Button>
                     </InputGroup.Append>
                   </InputGroup>
+                  <div style={style.comment_list}>
+                    <div style={{...style.author_profile, ...style.comment_item}}>
+                      <Image src={urls().profile("daystram")} height={42} width={42}
+                             style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
+                      <div style={{...style.cast_author_details, minWidth: 0}}>
+                        <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
+                        <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>
+                          This is a comment. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+                          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{...style.author_profile, ...style.comment_item}}>
+                      <Image src={urls().profile("daystram")} height={42} width={42}
+                             style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
+                      <div style={{...style.cast_author_details, minWidth: 0}}>
+                        <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
+                        <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>
+                          This is a comment. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+                          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{...style.author_profile, ...style.comment_item}}>
+                      <Image src={urls().profile("daystram")} height={42} width={42}
+                             style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
+                      <div style={{...style.cast_author_details, minWidth: 0}}>
+                        <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
+                        <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>
+                          This is a comment. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+                          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{...style.author_profile, ...style.comment_item}}>
+                      <Image src={urls().profile("daystram")} height={42} width={42}
+                             style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
+                      <div style={{...style.cast_author_details, minWidth: 0}}>
+                        <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
+                        <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>
+                          This is a comment. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+                          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </Col>
                 <Col xl={1} sm={0}/>
               </Row>
 
             </Col>
-            <Col xl={2} md={12}>
+            <Col xl={{span: 2, order: 3}} sm={{span: 6, order: 3}} xs={{span: 12, order: 3}}>
               <Card style={style.live_chat}>
                 <Card.Body style={style.live_chat_body}>
                   <p style={style.live_chat_item}><b>User1</b>: Hello! Hello! Hello! Hello! Hello! Hello! Hello!</p>
@@ -249,7 +233,12 @@ class Scene extends Component {
                 </Card.Body>
               </Card>
               <div style={style.cast_list}>
-                {vodSample}
+                {this.state.vod && Object.values(this.state.vod).map(video =>
+                  <Row noGutters style={{padding: "0 0 16px 0"}}>
+                    <Cast video={video} onClick={(a, b) => this.incrementView(a, b)}/>
+                  </Row>
+                )}
+                {this.state.loading.vod && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
               </div>
             </Col>
           </Row>
@@ -265,6 +254,10 @@ let style = {
   },
   content_container: {
     padding: "36px 0 0 0"
+  },
+  spinner: {
+    display: "block",
+    margin: "32px auto 64px auto",
   },
   cast_list: {
     marginTop: 16
@@ -345,6 +338,14 @@ let style = {
   },
   comment_input: {
     borderRadius: "8px 48px 8px 8px",
+  },
+  comment_list: {
+    marginTop: 32,
+    marginBottom: 64
+  },
+  comment_item: {
+    marginTop: 16,
+    marginBottom: 16,
   }
 };
 
