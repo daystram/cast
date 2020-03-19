@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  digest = "1:cd8d1e66ca4e6051ea1fbbc071ffe23c499d1019014478b337338ab3260c0d50"
+  digest = "1:123688dc18b79ba3de779ba0c7d4ea840bdc53a08589618cdb382021926b62a8"
   name = "github.com/astaxie/beego"
   packages = [
     ".",
@@ -11,6 +11,7 @@
     "context/param",
     "grace",
     "logs",
+    "orm",
     "plugins/cors",
     "session",
     "toolbox",
@@ -19,6 +20,14 @@
   pruneopts = "UT"
   revision = "de5650b7230083f957045890af942ffdac87c782"
   version = "v1.12.1"
+
+[[projects]]
+  digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
+  name = "github.com/dgrijalva/jwt-go"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
+  version = "v3.2.0"
 
 [[projects]]
   digest = "1:586ea76dbd0374d6fb649a91d70d652b7fe0ccffb8910a77468e7702e7901f3d"
@@ -154,11 +163,13 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:289402c29952ac357e984f4bdf2efc5bcce24408cfad32425ea4eceea967de48"
+  digest = "1:b6fa9a28b667295bcd7fa113e2b002a7020c99f0ddd3beb320e52bbe65e6776f"
   name = "golang.org/x/crypto"
   packages = [
     "acme",
     "acme/autocert",
+    "bcrypt",
+    "blowfish",
     "pbkdf2",
   ]
   pruneopts = "UT"
@@ -218,8 +229,11 @@
   analyzer-version = 1
   input-imports = [
     "github.com/astaxie/beego",
+    "github.com/astaxie/beego/context",
     "github.com/astaxie/beego/context/param",
+    "github.com/astaxie/beego/orm",
     "github.com/astaxie/beego/plugins/cors",
+    "github.com/dgrijalva/jwt-go",
     "github.com/nareix/joy4/av/avutil",
     "github.com/nareix/joy4/av/pubsub",
     "github.com/nareix/joy4/format",
@@ -229,6 +243,7 @@
     "go.mongodb.org/mongo-driver/bson/primitive",
     "go.mongodb.org/mongo-driver/mongo",
     "go.mongodb.org/mongo-driver/mongo/options",
+    "golang.org/x/crypto/bcrypt",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
