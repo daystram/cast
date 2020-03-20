@@ -3,6 +3,8 @@ import {Alert, Button, Col, Container, Form, ProgressBar, Row, Spinner} from "re
 import axios from "axios";
 import bsCustomFileInput from 'bs-custom-file-input'
 import SidebarProfile from "./SidebarProfile";
+import urls from "../helper/url";
+import CastEditable from "./CastEditable";
 
 class Manage extends Component {
   constructor(props) {
@@ -20,7 +22,9 @@ class Manage extends Component {
       error_video: "",
       error_upload: "",
       progress: 0,
-      loading: false,
+      list: [],
+      uploading: false,
+      loading: true,
       success: false,
     };
     this.handleChange = this.handleChange.bind(this);
@@ -30,6 +34,25 @@ class Manage extends Component {
 
   componentDidMount() {
     bsCustomFileInput.init();
+    this.fetchVideos()
+  }
+
+  fetchVideos() {
+    axios.get(urls().list(), {
+      params: {
+        author: localStorage.getItem("username"),
+        count: 8,
+        offset: 0,
+      }
+    }).then((response) => {
+      this.setState({loading: false});
+      if (response.data.code === 200) {
+        this.setState({list: response.data.data})
+      }
+    }).catch((error) => {
+      console.log(error);
+      this.setState({loading: false});
+    });
   }
 
   handleChange(e) {
@@ -37,7 +60,6 @@ class Manage extends Component {
     this.setState({[e.target.name]: e.target.value});
     this.validate(e.target.name, e.target.value);
   }
-
 
   handleChangeFile(e) {
     this.setState({error_login: ""});
@@ -97,23 +119,24 @@ class Manage extends Component {
     ok &= this.validate("video", this.state.video);
     if (!ok) return;
 
-    this.setState({loading: true});
+    this.setState({uploading: true});
     const form = new FormData();
     form.append("title", this.state.title);
     form.append("description", this.state.description);
     form.append("tags", this.state.tags);
     form.append("thumbnail", this.state.thumbnail);
     form.append("video", this.state.video);
-    axios.post('/p/video/upload', form, {
+    axios.post(urls().upload(), form, {
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Content-Type": "multipart/form-data"
         },
-        onUploadProgress: (progressEvent) => {
-          this.setState({progress: (progressEvent.loaded * 100) / progressEvent.total})
+        onUploadProgress: (progress) => {
+          this.setState({progress: (progress.loaded * 100) / progress.total})
         }
       }
     ).then((response) => {
+      console.log(response)
       this.setState({
         title: "",
         description: "",
@@ -121,13 +144,13 @@ class Manage extends Component {
         thumbnail: "",
         video: "",
         progress: 0,
-        loading: false,
+        uploading: false,
         success: true
       });
-      // this.setState({error_upload: "An error has occurred!"});
+      this.fetchVideos();
     }).catch((error) => {
       console.log(error);
-      this.setState({loading: false});
+      this.setState({error_upload: "An error has occurred! Please try again.", uploading: false});
     });
   }
 
@@ -152,28 +175,28 @@ class Manage extends Component {
               </Alert>}
               <Form noValidate autocomplete={"off"} onSubmit={this.submitForm}>
                 <Form.Row>
-                  <Col>
+                  <Col md={6} sm={12}>
                     <Form.Group>
                       <Form.Label>Title</Form.Label>
                       <Form.Control name={"title"} value={this.state.title} onBlur={this.handleChange}
                                     onChange={this.handleChange} type={"text"} size={"lg"} style={{fontSize: "2rem"}}
-                                    isInvalid={!!this.state.error_title} disabled={this.state.loading}/>
+                                    isInvalid={!!this.state.error_title} disabled={this.state.uploading}/>
                       <Form.Control.Feedback type={"invalid"}>{this.state.error_title}</Form.Control.Feedback>
                     </Form.Group>
                     <Form.Group>
                       <Form.Label>Description</Form.Label>
                       <Form.Control name={"description"} value={this.state.description} onBlur={this.handleChange}
                                     onChange={this.handleChange} as={"textarea"} rows={7}
-                                    isInvalid={!!this.state.error_description} disabled={this.state.loading}/>
+                                    isInvalid={!!this.state.error_description} disabled={this.state.uploading}/>
                       <Form.Control.Feedback type={"invalid"}>{this.state.error_description}</Form.Control.Feedback>
                     </Form.Group>
                   </Col>
-                  <Col>
+                  <Col md={6} sm={12}>
                     <Form.Group>
                       <Form.Label>Tags</Form.Label>
                       <Form.Control name={"tags"} value={this.state.tags} onBlur={this.handleChange}
                                     onChange={this.handleChange} type={"text"}
-                                    isInvalid={!!this.state.error_tags} disabled={this.state.loading}/>
+                                    isInvalid={!!this.state.error_tags} disabled={this.state.uploading}/>
                       <Form.Control.Feedback type={"invalid"}>{this.state.error_tags}</Form.Control.Feedback>
                     </Form.Group>
                     <Form.Group>
@@ -181,7 +204,7 @@ class Manage extends Component {
                       <div className={"custom-file"}>
                         <Form.Control name={"thumbnail"} type={"file"} className={"custom-file-input"}
                                       onChange={this.handleChangeFile} accept="image/*"
-                                      isInvalid={!!this.state.error_thumbnail} disabled={this.state.loading}/>
+                                      isInvalid={!!this.state.error_thumbnail} disabled={this.state.uploading}/>
                         <Form.Control.Feedback type={"invalid"}>{this.state.error_thumbnail}</Form.Control.Feedback>
                         <Form.Label className="custom-file-label">{this.state.thumbnail.name}</Form.Label>
                       </div>
@@ -191,15 +214,15 @@ class Manage extends Component {
                       <div className={"custom-file"}>
                         <Form.Control name={"video"} type={"file"} className={"custom-file-input"}
                                       onChange={this.handleChangeFile} accept="video/*"
-                                      isInvalid={!!this.state.error_video} disabled={this.state.loading}/>
+                                      isInvalid={!!this.state.error_video} disabled={this.state.uploading}/>
                         <Form.Control.Feedback type={"invalid"}>{this.state.error_video}</Form.Control.Feedback>
                         <Form.Label className="custom-file-label">{this.state.video.name}</Form.Label>
                       </div>
                     </Form.Group>
                     <ProgressBar animated now={this.state.progress} style={style.progress}/>
-                    <Button variant="primary" type="submit" block disabled={this.state.loading}>
+                    <Button variant="primary" type="submit" block disabled={this.state.uploading}>
                       Upload{" "}
-                      {this.state.loading &&
+                      {this.state.uploading &&
                       <Spinner style={{verticalAlign: "initial"}} as="span" animation="grow"
                                size="sm" role="status" aria-hidden="true"/>}
                     </Button>
@@ -208,7 +231,14 @@ class Manage extends Component {
               </Form>
               <hr/>
               <h1 style={style.h1}>Manage</h1>
-              Manage card
+              <Col>
+                {!this.state.loading && (this.state.list ? this.state.list.map(video =>
+                  <Row>
+                    <CastEditable video={video}/>
+                  </Row>
+                ) : <h5 style={style.h5}>No videos uploaded yet!</h5>)}
+                {this.state.loading && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
+              </Col>
             </Col>
           </Row>
         </Container>
@@ -226,7 +256,17 @@ let style = {
   },
   progress: {
     marginBottom: 16
-  }
+  },
+  h5: {
+    fontFamily: "Open Sans",
+    fontSize: 18,
+    fontStyle: "italic",
+    marginTop: 16
+  },
+  spinner: {
+    margin: "32px auto 64px auto",
+    display: "block"
+  },
 };
 
 export default Manage
