@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {Badge, Image} from "react-bootstrap";
 import {useHistory} from "react-router-dom";
 import abbreviate from '../helper/abbreviate'
@@ -6,6 +6,7 @@ import urls from "../helper/url";
 
 function Cast(props) {
   const history = useHistory();
+  let duration = abbreviate().time(Date.now() - new Date(props.video.created_at));
 
   function playVideo(e) {
     if (props.onClick) props.onClick(props.video.type, props.video.hash);
@@ -35,8 +36,8 @@ function Cast(props) {
           <p style={style.cast_author} onClick={viewAuthor}>{props.video.author.name}</p>
           <p style={style.cast_duration}>
             {props.video.is_live ?
-              `Streaming for ${abbreviate().time(Date.now() - new Date(props.video.created_at))}` :
-              `${abbreviate().time(Date.now() - new Date(props.video.created_at))} ago`}
+              `Streaming ${duration === "Yesterday" ? "since" : "for"} ${duration.toLowerCase()}` :
+              `${abbreviate().time(Date.now() - new Date(props.video.created_at))} ${duration === "Yesterday" ? "" : "ago"}`}
           </p>
         </div>
       </div>
