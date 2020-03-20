@@ -118,13 +118,9 @@ func init() {
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"],
         beego.ControllerComments{
             Method: "UploadVideo",
-            Router: `/fresh`,
-            AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(
-				param.New("variant", param.IsRequired),
-				param.New("count", param.Default("false")),
-				param.New("offset", param.Default("false")),
-			),
+            Router: `/upload`,
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
 

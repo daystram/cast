@@ -3,6 +3,7 @@ package routers
 import (
 	"context"
 	"fmt"
+	"github.com/astaxie/beego/plugins/cors"
 	"log"
 	"time"
 
@@ -73,8 +74,13 @@ func init() {
 				),
 			),
 		),
-
 	)
-
 	beego.AddNamespace(nsPublic)
+	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin"},
+		AllowCredentials: true,
+	}))
 }
