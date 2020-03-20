@@ -1,8 +1,7 @@
 import React from "react";
 import {Redirect, Route, Switch} from 'react-router-dom'
-import {Home, LogOut, Scene} from "./components";
-import Login from "./components/LogIn";
-import SignUp from "./components/SignUp";
+import {Dashboard, Home, LogOut, Scene, Profile, LogIn, SignUp} from "./components";
+import Manage from "./components/Manage";
 
 const Routes = () => {
   return (
@@ -10,8 +9,10 @@ const Routes = () => {
       <Route path={"/"} exact component={Home}/>
       <Route path="/w/:hash" exact component={Scene}/>
       <Route path="/logout" component={LogOut}/>
-      {/*<PrivateRoute path="/profile" exact component={Profile}/>*/}
-      <PublicRoute path="/login" exact component={Login}/>
+      <PrivateRoute path="/profile" exact component={Profile}/>
+      <PrivateRoute path="/dashboard" exact component={Dashboard}/>
+      <PrivateRoute path="/manage" exact component={Manage}/>
+      <PublicRoute path="/login" exact component={LogIn}/>
       <PublicRoute path="/signup" exact component={SignUp}/>
       <Route><Redirect to="/"/></Route>
     </Switch>
