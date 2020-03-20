@@ -94,10 +94,11 @@ func init() {
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoController"],
         beego.ControllerComments{
             Method: "GetList",
-            Router: `/fresh`,
+            Router: `/list`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(
-				param.New("variant", param.IsRequired),
+				param.New("variant"),
+				param.New("author"),
 				param.New("count", param.Default("false")),
 				param.New("offset", param.Default("false")),
 			),
