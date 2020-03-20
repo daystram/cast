@@ -4,6 +4,8 @@ export default function urls() {
     thumbnail: (hash) => `${base}/thumbnail/${hash}.jpg`,
     profile: (username) => `${base}/profile/${username}.png`,
     vod: (hash) => `${base}/${hash}/manifest.mpd`,
-    live: (username) => `/api/v1/live/stream/${username}` // TODO: host
+    live: (username) => `http://localhost:8080/api/v1/live/stream/${username}`,
+    upload: () => `/p/video/upload`,
+    list: () => `/video/list`,
   }
 }
