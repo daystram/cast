@@ -3,6 +3,7 @@ import {Col, Container, Row, Spinner} from "react-bootstrap";
 import Cast from "./Cast"
 import Sidebar from "./Sidebar";
 import axios from "axios";
+import urls from "../helper/url";
 
 class Home extends Component {
   constructor(props) {
@@ -24,7 +25,7 @@ class Home extends Component {
   }
 
   fetchVideos(variant) {
-    axios.get('/video/fresh', {
+    axios.get(urls().list(), {
       params: {
         variant: variant,
         count: 8,
