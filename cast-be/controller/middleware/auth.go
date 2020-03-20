@@ -56,7 +56,6 @@ func parseBearerToken(bearerTokenStr string) string {
 }
 
 func (j *JwtAuthorization) parseJwtClaims(claims jwt.MapClaims) (err error) {
-	fmt.Printf("%+v\n", claims)
 	id, ok := claims["id"]
 	if !ok {
 		return fmt.Errorf("key 'id' is not contained within JWT's claims")
