@@ -114,7 +114,7 @@ class CastEditable extends Component {
       <Card body style={style.card}>
         <Row>
           <Col xl={3} lg={4} md={5} sm={12} className={"responsive-fold"}>
-            <Image src={urls().thumbnail("5e72d774017d9d3fd4b07ef9")} style={style.thumbnail}/>
+            <Image src={urls().thumbnail(this.props.video.hash)} style={style.thumbnail}/>
           </Col>
           <Col md sm={12} className={"responsive-fold"}>
             {this.state.editing ?
@@ -136,7 +136,6 @@ class CastEditable extends Component {
                 <Badge pill style={style.cast_tag}>another</Badge>
               </div>
             </div>
-
             {this.state.editing ?
               <Form.Group>
                 <Form.Control name={"description"} value={this.state.description} onBlur={this.handleChange}
@@ -157,10 +156,7 @@ class CastEditable extends Component {
         </Row>
         <Prompt
           when={this.state.editing || this.state.loading}
-          message={() =>
-            `Are you sure? You changes will be discarded.`
-          }
-        />
+          message={() =>`Are you sure? You changes will be discarded.`}/>
       </Card>
     )
   }

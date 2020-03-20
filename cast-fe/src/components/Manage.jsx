@@ -5,6 +5,7 @@ import bsCustomFileInput from 'bs-custom-file-input'
 import SidebarProfile from "./SidebarProfile";
 import urls from "../helper/url";
 import CastEditable from "./CastEditable";
+import {Prompt} from "react-router-dom";
 
 class Manage extends Component {
   constructor(props) {
@@ -242,6 +243,9 @@ class Manage extends Component {
             </Col>
           </Row>
         </Container>
+        <Prompt
+          when={this.state.uploading}
+          message={() => `Are you sure? Your current upload will be cancelled.`}/>
       </>
     )
   }
