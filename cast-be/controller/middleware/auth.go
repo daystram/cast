@@ -31,7 +31,7 @@ func NewJwtAuthorization(secret string, bearerTokenStr string) JwtAuthorization 
 	return JwtAuthorization{jwtTokenStr, []byte(secret), JwtClaims{}}
 }
 
-func (j *JwtAuthorization) ExtractClaimsFromToken() (email string, expiry int64, err error) {
+func (j *JwtAuthorization) ExtractClaimsFromToken() (id string, expiry int64, err error) {
 	claims := jwt.MapClaims{}
 	var token *jwt.Token
 	if token, err = jwt.ParseWithClaims(j.jwtTokenStr, claims, func(token *jwt.Token) (interface{}, error) {
@@ -56,7 +56,8 @@ func parseBearerToken(bearerTokenStr string) string {
 }
 
 func (j *JwtAuthorization) parseJwtClaims(claims jwt.MapClaims) (err error) {
-	id, ok := claims["email"]
+	fmt.Printf("%+v\n", claims)
+	id, ok := claims["id"]
 	if !ok {
 		return fmt.Errorf("key 'id' is not contained within JWT's claims")
 	}
@@ -80,7 +81,7 @@ func (j *JwtAuthorization) parseJwtClaims(claims jwt.MapClaims) (err error) {
 func AuthenticateJWT(ctx *context.Context) {
 	bearerTokenStr := ctx.Input.Query("access_token")
 	if bearerTokenStr == "" {
-		bearerTokenStr = ctx.Input.Header("Authorization**")
+		bearerTokenStr = ctx.Input.Header("Authorization")
 	}
 	jwtAuthorization := NewJwtAuthorization(config.AppConfig.JWTSecret, bearerTokenStr)
 	id, expiry, err := jwtAuthorization.ExtractClaimsFromToken()

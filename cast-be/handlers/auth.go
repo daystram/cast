@@ -54,6 +54,7 @@ func (m *module) Register(info datatransfers.UserRegister) (err error) {
 		IsLive:      false,
 		CreatedAt:   time.Now(),
 	}); err != nil {
+		_ = m.db().userOrm.DeleteOneByID(userID)
 		fmt.Printf("[Register] Failed adding %s live video entry. %+v\n", info.Username, err)
 		return
 	}
@@ -89,7 +90,7 @@ func (m *module) validate(info datatransfers.UserLogin) (user datatransfers.User
 func (m *module) generateToken(user datatransfers.User) (tokenString string, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":     user.ID,
-		"expiry": time.Now().Add(time.Hour).Unix(),
+		"expiry": time.Now().Add(24 * time.Hour).Unix(),
 	})
 	tokenString, _ = token.SignedString([]byte(config.AppConfig.JWTSecret))
 	return
