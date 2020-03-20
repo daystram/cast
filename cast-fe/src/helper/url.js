@@ -5,7 +5,7 @@ export default function urls() {
     profile: (username) => `${base}/profile/${username}.png`,
     vod: (hash) => `${base}/${hash}/manifest.mpd`,
     live: (username) => `/api/v1/live/stream/${username}`,
-    upload: () => `/p/video/upload`,
-    list: () => `/video/list`,
+    upload: () => `/api/v1/p/video/upload`,
+    list: () => `/api/v1/video/list`,
   }
 }

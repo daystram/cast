@@ -5,7 +5,7 @@ import Routes from './Routes'
 import Navigation from "./components/Navigation";
 import axios from 'axios';
 
-axios.defaults.baseURL = "http://localhost:8080/api/v1";
+// axios.defaults.baseURL = "http://localhost:8080";
 axios.interceptors.request.use(
   config => {
     const token = localStorage.getItem("auth_token");
