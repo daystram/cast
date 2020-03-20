@@ -92,7 +92,7 @@ func (c *VideoControllerAuth) UploadVideo() datatransfers.Response {
 		return datatransfers.Response{Error: "Failed creating video", Code: http.StatusInternalServerError}
 	}
 	_ = os.Mkdir(fmt.Sprintf("cast-uploaded-videos/%s", videoID.Hex()), 755)
-	err = c.SaveToFile("video", fmt.Sprintf("cast-uploaded-videos/%s/video_original.mp4", videoID.Hex()))
+	err = c.SaveToFile("video", fmt.Sprintf("%s/%s/video_original.mp4", config.AppConfig.UploadsDirectory, videoID.Hex()))
 	if err != nil {
 		_ = c.Handler.DeleteVideo(videoID)
 		fmt.Printf("[VideoController::UploadVideo] failed saving video file. %+v\n", err)
