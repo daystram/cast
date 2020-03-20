@@ -22,12 +22,19 @@ type VideoController struct {
 
 // @Title Get List
 // @Success 200 {object} models.Object
-// @Param   variant		query	string	true	"variant"
+// @Param   variant		query	string	false	"variant"
+// @Param   author		query	string	false	"author"
 // @Param   count		query   int 	false 8	"count"
 // @Param   offset		query   int 	false 0	"offset"
-// @router /fresh [get]
-func (c *VideoController) GetList(variant string, count, offset int) datatransfers.Response {
-	videos, err := c.Handler.VideoList(variant, count, offset)
+// @router /list [get]
+func (c *VideoController) GetList(variant, author string, count, offset int) datatransfers.Response {
+	var videos []datatransfers.Video
+	var err error
+	if author == "" {
+		videos, err = c.Handler.FreshList(variant, count, offset)
+	} else {
+		videos, err = c.Handler.AuthorList(author, count, offset)
+	}
 	if err != nil {
 		fmt.Printf("[VideoController::GetList] failed retrieving fresh videos. %+v\n", err)
 		return datatransfers.Response{Error: "Failed retrieving fresh videos", Code: http.StatusInternalServerError}

@@ -11,9 +11,19 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (m *module) VideoList(variant string, count int, offset int) (videos []data.Video, err error) {
+func (m *module) FreshList(variant string, count int, offset int) (videos []data.Video, err error) {
 	if videos, err = m.db().videoOrm.GetRecent(variant, count, offset); err != nil {
-		return nil, errors.New(fmt.Sprintf("[VideoList] error retrieving recent videos. %+v", err))
+		return nil, errors.New(fmt.Sprintf("[FreshList] error retrieving recent videos. %+v", err))
+	}
+	return
+}
+func (m *module) AuthorList(username string, count, offset int) (videos []data.Video, err error) {
+	var author data.User
+	if author, err = m.db().userOrm.GetOneByUsername(username); err != nil {
+		return nil, errors.New(fmt.Sprintf("[AuthorList] author not found. %+v", err))
+	}
+	if videos, err = m.db().videoOrm.GetAllVODByAuthor(author.ID, count, offset); err != nil {
+		return nil, errors.New(fmt.Sprintf("[AuthorList] error retrieving VODs. %+v", err))
 	}
 	return
 }

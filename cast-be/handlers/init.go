@@ -46,7 +46,8 @@ type Handler interface {
 	Register(info data.UserRegister) (err error)
 	Authenticate(info data.UserLogin) (token string, err error)
 
-	VideoList(variant string, count, offset int) (videos []data.Video, err error)
+	FreshList(variant string, count, offset int) (videos []data.Video, err error)
+	AuthorList(author string, count, offset int) (videos []data.Video, err error)
 	Search(query string, tags []string) (videos []data.Video, err error)
 	VideoDetails(hash string) (video data.Video, err error)
 	CreateVOD(upload data.VideoUpload, userID primitive.ObjectID) (ID primitive.ObjectID, err error)
