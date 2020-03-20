@@ -19,6 +19,7 @@ type UserOrmer interface {
 	GetOneByUsername(username string) (user datatransfers.User, err error)
 	CheckUnique(field, value string) (err error)
 	InsertUser(user datatransfers.User) (ID primitive.ObjectID, err error)
+	DeleteOneByID(ID primitive.ObjectID) (err error)
 }
 
 type userOrm struct {
@@ -59,4 +60,9 @@ func (o *userOrm) InsertUser(user datatransfers.User) (ID primitive.ObjectID, er
 		return
 	}
 	return result.InsertedID.(primitive.ObjectID), nil
+}
+
+func (o *userOrm) DeleteOneByID(ID primitive.ObjectID) (err error) {
+	_, err = o.collection.DeleteOne(context.TODO(), bson.M{"_id": ID})
+	return
 }

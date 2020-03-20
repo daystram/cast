@@ -16,6 +16,7 @@ type VideoOrmer interface {
 	IncrementViews(hash string) error
 	SetLive(authorID primitive.ObjectID, live bool) (err error)
 	InsertVideo(video datatransfers.VideoInsert) (ID primitive.ObjectID, err error)
+	DeleteOneByID(ID primitive.ObjectID) (err error)
 }
 
 type videoOrm struct {
@@ -27,9 +28,14 @@ func NewVideoOrmer(db *mongo.Client) VideoOrmer {
 }
 
 func (o *videoOrm) GetRecent(variant string, count int, offset int) (result []datatransfers.Video, err error) {
+	resolution := -1
+	if variant == constants.VideoTypeVOD {
+		resolution = 0
+	}
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
 		{{"$match", bson.D{{"type", variant}}}},
+		{{"$match", bson.D{{"resolutions", bson.D{{"$gt", resolution}}}}}},
 		{{"$match", bson.D{{"is_live", variant == constants.VideoTypeLive}}}},
 		{{"$sort", bson.D{{"created_at", -1}}}},
 		{{"$skip", offset}},
@@ -95,4 +101,9 @@ func (o *videoOrm) InsertVideo(video datatransfers.VideoInsert) (ID primitive.Ob
 		return
 	}
 	return result.InsertedID.(primitive.ObjectID), nil
+}
+
+func (o *videoOrm) DeleteOneByID(ID primitive.ObjectID) (err error) {
+	_, err = o.collection.DeleteOne(context.TODO(), bson.M{"_id": ID})
+	return
 }
