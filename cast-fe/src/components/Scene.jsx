@@ -69,7 +69,7 @@ class Scene extends Component {
   }
 
   fetchDetail(hash) {
-    axios.get('/video/details', {
+    axios.get(urls().cast_details(), {
       params: {
         hash: hash,
       }
