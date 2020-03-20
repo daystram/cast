@@ -74,6 +74,7 @@ class LogIn extends Component {
       }
     }).catch((error) => {
       console.log(error);
+      this.setState({error_login: "An error has occurred!"});
       this.setState({loading: false});
     });
   }

@@ -21,7 +21,7 @@ class SignUp extends Component {
       error_password2: "",
       error_signup: "",
       loading: false,
-      success: true
+      success: false
     };
     this.handleChange = this.handleChange.bind(this);
     this.submitForm = this.submitForm.bind(this);
@@ -150,6 +150,7 @@ class SignUp extends Component {
       }
     }).catch((error) => {
       console.log(error);
+      this.setState({error_signup: "An error has occurred!"});
       this.setState({loading: false});
     });
   }
@@ -159,6 +160,13 @@ class SignUp extends Component {
       <>
         <Container fluid style={style.content_container}>
           <h1 style={style.h1}>Sign Up</h1>
+          {this.state.success &&
+          <Alert variant="success">
+            <Alert.Heading>Welcome!</Alert.Heading>
+            <p>
+              Your account has been successfully registered! Check your email to verify your email before logging in.
+            </p>
+          </Alert>}
           {this.state.error_signup && <Alert variant={"danger"}>{this.state.error_signup}</Alert>}
           <Form noValidate onSubmit={this.submitForm}>
             <Form.Group>

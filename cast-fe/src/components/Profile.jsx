@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import {Col, Container, Row} from "react-bootstrap";
-import axios from "axios";
 import SidebarProfile from "./SidebarProfile";
 
 class Profile extends Component {
@@ -15,7 +14,6 @@ class Profile extends Component {
       loading: false,
     };
     this.handleChange = this.handleChange.bind(this);
-    this.submitForm = this.submitForm.bind(this);
   }
 
   handleChange(e) {

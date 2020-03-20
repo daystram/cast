@@ -1,5 +1,5 @@
 const cdn_base = 'https://storage.googleapis.com/cast-uploaded-videos';
-const api_base = '${api_base}';
+const api_base = '/api/v1';
 
 export default function urls() {
   return {
