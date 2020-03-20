@@ -15,6 +15,7 @@
     "react-dom": "^16.13.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.0",
+    "react-truncate": "^2.4.0",
     "video.js": "^7.6.6",
     "videojs-contrib-quality-levels": "^2.0.9",
     "videojs-flvjs-es6": "^1.0.1",
