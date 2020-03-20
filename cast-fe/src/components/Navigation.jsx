@@ -26,7 +26,7 @@ function Navigation() {
       {localStorage.getItem("username") ?
         <Image src={urls().profile(localStorage.getItem("username"))}
                height={42} width={42}
-               style={style.profile_image} onClick={() => history.push("/logout")} roundedCircle/> :
+               style={style.profile_image} onClick={() => history.push("/profile")} roundedCircle/> :
         <>
           <Button variant="outline-primary" size="sm" style={{marginRight: 8}} onClick={() => history.push("/login")}>
             Log In</Button>
