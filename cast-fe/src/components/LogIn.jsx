@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Alert, Button, Container, Form, Spinner} from "react-bootstrap";
 import axios from "axios";
+import urls from "../helper/url";
 
 class LogIn extends Component {
   constructor(props) {
@@ -51,7 +52,7 @@ class LogIn extends Component {
     ok &= this.validate("password", this.state.password);
     if (!ok) return;
     this.setState({loading: true});
-    axios.post('/auth/login', {
+    axios.post(urls().login(), {
       username: this.state.username.trim(),
       password: this.state.password.trim(),
     }).then((response) => {

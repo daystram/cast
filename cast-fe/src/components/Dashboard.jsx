@@ -45,39 +45,6 @@ class Dashboard extends Component {
     }
   }
 
-  submitForm(e) {
-    e.preventDefault();
-    let ok = true;
-    ok &= this.validate("username", this.state.username);
-    ok &= this.validate("password", this.state.password);
-    if (!ok) return;
-    this.setState({loading: true});
-    axios.post('/auth/login', {
-      username: this.state.username.trim(),
-      password: this.state.password.trim(),
-    }).then((response) => {
-      this.setState({loading: false});
-      switch (response.data.code) {
-        case 200:
-          localStorage.setItem("username", this.state.username.trim());
-          this.props.history.push("/");
-          return;
-        case 404:
-          this.setState({error_username: "Username not registered"});
-          return;
-        case 403:
-          this.setState({error_password: "Incorrect password"});
-          return;
-        default:
-          this.setState({error_login: "An error has occurred!"});
-          return;
-      }
-    }).catch((error) => {
-      console.log(error);
-      this.setState({loading: false});
-    });
-  }
-
   render() {
     return (
       <>

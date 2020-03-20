@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Alert, Button, Col, Container, Form, Spinner} from "react-bootstrap";
 import axios from 'axios';
+import urls from "../helper/url";
 
 let timeout = {};
 
@@ -106,7 +107,7 @@ class SignUp extends Component {
   checkAvailability(field, value) {
     clearTimeout(timeout[field]);
     timeout[field] = setTimeout(() => {
-      axios.post('/auth/check', {
+      axios.post(urls().auth_check(), {
         field: field.trim(),
         value: value.trim()
       })
@@ -135,7 +136,7 @@ class SignUp extends Component {
     ok &= this.validate("password2", this.state.password2);
     if (!ok) return;
     this.setState({loading: true});
-    axios.post('/auth/signup', {
+    axios.post(urls().signup(), {
       name: this.state.name.trim(),
       username: this.state.username.trim(),
       email: this.state.email.trim(),
