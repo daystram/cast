@@ -2,7 +2,9 @@ package v1
 
 import (
 	"fmt"
+	"gitlab.com/daystram/cast/cast-be/config"
 	"net/http"
+	"os"
 
 	"gitlab.com/daystram/cast/cast-be/constants"
 	"gitlab.com/daystram/cast/cast-be/datatransfers"
@@ -68,10 +70,33 @@ func (c *VideoControllerAuth) Prepare() {
 
 // @Title Upload Video
 // @Success 200 {object} models.Object
-// @Param   variant		query	string	true	"variant"
-// @Param   count		query   int 	false 8	"count"
-// @Param   offset		query   int 	false 0	"offset"
-// @router /fresh [get]
-func (c *VideoControllerAuth) UploadVideo(variant string, count, offset int) datatransfers.Response {
-	return datatransfers.Response{}
+// @router /upload [post]
+func (c *VideoControllerAuth) UploadVideo() datatransfers.Response {
+	upload := datatransfers.VideoUpload{}
+	err := c.ParseForm(&upload)
+	if err != nil {
+		fmt.Printf("[VideoController::UploadVideo] failed parsing video details. %+v\n", err)
+		return datatransfers.Response{Error: "Failed parsing video detail", Code: http.StatusInternalServerError}
+	}
+	var videoID primitive.ObjectID
+	videoID, err = c.Handler.CreateVOD(upload, c.userID)
+	if err != nil {
+		fmt.Printf("[VideoController::UploadVideo] failed creating video. %+v\n", err)
+		return datatransfers.Response{Error: "Failed creating video", Code: http.StatusInternalServerError}
+	}
+	_ = os.Mkdir(fmt.Sprintf("cast-uploaded-videos/%s", videoID.Hex()), 755)
+	err = c.SaveToFile("video", fmt.Sprintf("cast-uploaded-videos/%s/video_original.mp4", videoID.Hex()))
+	if err != nil {
+		_ = c.Handler.DeleteVideo(videoID)
+		fmt.Printf("[VideoController::UploadVideo] failed saving video file. %+v\n", err)
+		return datatransfers.Response{Error: "Failed saving video file", Code: http.StatusInternalServerError}
+	}
+	err = c.SaveToFile("thumbnail", fmt.Sprintf("%s/thumbnail/%s.jpg", config.AppConfig.UploadsDirectory, videoID.Hex()))
+	if err != nil {
+		_ = c.Handler.DeleteVideo(videoID)
+		fmt.Printf("[VideoController::UploadVideo] failed saving thumbnail file. %+v\n", err)
+		return datatransfers.Response{Error: "Failed saving thumbnail file", Code: http.StatusInternalServerError}
+	}
+	// TODO: push for transcoding by cast-is
+	return datatransfers.Response{Code: http.StatusOK}
 }

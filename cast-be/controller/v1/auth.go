@@ -49,7 +49,6 @@ func (c *AuthController) PostCheckUnique(info datatransfers.UserFieldCheck) data
 // @Success 200 success
 // @router /login [post]
 func (c *AuthController) PostAuthenticate(info datatransfers.UserLogin) datatransfers.Response {
-	fmt.Println(info)
 	token, err := c.Handler.Authenticate(info)
 	switch err {
 	case nil:
