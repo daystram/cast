@@ -1,20 +1,22 @@
 package routers
 
 import (
-	"cloud.google.com/go/pubsub"
 	"context"
 	"fmt"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/plugins/cors"
-	"github.com/nareix/joy4/format"
+	"log"
+
 	conf "gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/controller/middleware"
 	v1 "gitlab.com/daystram/cast/cast-be/controller/v1"
 	"gitlab.com/daystram/cast/cast-be/handlers"
+
+	"cloud.google.com/go/pubsub"
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/plugins/cors"
+	"github.com/nareix/joy4/format"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/api/option"
-	"log"
 )
 
 func init() {
