@@ -25,7 +25,7 @@ type AuthController struct {
 func (c *AuthController) PostRegister(info datatransfers.UserRegister) datatransfers.Response {
 	err := c.Handler.Register(info)
 	if err != nil {
-		log.Printf("[PostAuthenticate] failed registering %s. %+v\n", info.Username, err)
+		log.Printf("[AuthController::PostRegister] failed registering %s. %+v\n", info.Username, err)
 		return datatransfers.Response{Error: "failed registering", Code: http.StatusInternalServerError}
 	}
 	return datatransfers.Response{Code: http.StatusOK}
@@ -38,7 +38,7 @@ func (c *AuthController) PostRegister(info datatransfers.UserRegister) datatrans
 func (c *AuthController) PostCheckUnique(info datatransfers.UserFieldCheck) datatransfers.Response {
 	err := c.Handler.CheckUniqueUserField(info.Field, info.Value)
 	if err != nil {
-		log.Printf("[PostCheckUnnique] user %s field already used. %+v\n", info.Field, err)
+		log.Printf("[AuthController::PostCheckUnique] user %s field already used. %+v\n", info.Field, err)
 		return datatransfers.Response{Error: fmt.Sprintf("%s already used", strings.Title(info.Field)), Code: http.StatusConflict}
 	}
 	return datatransfers.Response{Code: http.StatusOK}
@@ -55,13 +55,13 @@ func (c *AuthController) PostAuthenticate(info datatransfers.UserLogin) datatran
 		c.Ctx.Output.Header("Authorization", fmt.Sprintf("Bearer %s", token))
 		return datatransfers.Response{Data: fmt.Sprintf("Bearer %s", token), Code: http.StatusOK}
 	case errors.ErrNotRegistered:
-		log.Printf("[PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
+		log.Printf("[AuthController::PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
 		return datatransfers.Response{Error: "Username not registered", Code: http.StatusNotFound}
 	case errors.ErrIncorrectPassword:
-		log.Printf("[PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
+		log.Printf("[AuthController::PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
 		return datatransfers.Response{Error: "Incorrect password", Code: http.StatusForbidden}
 	default:
-		log.Printf("[PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
+		log.Printf("[AuthController::PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
 		return datatransfers.Response{Error: "Username not registered", Code: http.StatusNotFound}
 	}
 }
