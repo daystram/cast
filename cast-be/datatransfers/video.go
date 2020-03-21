@@ -14,9 +14,9 @@ type Video struct {
 	Author      UserItem           `json:"author"`
 	Description string             `json:"description" bson:"description"`
 	Views       int                `json:"views" bson:"views"`
-	Duration    int64              `json:"duration,omitempty" bson:"duration"`       // only for VODs
-	IsLive      bool               `json:"is_live,omitempty" bson:"is_live"`         // only for Live
-	Resolutions int                `json:"resolutions" bson:"resolutions"` // 0:None, 1:180p, 2:360p, 3:480p, 4:720p, 5:1080p, only for VODs
+	Duration    int64              `json:"duration,omitempty" bson:"duration"` // only for VODs
+	IsLive      bool               `json:"is_live,omitempty" bson:"is_live"`   // only for Live
+	Resolutions int                `json:"resolutions" bson:"resolutions"`     // 0:None, 1:180p, 2:360p, 3:480p, 4:720p, 5:1080p, only for VODs
 	CreatedAt   time.Time          `json:"created_at" bson:"created_at"`
 }
 
@@ -35,6 +35,13 @@ type VideoInsert struct {
 }
 
 type VideoUpload struct {
+	Title       string `form:"title"`
+	Description string `form:"description"`
+	Tags        string `form:"tags"`
+}
+
+type VideoEdit struct {
+	Hash        string `form:"hash"`
 	Title       string `form:"title"`
 	Description string `form:"description"`
 	Tags        string `form:"tags"`
