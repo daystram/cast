@@ -28,7 +28,7 @@ class SignUp extends Component {
   }
 
   handleChange(e) {
-    this.setState({error_login: ""});
+    this.setState({error_signup: ""});
     this.setState({[e.target.name]: e.target.value});
     this.validate(e.target.name, e.target.value);
   }
@@ -110,30 +110,27 @@ class SignUp extends Component {
       axios.post(urls().auth_check(), {
         field: field.trim(),
         value: value.trim()
-      })
-        .then((response) => {
-          if (response.data.code !== 200) {
-            this.setState({[`error_${field}`]: response.data.error});
-          } else {
-            this.setState({[`error_${field}`]: ""});
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          this.setState({error_signup: "An error has occurred!"});
-        });
+      }).then((response) => {
+        if (response.data.code !== 200) {
+          this.setState({[`error_${field}`]: response.data.error});
+        } else {
+          this.setState({[`error_${field}`]: ""});
+        }
+      }).catch((error) => {
+        console.log(error);
+        this.setState({error_signup: "An error has occurred!"});
+      });
     }, 400)
-
   }
 
   submitForm(e) {
     e.preventDefault();
     let ok = true;
-    ok &= this.validate("name", this.state.name);
-    ok &= this.validate("username", this.state.username);
-    ok &= this.validate("email", this.state.email);
-    ok &= this.validate("password", this.state.password);
-    ok &= this.validate("password2", this.state.password2);
+    ok &= !this.state.error_name;
+    ok &= !this.state.error_username;
+    ok &= !this.state.error_email;
+    ok &= !this.state.error_password;
+    ok &= !this.state.error_password2;
     if (!ok) return;
     this.setState({loading: true});
     axios.post(urls().signup(), {

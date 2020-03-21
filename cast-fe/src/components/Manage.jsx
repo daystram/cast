@@ -7,6 +7,8 @@ import urls from "../helper/url";
 import CastEditable from "./CastEditable";
 import {Prompt} from "react-router-dom";
 
+let timeout = null;
+
 class Manage extends Component {
   constructor(props) {
     super(props);
@@ -57,13 +59,13 @@ class Manage extends Component {
   }
 
   handleChange(e) {
-    this.setState({error_login: ""});
+    this.setState({error_upload: ""});
     this.setState({[e.target.name]: e.target.value});
     this.validate(e.target.name, e.target.value);
   }
 
   handleChangeFile(e) {
-    this.setState({error_login: ""});
+    this.setState({error_upload: ""});
     this.setState({[e.target.name]: e.target.files[0]});
     this.validate(e.target.name, e.target.value);
   }
@@ -76,6 +78,7 @@ class Manage extends Component {
           return false;
         }
         this.setState({error_title: ""});
+        this.checkAvailability(value);
         return true;
       case "description":
         if (!value.trim()) {
@@ -110,14 +113,34 @@ class Manage extends Component {
     }
   }
 
+  checkAvailability(value) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      axios.get(urls().title_check(), {
+        params: {
+          title: value.trim()
+        }
+      }).then((response) => {
+        if (response.data.code !== 200) {
+          this.setState({error_title: response.data.error});
+        } else {
+          this.setState({error_title: ""});
+        }
+      }).catch((error) => {
+        console.log(error);
+        this.setState({error_upload: "An error has occurred!"});
+      });
+    }, 400)
+  }
+
   submitForm(e) {
     e.preventDefault();
     let ok = true;
-    ok &= this.validate("title", this.state.title);
-    ok &= this.validate("description", this.state.description);
-    ok &= this.validate("tags", this.state.tags);
-    ok &= this.validate("thumbnail", this.state.thumbnail);
-    ok &= this.validate("video", this.state.video);
+    ok &= !this.state.error_title;
+    ok &= !this.state.error_description;
+    ok &= !this.state.error_tags;
+    ok &= !this.state.error_thumbnail;
+    ok &= !this.state.error_video;
     if (!ok) return;
 
     this.setState({uploading: true});
@@ -137,7 +160,7 @@ class Manage extends Component {
         }
       }
     ).then((response) => {
-      console.log(response)
+      console.log(response);
       this.setState({
         title: "",
         description: "",
@@ -203,21 +226,23 @@ class Manage extends Component {
                     <Form.Group>
                       <Form.Label>Thumbnail</Form.Label>
                       <div className={"custom-file"}>
-                        <Form.Control name={"thumbnail"} type={"file"} className={"custom-file-input"}
-                                      onChange={this.handleChangeFile} accept="image/*"
+                        <Form.Control name={"thumbnail"} type={"file"} className={"custom-file-input"} accept="image/*"
+                                      onChange={this.handleChangeFile} onBlur={this.handleChangeFile}
                                       isInvalid={!!this.state.error_thumbnail} disabled={this.state.uploading}/>
                         <Form.Control.Feedback type={"invalid"}>{this.state.error_thumbnail}</Form.Control.Feedback>
-                        <Form.Label className="custom-file-label">{this.state.thumbnail.name}</Form.Label>
+                        <Form.Label
+                          className="custom-file-label">{this.state.thumbnail && this.state.thumbnail.name}</Form.Label>
                       </div>
                     </Form.Group>
                     <Form.Group>
                       <Form.Label>Video</Form.Label>
                       <div className={"custom-file"}>
-                        <Form.Control name={"video"} type={"file"} className={"custom-file-input"}
-                                      onChange={this.handleChangeFile} accept="video/*"
+                        <Form.Control name={"video"} type={"file"} className={"custom-file-input"} accept="video/*"
+                                      onChange={this.handleChangeFile} onBlur={this.handleChangeFile}
                                       isInvalid={!!this.state.error_video} disabled={this.state.uploading}/>
                         <Form.Control.Feedback type={"invalid"}>{this.state.error_video}</Form.Control.Feedback>
-                        <Form.Label className="custom-file-label">{this.state.video.name}</Form.Label>
+                        <Form.Label
+                          className="custom-file-label">{this.state.video && this.state.video.name}</Form.Label>
                       </div>
                     </Form.Group>
                     <ProgressBar animated now={this.state.progress} style={style.progress}/>
@@ -235,7 +260,7 @@ class Manage extends Component {
               <Col>
                 {!this.state.loading && (this.state.list ? this.state.list.map(video =>
                   <Row>
-                    <CastEditable video={video}/>
+                    <CastEditable video={video} onDelete={() => this.fetchVideos()}/>
                   </Row>
                 ) : <h5 style={style.h5}>No videos uploaded yet!</h5>)}
                 {this.state.loading && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
