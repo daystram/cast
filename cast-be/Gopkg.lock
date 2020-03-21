@@ -30,6 +30,14 @@
   version = "v3.2.0"
 
 [[projects]]
+  digest = "1:0e9469c594ba4968647dc76d12db8fb3b05dc9603fb05346e1f9dad267a41e86"
+  name = "github.com/disintegration/imaging"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "acabd8315e63bfcaac97d52d68a7a0b88d2eea93"
+  version = "v1.6.2"
+
+[[projects]]
   digest = "1:586ea76dbd0374d6fb649a91d70d652b7fe0ccffb8910a77468e7702e7901f3d"
   name = "github.com/go-stack/stack"
   packages = ["."]
@@ -177,6 +185,19 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:78d7e1e06e835aaf1bc71f958c3871115c533dc5bf738ca1f25cd64d91893736"
+  name = "golang.org/x/image"
+  packages = [
+    "bmp",
+    "ccitt",
+    "tiff",
+    "tiff/lzw",
+  ]
+  pruneopts = "UT"
+  revision = "58c23975cae11f062d4b3b0c143fe248faac195d"
+
+[[projects]]
+  branch = "master"
   digest = "1:d1f7edf951b9cc444358a31de2f4e4c1c5c539ea9c6aca13f5bf92eb1124fc4b"
   name = "golang.org/x/net"
   packages = ["idna"]
@@ -234,6 +255,7 @@
     "github.com/astaxie/beego/orm",
     "github.com/astaxie/beego/plugins/cors",
     "github.com/dgrijalva/jwt-go",
+    "github.com/disintegration/imaging",
     "github.com/nareix/joy4/av/avutil",
     "github.com/nareix/joy4/av/pubsub",
     "github.com/nareix/joy4/format",
