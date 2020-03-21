@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"gitlab.com/daystram/cast/cast-be/config"
 	"net/http"
 	"sync"
 
 	data "gitlab.com/daystram/cast/cast-be/datatransfers"
 	"gitlab.com/daystram/cast/cast-be/models"
 
+	googlePS "cloud.google.com/go/pubsub"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/rtmp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,6 +17,7 @@ import (
 
 type module struct {
 	db   func() *Entity
+	mq   func() *MQ
 	live Live
 }
 
@@ -29,12 +32,18 @@ type Stream struct {
 }
 
 type Component struct {
-	DB *mongo.Client
+	DB       *mongo.Client
+	MQClient *googlePS.Client
 }
 
 type Entity struct {
 	videoOrm models.VideoOrmer
 	userOrm  models.UserOrmer
+}
+
+type MQ struct {
+	transcodeTopic *googlePS.Topic
+	completeTopic  *googlePS.Topic
 }
 
 type Handler interface {
@@ -63,6 +72,12 @@ func NewHandler(component Component) Handler {
 			return &Entity{
 				videoOrm: models.NewVideoOrmer(component.DB),
 				userOrm:  models.NewUserOrmer(component.DB),
+			}
+		},
+		mq: func() (m *MQ) {
+			return &MQ{
+				transcodeTopic: component.MQClient.Topic(config.AppConfig.TopicNameTranscode),
+				completeTopic:  component.MQClient.Topic(config.AppConfig.TopicNameComplete),
 			}
 		},
 	}

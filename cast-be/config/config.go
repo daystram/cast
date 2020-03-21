@@ -15,6 +15,12 @@ type Config struct {
 	MongoDBURI  string
 	MongoDBName string
 
+	GoogleProjectID          string
+	JSONKey                  string
+	TopicNameTranscode       string
+	TopicNameComplete        string
+	SubscriptionNameComplete string
+
 	UploadsDirectory string
 }
 
@@ -45,6 +51,31 @@ func InitializeAppConfig() {
 	// MongoDB DB Name
 	if AppConfig.MongoDBName = beego.AppConfig.String("mongodb_name"); AppConfig.MongoDBName == "" {
 		panic("mongodb_name is missing in app.conf")
+	}
+
+	// Google Project ID
+	if AppConfig.GoogleProjectID = beego.AppConfig.String("google_project_id"); AppConfig.GoogleProjectID == "" {
+		panic("google_project_id is missing in app.conf")
+	}
+
+	// Google Service Worker JSON Key
+	if AppConfig.JSONKey = beego.AppConfig.String("google_api_key"); AppConfig.JSONKey == "" {
+		panic("google_api_key is missing in app.conf")
+	}
+
+	// PubSub Transcode Topic Name
+	if AppConfig.TopicNameTranscode = beego.AppConfig.String("pubsub_topic_transcode"); AppConfig.TopicNameTranscode == "" {
+		panic("pubsub_topic_transcode is missing in app.conf")
+	}
+
+	// PubSub Complete Topic Name
+	if AppConfig.TopicNameComplete = beego.AppConfig.String("pubsub_topic_complete"); AppConfig.TopicNameComplete == "" {
+		panic("pubsub_topic_complete is missing in app.conf")
+	}
+
+	// PubSub Complete Subscription Name
+	if AppConfig.SubscriptionNameComplete = beego.AppConfig.String("pubsub_subscription_complete"); AppConfig.SubscriptionNameComplete == "" {
+		panic("pubsub_subscription_complete is missing in app.conf")
 	}
 
 	// Uploads Directory

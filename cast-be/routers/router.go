@@ -1,38 +1,44 @@
 package routers
 
 import (
+	"cloud.google.com/go/pubsub"
 	"context"
 	"fmt"
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/plugins/cors"
-	"log"
-	"time"
-
+	"github.com/nareix/joy4/format"
 	conf "gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/controller/middleware"
 	v1 "gitlab.com/daystram/cast/cast-be/controller/v1"
 	"gitlab.com/daystram/cast/cast-be/handlers"
-
-	"github.com/astaxie/beego"
-	"github.com/nareix/joy4/format"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"google.golang.org/api/option"
+	"log"
 )
 
 func init() {
 	conf.InitializeAppConfig()
 
 	// Init MongoDB
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	db, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.AppConfig.MongoDBURI))
+	db, err := mongo.Connect(context.Background(), options.Client().ApplyURI(conf.AppConfig.MongoDBURI))
 	if err != nil {
-		log.Fatalf("Failed connecting to mongoDB at %s\n", conf.AppConfig.MongoDBURI)
+		log.Fatalf("Failed connecting to mongoDB at %s. %+v\n", conf.AppConfig.MongoDBURI, err)
 	}
 	fmt.Printf("[Initialization] MongoDB connected\n")
 
 	// Init RTMP UpLink
 	format.RegisterAll()
 
-	h := handlers.NewHandler(handlers.Component{DB: db})
+	// Init Google PubSub
+	var pubsubClient *pubsub.Client
+	pubsubClient, err = pubsub.NewClient(context.Background(), conf.AppConfig.GoogleProjectID, option.WithCredentialsFile(conf.AppConfig.JSONKey))
+	if err != nil {
+		log.Fatalf("Failed connecting to Google PubSub. %+v\n", err)
+	}
+	fmt.Printf("[Initialization] Google PubSub connected\n")
+
+	h := handlers.NewHandler(handlers.Component{DB: db, MQClient: pubsubClient})
 	h.CreateRTMPUpLink()
 	fmt.Printf("[Initialization] Initialization completed\n")
 
