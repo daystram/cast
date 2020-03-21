@@ -3,11 +3,15 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"image"
+	"os"
 	"time"
 
+	"gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/constants"
 	data "gitlab.com/daystram/cast/cast-be/datatransfers"
 
+	"github.com/disintegration/imaging"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -77,6 +81,8 @@ func (m *module) DeleteVideo(ID, userID primitive.ObjectID) (err error) {
 	if user.Username != video.Author.Username {
 		return errors.New(fmt.Sprintf("[DeleteVideo] cannot delete others' video."))
 	}
+	_ = os.RemoveAll(fmt.Sprintf(fmt.Sprintf("%s/%s", config.AppConfig.UploadsDirectory, ID.Hex())))
+	_ = os.Remove(fmt.Sprintf("%s/thumbnail/%s.jpg", config.AppConfig.UploadsDirectory, ID.Hex()))
 	return m.db().videoOrm.DeleteOneByID(ID)
 }
 
@@ -94,4 +100,22 @@ func (m *module) UpdateVideo(video data.VideoEdit, userID primitive.ObjectID) (e
 
 func (m *module) CheckUniqueVideoTitle(title string) (err error) {
 	return m.db().videoOrm.CheckUnique(title)
+}
+
+func (m *module) NormalizeThumbnail(ID primitive.ObjectID) (err error) {
+	var reader *os.File
+	if reader, err = os.Open(fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, ID.Hex())); err != nil {
+		return errors.New(fmt.Sprintf("[NormalizeThumbnail] failed to read original image. %+v", err))
+	}
+	original, _, err := image.Decode(reader)
+	if err != nil {
+		return
+	}
+	normalized := imaging.Fill(original, constants.ThumbnailWidth, constants.ThumbnailHeight, imaging.Center, imaging.Lanczos)
+	if err = imaging.Save(normalized, fmt.Sprintf("%s/thumbnail/%s.jpg", config.AppConfig.UploadsDirectory, ID.Hex())); err != nil {
+		return errors.New(fmt.Sprintf("[NormalizeThumbnail] failed to normalize image. %+v", err))
+	}
+	reader.Close()
+	_ = os.Remove(fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, ID.Hex()))
+	return
 }

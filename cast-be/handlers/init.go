@@ -54,6 +54,7 @@ type Handler interface {
 	DeleteVideo(ID, userID primitive.ObjectID) (err error)
 	UpdateVideo(video data.VideoEdit, userID primitive.ObjectID) (err error)
 	CheckUniqueVideoTitle(title string) (err error)
+	NormalizeThumbnail(ID primitive.ObjectID) (err error)
 }
 
 func NewHandler(component Component) Handler {
