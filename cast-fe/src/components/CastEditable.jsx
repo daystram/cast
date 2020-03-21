@@ -12,9 +12,9 @@ class CastEditable extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      title: props.video.title,
+      title: this.props.video.title,
       tags: "",
-      description: props.video.description,
+      description: this.props.video.description,
       error_title: "",
       error_tags: "",
       error_description: "",
@@ -31,6 +31,12 @@ class CastEditable extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.submitForm = this.submitForm.bind(this);
     this.deleteVideo = this.deleteVideo.bind(this);
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (prevState.title !== this.props.video.title || prevState.description !== this.props.video.description) {
+      this.setState({title: this.props.video.title, description: this.props.video.description})
+    }
   }
 
   pressEdit() {
@@ -231,7 +237,7 @@ class CastEditable extends Component {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {!this.state.error_delete && <Alert variant={"danger"}>{this.state.error_delete}</Alert>}
+            {this.state.error_delete && <Alert variant={"danger"}>{this.state.error_delete}</Alert>}
             <p>Are you sure you want to delete <b>{this.state.title}</b>? <b>This action cannot be undone.</b></p>
           </Modal.Body>
           <Modal.Footer>
