@@ -151,7 +151,7 @@ class CastEditable extends Component {
   }
 
   deleteVideo() {
-    this.setState({loading_delete: true});
+    this.setState({error_delete: "", loading_delete: true});
     axios.delete(urls().delete(), {
         params: {
           hash: this.props.video.hash
