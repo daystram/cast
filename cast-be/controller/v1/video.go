@@ -141,11 +141,17 @@ func (c *VideoControllerAuth) UploadVideo() datatransfers.Response {
 		fmt.Printf("[VideoController::UploadVideo] failed saving video file. %+v\n", err)
 		return datatransfers.Response{Error: "Failed saving video file", Code: http.StatusInternalServerError}
 	}
-	err = c.SaveToFile("thumbnail", fmt.Sprintf("%s/thumbnail/%s.jpg", config.AppConfig.UploadsDirectory, videoID.Hex()))
+	err = c.SaveToFile("thumbnail", fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, videoID.Hex()))
 	if err != nil {
 		_ = c.Handler.DeleteVideo(videoID, c.userID)
 		fmt.Printf("[VideoController::UploadVideo] failed saving thumbnail file. %+v\n", err)
 		return datatransfers.Response{Error: "Failed saving thumbnail file", Code: http.StatusInternalServerError}
+	}
+	err = c.Handler.NormalizeThumbnail(videoID)
+	if err != nil {
+		_ = c.Handler.DeleteVideo(videoID, c.userID)
+		fmt.Printf("[VideoController::UploadVideo] failed normalizing thumbnail image. %+v\n", err)
+		return datatransfers.Response{Error: "Failed normalizing thumbnail image", Code: http.StatusInternalServerError}
 	}
 	// TODO: push for transcoding by cast-is
 	return datatransfers.Response{Code: http.StatusOK}
