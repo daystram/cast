@@ -62,6 +62,36 @@ func (m *module) CreateVOD(upload data.VideoUpload, userID primitive.ObjectID) (
 	return
 }
 
-func (m *module) DeleteVideo(ID primitive.ObjectID) (err error) {
+func (m *module) DeleteVideo(ID, userID primitive.ObjectID) (err error) {
+	var user data.User
+	var video data.Video
+	if user, err = m.db().userOrm.GetOneByID(userID); err != nil {
+		return errors.New(fmt.Sprintf("[DeleteVideo] failed retrieving user %s detail. %+v", userID.Hex(), err))
+	}
+	if video, err = m.db().videoOrm.GetOneByHash(ID.Hex()); err != nil {
+		return errors.New(fmt.Sprintf("[DeleteVideo] failed retrieving video %s detail. %+v", userID.Hex(), err))
+	}
+	if video.Type == constants.VideoTypeLive {
+		return errors.New(fmt.Sprintf("[DeleteVideo] live videos cannot be deleted."))
+	}
+	if user.Username != video.Author.Username {
+		return errors.New(fmt.Sprintf("[DeleteVideo] cannot delete others' video."))
+	}
 	return m.db().videoOrm.DeleteOneByID(ID)
+}
+
+func (m *module) UpdateVideo(video data.VideoEdit, userID primitive.ObjectID) (err error) {
+	if err = m.db().videoOrm.EditVideo(data.VideoInsert{
+		Hash:        video.Hash,
+		Title:       video.Title,
+		Author:      userID,
+		Description: video.Description,
+	}); err != nil {
+		return errors.New(fmt.Sprintf("[UpdateVideo] error updating video. %+v", err))
+	}
+	return
+}
+
+func (m *module) CheckUniqueVideoTitle(title string) (err error) {
+	return m.db().videoOrm.CheckUnique(title)
 }

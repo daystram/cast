@@ -51,7 +51,9 @@ type Handler interface {
 	Search(query string, tags []string) (videos []data.Video, err error)
 	VideoDetails(hash string) (video data.Video, err error)
 	CreateVOD(upload data.VideoUpload, userID primitive.ObjectID) (ID primitive.ObjectID, err error)
-	DeleteVideo(ID primitive.ObjectID) (err error)
+	DeleteVideo(ID, userID primitive.ObjectID) (err error)
+	UpdateVideo(video data.VideoEdit, userID primitive.ObjectID) (err error)
+	CheckUniqueVideoTitle(title string) (err error)
 }
 
 func NewHandler(component Component) Handler {
