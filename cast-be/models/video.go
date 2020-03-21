@@ -2,12 +2,14 @@ package models
 
 import (
 	"context"
+	"errors"
 	"gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/constants"
 	"gitlab.com/daystram/cast/cast-be/datatransfers"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type VideoOrmer interface {
@@ -17,7 +19,9 @@ type VideoOrmer interface {
 	IncrementViews(hash string) error
 	SetLive(authorID primitive.ObjectID, live bool) (err error)
 	InsertVideo(video datatransfers.VideoInsert) (ID primitive.ObjectID, err error)
+	EditVideo(video datatransfers.VideoInsert) (err error)
 	DeleteOneByID(ID primitive.ObjectID) (err error)
+	CheckUnique(title string) (err error)
 }
 
 type videoOrm struct {
@@ -113,7 +117,10 @@ func (o *videoOrm) IncrementViews(hash string) error {
 }
 
 func (o *videoOrm) SetLive(authorID primitive.ObjectID, live bool) (err error) {
-	return o.collection.FindOneAndUpdate(context.TODO(), bson.M{"author": authorID, "type": constants.VideoTypeLive}, bson.M{"is_live": live}).Err()
+	return o.collection.FindOneAndUpdate(context.TODO(),
+		bson.M{"author": authorID, "type": constants.VideoTypeLive},
+		bson.D{{"$set", bson.D{{"is_live", live}}}},
+	).Err()
 }
 
 func (o *videoOrm) InsertVideo(video datatransfers.VideoInsert) (ID primitive.ObjectID, err error) {
@@ -131,7 +138,28 @@ func (o *videoOrm) InsertVideo(video datatransfers.VideoInsert) (ID primitive.Ob
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
+func (o *videoOrm) EditVideo(video datatransfers.VideoInsert) (err error) {
+	return o.collection.FindOneAndUpdate(context.TODO(),
+		bson.M{"hash": video.Hash, "author": video.Author},
+		bson.D{{"$set", bson.D{
+			{"title", video.Title},
+			{"description", video.Description},
+		}}},
+	).Err()
+}
+
 func (o *videoOrm) DeleteOneByID(ID primitive.ObjectID) (err error) {
 	_, err = o.collection.DeleteOne(context.TODO(), bson.M{"_id": ID})
+	return
+}
+
+func (o *videoOrm) CheckUnique(title string) (err error) {
+	uniqueOptions := &options.FindOneOptions{Collation: &options.Collation{Locale: "en", Strength: 2}}
+	if err = o.collection.FindOne(context.TODO(), bson.M{"title": title}, uniqueOptions).Err(); err == mongo.ErrNoDocuments {
+		return nil
+	}
+	if err == nil {
+		return errors.New("[CheckUnique] duplicate entry found")
+	}
 	return
 }
