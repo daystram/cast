@@ -3,12 +3,12 @@ package v1
 import (
 	"fmt"
 	"gitlab.com/daystram/cast/cast-be/config"
-	"net/http"
-	"os"
-
 	"gitlab.com/daystram/cast/cast-be/constants"
 	"gitlab.com/daystram/cast/cast-be/datatransfers"
 	"gitlab.com/daystram/cast/cast-be/handlers"
+	"log"
+	"net/http"
+	"os"
 
 	"github.com/astaxie/beego"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -55,7 +55,6 @@ func (c *VideoController) Search(query string) {
 // @Param   hash		query	string	true	"hash"
 // @router /details [get]
 func (c *VideoController) GetDetails(hash string) datatransfers.Response {
-	// TODO: add view count
 	video, err := c.Handler.VideoDetails(hash)
 	if err != nil {
 		fmt.Printf("[VideoController::GetDetails] failed retrieving video detail. %+v\n", err)
@@ -73,6 +72,50 @@ type VideoControllerAuth struct {
 
 func (c *VideoControllerAuth) Prepare() {
 	c.userID, _ = primitive.ObjectIDFromHex(c.Ctx.Input.Param(constants.ContextParamUserID))
+}
+
+// @Title Check Title
+// @Param   title    query	string	true	"title"
+// @Success 200 success
+// @router /check [get]
+func (c *VideoControllerAuth) GetCheckUnique(title string) datatransfers.Response {
+	err := c.Handler.CheckUniqueVideoTitle(title)
+	if err != nil {
+		log.Printf("[VideoControllerAuth::GetCheckUnique] title already used. %+v\n", err)
+		return datatransfers.Response{Error: "Title already used", Code: http.StatusConflict}
+	}
+	return datatransfers.Response{Code: http.StatusOK}
+}
+
+// @Title Edit Video
+// @Success 200 {object} models.Object
+// @Param   video    body	{datatransfers.VideoEdit}	true	"video"
+// @router /edit [put]
+func (c *VideoControllerAuth) EditVideo(video datatransfers.VideoEdit) datatransfers.Response {
+	err := c.Handler.UpdateVideo(video, c.userID)
+	if err != nil {
+		fmt.Printf("[VideoController::EditVideo] failed editing video. %+v\n", err)
+		return datatransfers.Response{Error: "Failed editing video", Code: http.StatusInternalServerError}
+	}
+	return datatransfers.Response{Code: http.StatusOK}
+}
+
+// @Title Delete Video
+// @Success 200 {object} models.Object
+// @Param   hash		query	string	true	"hash"
+// @router /delete [delete]
+func (c *VideoControllerAuth) DeleteVideo(hash string) datatransfers.Response {
+	videoID, err := primitive.ObjectIDFromHex(hash)
+	if err != nil {
+		fmt.Printf("[VideoController::DeleteVideo] invalid video hash. %+v\n", err)
+		return datatransfers.Response{Error: "Invalid video hash", Code: http.StatusInternalServerError}
+	}
+	err = c.Handler.DeleteVideo(videoID, c.userID)
+	if err != nil {
+		fmt.Printf("[VideoController::DeleteVideo] failed deleting video. %+v\n", err)
+		return datatransfers.Response{Error: "Failed deleting video", Code: http.StatusInternalServerError}
+	}
+	return datatransfers.Response{Code: http.StatusOK}
 }
 
 // @Title Upload Video
@@ -94,13 +137,13 @@ func (c *VideoControllerAuth) UploadVideo() datatransfers.Response {
 	_ = os.Mkdir(fmt.Sprintf("%s/%s", config.AppConfig.UploadsDirectory, videoID.Hex()), 755)
 	err = c.SaveToFile("video", fmt.Sprintf("%s/%s/video_original.mp4", config.AppConfig.UploadsDirectory, videoID.Hex()))
 	if err != nil {
-		_ = c.Handler.DeleteVideo(videoID)
+		_ = c.Handler.DeleteVideo(videoID, c.userID)
 		fmt.Printf("[VideoController::UploadVideo] failed saving video file. %+v\n", err)
 		return datatransfers.Response{Error: "Failed saving video file", Code: http.StatusInternalServerError}
 	}
 	err = c.SaveToFile("thumbnail", fmt.Sprintf("%s/thumbnail/%s.jpg", config.AppConfig.UploadsDirectory, videoID.Hex()))
 	if err != nil {
-		_ = c.Handler.DeleteVideo(videoID)
+		_ = c.Handler.DeleteVideo(videoID, c.userID)
 		fmt.Printf("[VideoController::UploadVideo] failed saving thumbnail file. %+v\n", err)
 		return datatransfers.Response{Error: "Failed saving thumbnail file", Code: http.StatusInternalServerError}
 	}
