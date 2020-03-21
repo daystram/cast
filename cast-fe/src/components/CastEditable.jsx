@@ -179,7 +179,7 @@ class CastEditable extends Component {
             <Image src={urls().thumbnail(this.props.video.hash)} style={style.thumbnail}/>
           </Col>
           <Col md sm={12} className={"responsive-fold"}>
-            {this.state.error_upload && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
+            {this.state.error_edit && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
             {this.state.editing ?
               <Form.Group>
                 <Form.Control name={"title"} value={this.state.title} onBlur={this.handleChange}
@@ -231,6 +231,7 @@ class CastEditable extends Component {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
+            {!this.state.error_delete && <Alert variant={"danger"}>{this.state.error_delete}</Alert>}
             <p>Are you sure you want to delete <b>{this.state.title}</b>? <b>This action cannot be undone.</b></p>
           </Modal.Body>
           <Modal.Footer>
