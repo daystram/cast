@@ -109,7 +109,7 @@ deploy_dev:ingest:
   script:
     - echo $CONFIG_INGEST | base64 -d > ./cast-is/app.conf
     - docker pull $CI_REGISTRY_IMAGE:dev-cast-is || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-is --tag $CI_REGISTRY_IMAGE/ingest:dev-cast-is cast-is/
+    - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-is --tag $CI_REGISTRY_IMAGE:dev-cast-is cast-is/
     - docker push $CI_REGISTRY_IMAGE:dev-cast-is
     - ssh $HOST "make update SERVICE=$SERVICE_NAME"
   except:
