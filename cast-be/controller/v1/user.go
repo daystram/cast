@@ -24,8 +24,9 @@ func (c *UserControllerAuth) Prepare() {
 
 // @Title Get User Details
 // @Success 200 {object} models.Object
+// @Param   stub		query	string	false	"stub"
 // @router /info [get]
-func (c *UserControllerAuth) ProfileInfo() datatransfers.Response {
+func (c *UserControllerAuth) ProfileDetails(stub string) datatransfers.Response {
 	user, err := c.Handler.UserDetails(c.userID)
 	if err != nil {
 		fmt.Printf("[UserControllerAuth::ProfileInfo] user cannot be found. %+v\n", err)

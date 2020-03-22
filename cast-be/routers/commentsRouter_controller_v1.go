@@ -93,10 +93,12 @@ func init() {
 
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:UserControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:UserControllerAuth"],
         beego.ControllerComments{
-            Method: "ProfileInfo",
+            Method: "ProfileDetails",
             Router: `/info`,
             AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("stub"),
+			),
             Filters: nil,
             Params: nil})
 
