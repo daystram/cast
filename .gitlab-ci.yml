@@ -107,7 +107,7 @@ deploy_dev:ingest:
     - . scripts/init_deploy.sh
     - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
   script:
-    - echo $CONFIG_INGEST | base64 -d > ./cast-is/config/app.conf
+    - echo $CONFIG_INGEST | base64 -d > ./cast-is/app.conf
     - docker pull $CI_REGISTRY_IMAGE:dev-cast-is || true
     - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-is --tag $CI_REGISTRY_IMAGE/ingest:dev-cast-is cast-is/
     - docker push $CI_REGISTRY_IMAGE:dev-cast-is
@@ -201,7 +201,7 @@ deploy_prod:ingest:
     - . scripts/init_deploy.sh
     - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
   script:
-    - echo $CONFIG_INGEST | base64 -d > ./cast-is/config/app.conf
+    - echo $CONFIG_INGEST | base64 -d > ./cast-is/app.conf
     - docker pull $CI_REGISTRY_IMAGE:cast-is || true
     - docker build --cache-from $CI_REGISTRY_IMAGE:cast-is --tag $CI_REGISTRY_IMAGE:cast-is cast-is/
     - docker push $CI_REGISTRY_IMAGE:cast-is
