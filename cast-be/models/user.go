@@ -19,6 +19,7 @@ type UserOrmer interface {
 	GetOneByUsername(username string) (user datatransfers.User, err error)
 	CheckUnique(field, value string) (err error)
 	InsertUser(user datatransfers.User) (ID primitive.ObjectID, err error)
+	EditUser(user datatransfers.User) (err error)
 	DeleteOneByID(ID primitive.ObjectID) (err error)
 }
 
@@ -60,6 +61,16 @@ func (o *userOrm) InsertUser(user datatransfers.User) (ID primitive.ObjectID, er
 		return
 	}
 	return result.InsertedID.(primitive.ObjectID), nil
+}
+
+func (o *userOrm) EditUser(user datatransfers.User) (err error) {
+	return o.collection.FindOneAndUpdate(context.TODO(),
+		bson.M{"_id": user.ID},
+		bson.D{{"$set", bson.D{
+			{"name", user.Name},
+			{"email", user.Email},
+		}}},
+	).Err()
 }
 
 func (o *userOrm) DeleteOneByID(ID primitive.ObjectID) (err error) {

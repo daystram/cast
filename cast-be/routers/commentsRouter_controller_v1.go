@@ -80,6 +80,26 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:UserControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:UserControllerAuth"],
+        beego.ControllerComments{
+            Method: "UpdateProfile",
+            Router: `/edit`,
+            AllowHTTPMethods: []string{"put"},
+            MethodParams: param.Make(
+				param.New("info", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:UserControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:UserControllerAuth"],
+        beego.ControllerComments{
+            Method: "ProfileInfo",
+            Router: `/info`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoController"],
         beego.ControllerComments{
             Method: "GetDetails",

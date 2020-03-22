@@ -39,3 +39,8 @@ type UserFieldCheck struct {
 	Field string
 	Value string
 }
+
+type UserEdit struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+}

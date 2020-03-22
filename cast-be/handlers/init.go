@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"gitlab.com/daystram/cast/cast-be/config"
 	"net/http"
 	"sync"
 
+	"gitlab.com/daystram/cast/cast-be/config"
 	data "gitlab.com/daystram/cast/cast-be/datatransfers"
 	"gitlab.com/daystram/cast/cast-be/models"
 
@@ -54,6 +54,9 @@ type Handler interface {
 	CheckUniqueUserField(field, value string) (err error)
 	Register(info data.UserRegister) (err error)
 	Authenticate(info data.UserLogin) (token string, err error)
+
+	UserDetails(userID primitive.ObjectID) (user data.User, err error)
+	UpdateUser(user data.UserEdit, ID primitive.ObjectID) (err error)
 
 	FreshList(variant string, count, offset int) (videos []data.Video, err error)
 	AuthorList(author string, count, offset int) (videos []data.Video, err error)
