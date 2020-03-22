@@ -135,7 +135,7 @@ func (c *VideoControllerAuth) UploadVideo() datatransfers.Response {
 		return datatransfers.Response{Error: "Failed creating video", Code: http.StatusInternalServerError}
 	}
 	_ = os.Mkdir(fmt.Sprintf("%s/%s", config.AppConfig.UploadsDirectory, videoID.Hex()), 755)
-	err = c.SaveToFile("video", fmt.Sprintf("%s/%s/video_original.mp4", config.AppConfig.UploadsDirectory, videoID.Hex()))
+	err = c.SaveToFile("video", fmt.Sprintf("%s/%s/video.mp4", config.AppConfig.UploadsDirectory, videoID.Hex()))
 	if err != nil {
 		_ = c.Handler.DeleteVideo(videoID, c.userID)
 		fmt.Printf("[VideoController::UploadVideo] failed saving video file. %+v\n", err)
@@ -153,6 +153,6 @@ func (c *VideoControllerAuth) UploadVideo() datatransfers.Response {
 		fmt.Printf("[VideoController::UploadVideo] failed normalizing thumbnail image. %+v\n", err)
 		return datatransfers.Response{Error: "Failed normalizing thumbnail image", Code: http.StatusInternalServerError}
 	}
-	// TODO: push for transcoding by cast-is
+	c.Handler.StartTranscode(videoID.Hex())
 	return datatransfers.Response{Code: http.StatusOK}
 }
