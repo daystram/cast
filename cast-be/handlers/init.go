@@ -42,8 +42,8 @@ type Entity struct {
 }
 
 type MQ struct {
-	transcodeTopic *googlePS.Topic
-	completeTopic  *googlePS.Topic
+	transcodeTopic       *googlePS.Topic
+	completeSubscription *googlePS.Subscription
 }
 
 type Handler interface {
@@ -64,6 +64,9 @@ type Handler interface {
 	UpdateVideo(video data.VideoEdit, userID primitive.ObjectID) (err error)
 	CheckUniqueVideoTitle(title string) (err error)
 	NormalizeThumbnail(ID primitive.ObjectID) (err error)
+
+	TranscodeListenerWorker()
+	StartTranscode(hash string)
 }
 
 func NewHandler(component Component) Handler {
@@ -76,8 +79,8 @@ func NewHandler(component Component) Handler {
 		},
 		mq: func() (m *MQ) {
 			return &MQ{
-				transcodeTopic: component.MQClient.Topic(config.AppConfig.TopicNameTranscode),
-				completeTopic:  component.MQClient.Topic(config.AppConfig.TopicNameComplete),
+				transcodeTopic:       component.MQClient.Topic(config.AppConfig.TopicNameTranscode),
+				completeSubscription: component.MQClient.Subscription(config.AppConfig.SubscriptionNameComplete),
 			}
 		},
 	}
