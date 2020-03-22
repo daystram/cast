@@ -7,38 +7,123 @@ import (
 	"google.golang.org/api/option"
 	"gopkg.in/ini.v1"
 	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 	"sync"
-	"time"
+)
+
+type Config struct {
+	ProjectID             string
+	APIKey                string
+	TopicTranscode        string
+	TopicComplete         string
+	SubscriptionTranscode string
+	UploadsDir            string
+	FFMpegExecutable      string
+	MP4BoxExecutable      string
+}
+
+type Resolution struct {
+	Name  string
+	Flags string
+}
+
+const (
+	FlagsAudio = "-i video.mp4 -vn -acodec aac -ab 128k -dash 1 -y audio.m4a"
+	BaseVideo  = "-i video.mp4 -vsync passthrough -c:v libx264 -x264-params keyint=25:min-keyint=25:no-scenecut -movflags +faststart -y "
+	Flags240   = BaseVideo + "-an -vf scale=-2:240 -b:v 400k -preset faster temp_240.mp4"
+	Flags360   = BaseVideo + "-an -vf scale=-2:360 -b:v 800k -preset faster temp_360.mp4"
+	Flags480   = BaseVideo + "-an -vf scale=-2:480 -b:v 1200k -preset faster temp_480.mp4"
+	Flags720   = BaseVideo + "-an -vf scale=-2:720 -b:v 2400k -preset faster temp_720.mp4"
+	Flags1080  = BaseVideo + "-an -vf scale=-2:1080 -b:v 4800k -preset faster temp_1080.mp4"
+	FlagsDASH  = "-dash 10000 -rap -frag-rap -bs-switching no -url-template -dash-profile onDemand -segment-name 'segment_$RepresentationID$' " +
+		"-new manifest.mpd temp_1080.mp4 temp_720.mp4 temp_480.mp4 temp_360.mp4 temp_180.mp4 audio.m4a"
 )
 
 func main() {
 	// Init Configuration
-	config, err := ini.Load("app.conf")
+	configFile, err := ini.Load("app.conf")
 	if err != nil {
 		log.Fatalf("[Initialize] unable to find app.conf. %+v\n", err)
 	}
-	projectID := config.Section("").Key("google_project_id").String()
-	apiKey := config.Section("").Key("google_api_key").String()
-	transcodeTopic := config.Section("").Key("pubsub_subscription_transcode").String()
+	config := Config{
+		ProjectID:             configFile.Section("").Key("google_project_id").String(),
+		APIKey:                configFile.Section("").Key("google_api_key").String(),
+		TopicComplete:         configFile.Section("").Key("pubsub_topic_complete").String(),
+		SubscriptionTranscode: configFile.Section("").Key("pubsub_subscription_transcode").String(),
+		UploadsDir:            configFile.Section("").Key("uploads_dir").String(),
+		FFMpegExecutable:      configFile.Section("").Key("ffmpeg_executable").String(),
+		MP4BoxExecutable:      configFile.Section("").Key("mp4box_executable").String(),
+	}
+	resolutions := []Resolution{
+		{"Audio", FlagsAudio},
+		{"240p", Flags240},
+		{"360p", Flags360},
+		{"480p", Flags480},
+		{"720p", Flags720},
+		{"1080p", Flags1080},
+	}
+	fmt.Println("[Initialization] config loaded")
 
 	// Init Google PubSub
-	pubsubClient, err := pubsub.NewClient(context.Background(), projectID,
-		option.WithCredentialsFile(apiKey))
+	pubsubClient, err := pubsub.NewClient(context.Background(), config.ProjectID, option.WithCredentialsFile(config.APIKey))
 	if err != nil {
 		log.Fatalf("Failed connecting to Google PubSub. %+v\n", err)
 	}
+	fmt.Println("[Initialization] Google PubSub connected")
 
 	// Listen to messages
 	var mu sync.Mutex
-	sub := pubsubClient.Subscription(transcodeTopic)
+	sub := pubsubClient.Subscription(config.SubscriptionTranscode)
+	topic := pubsubClient.Topic(config.TopicComplete)
+	fmt.Println("[cast-is] Ready to transcode")
 	for {
-		fmt.Println("READY")
-		err = sub.Receive(context.Background(), func(ctx context.Context, msg *pubsub.Message) {
+		_ = sub.Receive(context.Background(), func(ctx context.Context, msg *pubsub.Message) {
 			msg.Ack()
 			mu.Lock()
 			defer mu.Unlock()
-			fmt.Printf("Got message: %q\n", string(msg.Data))
-			time.Sleep(5*time.Second)
+			hash := string(msg.Data)
+			workDir := fmt.Sprintf("%s/%s", config.UploadsDir, hash)
+			outfile, _ := os.Create(fmt.Sprintf("%s/transcode.log", workDir))
+			defer outfile.Close()
+
+			fmt.Printf("[cast-is] Start: %s\n", hash)
+			fmt.Fprintf(outfile, "\n[cast-is] ----------------------- Start: %s", hash)
+			for i, resolution := range resolutions {
+				fmt.Printf("[cast-is] %s -> %s\n", hash, resolution.Name)
+				fmt.Fprintf(outfile, "\n[cast-is] ----------------------- %s -> %s\n", hash, resolution.Name)
+				cmd := exec.Command(config.FFMpegExecutable, strings.Split(resolution.Flags, " ")...)
+				cmd.Stderr = outfile
+				cmd.Dir = workDir
+				if err := cmd.Run(); err != nil {
+					fmt.Printf("[cast-is] Stopped: %s\n", hash)
+					fmt.Fprintf(outfile, "[cast-is] ----------------------- Stopped: %s\n", hash)
+					return
+				}
+				if resolution.Name == "Audio" {
+					continue
+				}
+				fmt.Fprintf(outfile, "[cast-is] ----------------------- %s -> %s DASH\n", hash, resolution.Name)
+				cmd = exec.Command(config.MP4BoxExecutable, strings.Split(FlagsDASH, " ")...)
+				cmd.Stderr = outfile
+				cmd.Dir = workDir
+				if err := cmd.Run(); err != nil {
+					fmt.Println(err)
+				}
+				topic.Publish(context.Background(), &pubsub.Message{Data: []byte(fmt.Sprintf("%s:%d", hash, i))})
+			}
+			cleanUp(workDir)
+			fmt.Printf("[cast-is] Done: %s\n", hash)
+			fmt.Fprintf(outfile, "[cast-is] ----------------------- Done: %s\n", hash)
 		})
+	}
+}
+
+func cleanUp(path string) {
+	files, _ := filepath.Glob(fmt.Sprintf("%s/temp*", path))
+	for _, file := range files {
+		_ = os.Remove(file)
 	}
 }
