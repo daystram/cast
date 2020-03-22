@@ -18,7 +18,6 @@ type Config struct {
 	GoogleProjectID          string
 	JSONKey                  string
 	TopicNameTranscode       string
-	TopicNameComplete        string
 	SubscriptionNameComplete string
 
 	UploadsDirectory string
@@ -66,11 +65,6 @@ func InitializeAppConfig() {
 	// PubSub Transcode Topic Name
 	if AppConfig.TopicNameTranscode = beego.AppConfig.String("pubsub_topic_transcode"); AppConfig.TopicNameTranscode == "" {
 		panic("pubsub_topic_transcode is missing in app.conf")
-	}
-
-	// PubSub Complete Topic Name
-	if AppConfig.TopicNameComplete = beego.AppConfig.String("pubsub_topic_complete"); AppConfig.TopicNameComplete == "" {
-		panic("pubsub_topic_complete is missing in app.conf")
 	}
 
 	// PubSub Complete Subscription Name
