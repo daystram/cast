@@ -42,7 +42,7 @@ const (
 	Flags480   = BaseVideo + "-an -vf scale=-2:480 -b:v 1200k -preset faster temp_480.mp4"
 	Flags720   = BaseVideo + "-an -vf scale=-2:720 -b:v 2400k -preset faster temp_720.mp4"
 	Flags1080  = BaseVideo + "-an -vf scale=-2:1080 -b:v 4800k -preset faster temp_1080.mp4"
-	FlagsDASH  = "-dash 10000 -rap -frag-rap -bs-switching no -url-template -dash-profile onDemand -segment-name segment_$RepresentationID$ -new manifest.mpd %s"
+	FlagsDASH  = "-dash 10000 -rap -frag-rap -bs-switching no -url-template -dash-profile onDemand -segment-name segment_$RepresentationID$ -out manifest.mpd %s"
 )
 
 func main() {
@@ -109,6 +109,7 @@ func main() {
 					continue
 				}
 				fmt.Fprintf(outfile, "[cast-is] ----------------------- %s -> %s DASH\n", hash, resolution.Name)
+				_ = os.Remove(fmt.Sprintf("%s/manifest.mpd", workDir))
 				cmd = exec.Command(config.MP4BoxExecutable, strings.Split(fmt.Sprintf(FlagsDASH, strings.Join(TempFileNames[5-i:], " ")), " ")...)
 				cmd.Stderr = outfile
 				cmd.Dir = workDir
