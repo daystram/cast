@@ -3,12 +3,11 @@ package routers
 import (
 	"context"
 	"fmt"
-	"log"
-
 	conf "gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/controller/middleware"
 	v1 "gitlab.com/daystram/cast/cast-be/controller/v1"
 	"gitlab.com/daystram/cast/cast-be/handlers"
+	"log"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/astaxie/beego"
@@ -42,6 +41,7 @@ func init() {
 
 	h := handlers.NewHandler(handlers.Component{DB: db, MQClient: pubsubClient})
 	h.CreateRTMPUpLink()
+	go h.TranscodeListenerWorker()
 	fmt.Printf("[Initialization] Initialization completed\n")
 
 	nsPublic := beego.NewNamespace("api/v1",
