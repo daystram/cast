@@ -2,12 +2,12 @@ package v1
 
 import (
 	"fmt"
-	"gitlab.com/daystram/cast/cast-be/errors"
 	"log"
 	"net/http"
 	"strings"
 
 	"gitlab.com/daystram/cast/cast-be/datatransfers"
+	"gitlab.com/daystram/cast/cast-be/errors"
 	"gitlab.com/daystram/cast/cast-be/handlers"
 
 	"github.com/astaxie/beego"

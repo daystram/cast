@@ -2,14 +2,14 @@ package v1
 
 import (
 	"fmt"
-	"gitlab.com/daystram/cast/cast-be/constants"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 
+	"gitlab.com/daystram/cast/cast-be/constants"
 	"gitlab.com/daystram/cast/cast-be/datatransfers"
 	"gitlab.com/daystram/cast/cast-be/handlers"
 
 	"github.com/astaxie/beego"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Live Stream Upstream Controller

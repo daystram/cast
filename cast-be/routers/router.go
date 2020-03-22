@@ -72,11 +72,17 @@ func init() {
 		),
 		beego.NSNamespace("/p",
 			beego.NSBefore(middleware.AuthenticateJWT),
+			beego.NSNamespace("/user",
+				beego.NSInclude(
+					&v1.UserControllerAuth{Handler: h},
+				),
+			),
 			beego.NSNamespace("/video",
 				beego.NSInclude(
 					&v1.VideoControllerAuth{Handler: h},
 				),
-			), beego.NSNamespace("/live",
+			),
+			beego.NSNamespace("/live",
 				beego.NSInclude(
 					&v1.LiveControllerAuth{Handler: h},
 				),
