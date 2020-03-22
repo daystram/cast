@@ -18,6 +18,7 @@ type VideoOrmer interface {
 	GetOneByHash(hash string) (datatransfers.Video, error)
 	IncrementViews(hash string) error
 	SetLive(authorID primitive.ObjectID, live bool) (err error)
+	SetResolution(hash string, resolution int) (err error)
 	InsertVideo(video datatransfers.VideoInsert) (ID primitive.ObjectID, err error)
 	EditVideo(video datatransfers.VideoInsert) (err error)
 	DeleteOneByID(ID primitive.ObjectID) (err error)
@@ -120,6 +121,13 @@ func (o *videoOrm) SetLive(authorID primitive.ObjectID, live bool) (err error) {
 	return o.collection.FindOneAndUpdate(context.TODO(),
 		bson.M{"author": authorID, "type": constants.VideoTypeLive},
 		bson.D{{"$set", bson.D{{"is_live", live}}}},
+	).Err()
+}
+
+func (o *videoOrm) SetResolution(hash string, resolution int) (err error) {
+	return o.collection.FindOneAndUpdate(context.TODO(),
+		bson.M{"hash": hash, "type": constants.VideoTypeVOD},
+		bson.D{{"$set", bson.D{{"resolutions", resolution}}}},
 	).Err()
 }
 
