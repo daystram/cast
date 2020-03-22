@@ -5,7 +5,7 @@ RUN dep ensure --vendor-only
 COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o /cast-is .
 
-FROM alpine:3.10
+FROM daystram/ingest-base:latest
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /cast-is /app/
 COPY config/app.conf /app/
