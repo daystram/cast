@@ -30,6 +30,10 @@ type Resolution struct {
 	Flags string
 }
 
+var (
+	TempFileNames = []string{"temp_1080.mp4", "temp_720.mp4", "temp_480.mp4", "temp_360.mp4", "temp_240.mp4", "audio.m4a"}
+)
+
 const (
 	FlagsAudio = "-i video.mp4 -vn -acodec aac -ab 128k -dash 1 -y audio.m4a"
 	BaseVideo  = "-i video.mp4 -vsync passthrough -c:v libx264 -x264-params keyint=25:min-keyint=25:no-scenecut -movflags +faststart -y "
@@ -38,8 +42,7 @@ const (
 	Flags480   = BaseVideo + "-an -vf scale=-2:480 -b:v 1200k -preset faster temp_480.mp4"
 	Flags720   = BaseVideo + "-an -vf scale=-2:720 -b:v 2400k -preset faster temp_720.mp4"
 	Flags1080  = BaseVideo + "-an -vf scale=-2:1080 -b:v 4800k -preset faster temp_1080.mp4"
-	FlagsDASH  = "-dash 10000 -rap -frag-rap -bs-switching no -url-template -dash-profile onDemand -segment-name 'segment_$RepresentationID$' " +
-		"-new manifest.mpd temp_1080.mp4 temp_720.mp4 temp_480.mp4 temp_360.mp4 temp_180.mp4 audio.m4a"
+	FlagsDASH  = "-dash 10000 -rap -frag-rap -bs-switching no -url-template -dash-profile onDemand -segment-name segment_$RepresentationID$ -new manifest.mpd %s"
 )
 
 func main() {
@@ -106,7 +109,7 @@ func main() {
 					continue
 				}
 				fmt.Fprintf(outfile, "[cast-is] ----------------------- %s -> %s DASH\n", hash, resolution.Name)
-				cmd = exec.Command(config.MP4BoxExecutable, strings.Split(FlagsDASH, " ")...)
+				cmd = exec.Command(config.MP4BoxExecutable, strings.Split(fmt.Sprintf(FlagsDASH, strings.Join(TempFileNames[5-i:], " ")), " ")...)
 				cmd.Stderr = outfile
 				cmd.Dir = workDir
 				if err := cmd.Run(); err != nil {
