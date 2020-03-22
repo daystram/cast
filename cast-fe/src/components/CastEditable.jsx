@@ -5,7 +5,7 @@ import format from "../helper/format";
 import axios from "axios";
 import {Prompt} from "react-router-dom";
 
-const resolutions = ["Processing", "180p", "360p", "480p", "720p", "1080p"];
+const resolutions = ["Processing", "240p", "360p", "480p", "720p", "1080p"];
 let timeout = null;
 
 class CastEditable extends Component {
@@ -25,6 +25,7 @@ class CastEditable extends Component {
       loading_edit: false,
       loading_delete: false,
       prompt: false,
+      updated: false,
     };
     this.pressEdit = this.pressEdit.bind(this);
     this.pressDelete = this.pressDelete.bind(this);
@@ -34,7 +35,7 @@ class CastEditable extends Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (prevState.title !== this.props.video.title || prevState.description !== this.props.video.description) {
+    if (!this.state.editing && !this.state.updated && (prevState.title !== this.props.video.title || prevState.description !== this.props.video.description)) {
       this.setState({title: this.props.video.title, description: this.props.video.description})
     }
   }
@@ -49,6 +50,9 @@ class CastEditable extends Component {
           tags: this.state.tags,
           description: this.state.description,
         },
+        error_title: "",
+        error_tags: "",
+        error_description: "",
         editing: true
       })
     }
@@ -144,7 +148,8 @@ class CastEditable extends Component {
           before: {},
           error_title: "",
           error_tags: "",
-          error_description: ""
+          error_description: "",
+          updated: true
         });
       } else {
         console.log(response.data);

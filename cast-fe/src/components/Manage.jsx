@@ -230,8 +230,8 @@ class Manage extends Component {
                                       onChange={this.handleChangeFile} onBlur={this.handleChangeFile}
                                       isInvalid={!!this.state.error_thumbnail} disabled={this.state.uploading}/>
                         <Form.Control.Feedback type={"invalid"}>{this.state.error_thumbnail}</Form.Control.Feedback>
-                        <Form.Label
-                          className="custom-file-label">{this.state.thumbnail && this.state.thumbnail.name}</Form.Label>
+                        <Form.Label style={{overflow: "hidden"}} className="custom-file-label">
+                          {this.state.thumbnail && this.state.thumbnail.name}</Form.Label>
                       </div>
                     </Form.Group>
                     <Form.Group>
@@ -241,8 +241,8 @@ class Manage extends Component {
                                       onChange={this.handleChangeFile} onBlur={this.handleChangeFile}
                                       isInvalid={!!this.state.error_video} disabled={this.state.uploading}/>
                         <Form.Control.Feedback type={"invalid"}>{this.state.error_video}</Form.Control.Feedback>
-                        <Form.Label
-                          className="custom-file-label">{this.state.video && this.state.video.name}</Form.Label>
+                        <Form.Label style={{overflow: "hidden"}} className="custom-file-label">
+                          {this.state.video && this.state.video.name}</Form.Label>
                       </div>
                     </Form.Group>
                     <ProgressBar animated now={this.state.progress} style={style.progress}/>
