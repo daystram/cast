@@ -1,17 +1,19 @@
 package main
 
 import (
-	"cloud.google.com/go/pubsub"
 	"context"
 	"fmt"
-	"google.golang.org/api/option"
-	"gopkg.in/ini.v1"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
+
+	"cloud.google.com/go/pubsub"
+	"google.golang.org/api/option"
+	"gopkg.in/ini.v1"
 )
 
 type Config struct {
@@ -108,9 +110,10 @@ func main() {
 				if resolution.Name == "Audio" {
 					continue
 				}
-				fmt.Fprintf(outfile, "[cast-is] ----------------------- %s -> %s DASH\n", hash, resolution.Name)
+				time.Sleep(1 * time.Second)
 				_ = os.Remove(fmt.Sprintf("%s/manifest.mpd", workDir))
-				fmt.Println(strings.Join(append(strings.Split(FlagsDASH, " "), TempFileNames[5-i:]...), " "))
+				time.Sleep(2 * time.Second)
+				fmt.Fprintf(outfile, "[cast-is] ----------------------- %s -> %s DASH\n", hash, resolution.Name)
 				cmd = exec.Command(config.MP4BoxExecutable, append(strings.Split(FlagsDASH, " "), TempFileNames[5-i:]...)...)
 				cmd.Stderr = outfile
 				cmd.Dir = workDir
