@@ -20,7 +20,12 @@ axios.interceptors.response.use(
   response => {
     const token = response.headers.authorization; // must be lowercase
     if (token) {
-      localStorage.setItem("auth_token", token);
+      if (token === "NONE") {
+        localStorage.removeItem("username");
+        localStorage.removeItem("auth_token");
+      } else {
+        localStorage.setItem("auth_token", token);
+      }
     }
     return response;
   },
