@@ -14,7 +14,8 @@ import (
 
 type VideoOrmer interface {
 	GetRecent(variant string, count int, offset int) ([]datatransfers.Video, error)
-	GetAllVODByAuthor(author primitive.ObjectID, count int, offset int) ([]datatransfers.Video, error)
+	GetAllVODByAuthor(author primitive.ObjectID) ([]datatransfers.Video, error)
+	GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) ([]datatransfers.Video, error)
 	GetOneByHash(hash string) (datatransfers.Video, error)
 	IncrementViews(hash string) error
 	SetLive(authorID primitive.ObjectID, live bool) (err error)
@@ -65,7 +66,32 @@ func (o *videoOrm) GetRecent(variant string, count int, offset int) (result []da
 	return
 }
 
-func (o *videoOrm) GetAllVODByAuthor(author primitive.ObjectID, count int, offset int) (result []datatransfers.Video, err error) {
+func (o *videoOrm) GetAllVODByAuthor(author primitive.ObjectID) (result []datatransfers.Video, err error) {
+	query := &mongo.Cursor{}
+	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+		{{"$match", bson.D{{"author", author}}}},
+		{{"$match", bson.D{{"type", constants.VideoTypeVOD}}}},
+		{{"$sort", bson.D{{"created_at", -1}}}},
+		{{"$lookup", bson.D{
+			{"from", constants.DBCollectionUser},
+			{"localField", "author"},
+			{"foreignField", "_id"},
+			{"as", "author"},
+		}}},
+		{{"$unwind", "$author"}}}); err != nil {
+		return
+	}
+	for query.Next(context.TODO()) {
+		var video datatransfers.Video
+		if err = query.Decode(&video); err != nil {
+			return
+		}
+		result = append(result, video)
+	}
+	return
+}
+
+func (o *videoOrm) GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) (result []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
 		{{"$match", bson.D{{"author", author}}}},
