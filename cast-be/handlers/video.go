@@ -26,7 +26,7 @@ func (m *module) AuthorList(username string, count, offset int) (videos []data.V
 	if author, err = m.db().userOrm.GetOneByUsername(username); err != nil {
 		return nil, errors.New(fmt.Sprintf("[AuthorList] author not found. %+v", err))
 	}
-	if videos, err = m.db().videoOrm.GetAllVODByAuthor(author.ID, count, offset); err != nil {
+	if videos, err = m.db().videoOrm.GetAllVODByAuthorPaginated(author.ID, count, offset); err != nil {
 		return nil, errors.New(fmt.Sprintf("[AuthorList] error retrieving VODs. %+v", err))
 	}
 	return

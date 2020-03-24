@@ -7,20 +7,30 @@ import (
 )
 
 type User struct {
-	ID       primitive.ObjectID `json:"_id" bson:"_id"`
-	Name     string             `json:"name" bson:"name"`
-	Username string             `json:"username" bson:"username"`
-	Email    string             `json:"email" bson:"email"`
-	Password string             `json:"-" bson:"password"`
+	ID          primitive.ObjectID `json:"_id" bson:"_id"`
+	Name        string             `json:"name" bson:"name"`
+	Username    string             `json:"username" bson:"username"`
+	Email       string             `json:"email" bson:"email"`
+	Password    string             `json:"-" bson:"password"`
+	Subscribers int                `json:"-" bson:"subscribers"`
 	//Subscribing []primitive.ObjectID // TODO: normalize to other table
 	//Likes       []primitive.ObjectID // TODO: normalize to other table
 	CreatedAt time.Time `json:"created_at,omitempty" bson:"created_at"`
 }
 
-type UserItem struct {
+type UserDetail struct {
 	Name        string `json:"name"`
-	Username    string `json:"username"`
-	Subscribers int    `json:"subscribers"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	Subscribers int    `json:"subscribers" bson:"subscribers"`
+	Views       int    `json:"views" bson:"views"`
+	Uploads     int    `json:"uploads" bson:"uploads"`
+}
+
+type UserItem struct {
+	Name        string `json:"name" bson:"name"`
+	Username    string `json:"username" bson:"username"`
+	Subscribers int    `json:"subscribers" bson:"subscribers"`
 }
 
 type UserLogin struct {
@@ -41,6 +51,6 @@ type UserFieldCheck struct {
 }
 
 type UserEdit struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }

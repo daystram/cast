@@ -55,7 +55,7 @@ type Handler interface {
 	Register(info data.UserRegister) (err error)
 	Authenticate(info data.UserLogin) (token string, err error)
 
-	UserDetails(userID primitive.ObjectID) (user data.User, err error)
+	UserDetails(userID primitive.ObjectID) (detail data.UserDetail, err error)
 	UpdateUser(user data.UserEdit, ID primitive.ObjectID) (err error)
 
 	FreshList(variant string, count, offset int) (videos []data.Video, err error)
