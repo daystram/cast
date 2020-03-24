@@ -10,11 +10,13 @@ export default function urls() {
     cast_details: () => `${api_base}/video/details`,
     title_check: () => `${api_base}/p/video/check`,
     upload: () => `${api_base}/p/video/upload`,
-    edit: () => `${api_base}/p/video/edit`,
+    edit_video: () => `${api_base}/p/video/edit`,
     delete: () => `${api_base}/p/video/delete`,
     list: () => `${api_base}/video/list`,
     auth_check: () => `${api_base}/auth/check`,
     login: () => `${api_base}/auth/login`,
     signup: () => `${api_base}/auth/signup`,
+    user_info: () => `${api_base}/p/user/info`,
+    edit_user: () => `${api_base}/p/user/edit`,
   }
 }
