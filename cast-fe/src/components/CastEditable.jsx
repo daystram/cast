@@ -134,7 +134,7 @@ class CastEditable extends Component {
     ok &= !this.state.error_tags;
     if (!ok) return;
     this.setState({loading_edit: true});
-    axios.put(urls().edit(), {
+    axios.put(urls().edit_video(), {
         hash: this.props.video.hash,
         title: this.state.title,
         description: this.state.description,
@@ -195,7 +195,7 @@ class CastEditable extends Component {
               <Form.Group>
                 <Form.Control name={"title"} value={this.state.title} onBlur={this.handleChange}
                               onChange={this.handleChange} type={"text"} size={"lg"} style={style.title}
-                              isInvalid={this.state.error_title}/>
+                              isInvalid={this.state.error_title} placeholder={"Title"}/>
                 <Form.Control.Feedback type={"invalid"}>{this.state.error_title}</Form.Control.Feedback>
               </Form.Group> :
               <h1 style={style.title}>{this.state.title}</h1>
@@ -214,7 +214,7 @@ class CastEditable extends Component {
               <Form.Group>
                 <Form.Control name={"description"} value={this.state.description} onBlur={this.handleChange}
                               onChange={this.handleChange} as={"textarea"} size={"lg"} style={style.description}
-                              isInvalid={this.state.error_description} rows={5}/>
+                              isInvalid={this.state.error_description} rows={5} placeholder={"Description"}/>
                 <Form.Control.Feedback type={"invalid"}>{this.state.error_description}</Form.Control.Feedback>
               </Form.Group> :
               <p style={style.description}>{this.state.description}</p>
