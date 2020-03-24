@@ -91,6 +91,7 @@ func AuthenticateJWT(ctx *context.Context) {
 		log.Printf("[AuthFilter] failed to get jwt token. %+v\n", err)
 		errMessage, _ := json.Marshal(map[string]interface{}{"message": "JWT is invalid"})
 		ctx.ResponseWriter.WriteHeader(http.StatusForbidden)
+		ctx.ResponseWriter.Header().Set("Authorization", "NONE")
 		_, _ = ctx.ResponseWriter.Write(errMessage)
 		return
 	}
