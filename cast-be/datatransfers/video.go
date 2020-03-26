@@ -7,7 +7,7 @@ import (
 )
 
 type Video struct {
-	ID          primitive.ObjectID `json:"_id" bson:"_id"`
+	ID          primitive.ObjectID `json:"-" bson:"_id"`
 	Hash        string             `json:"hash" bson:"hash"` // used for querying
 	Type        string             `json:"type" bson:"type"` // "live" or "vod"
 	Title       string             `json:"title" bson:"title"`
@@ -17,6 +17,9 @@ type Video struct {
 	Duration    int64              `json:"duration,omitempty" bson:"duration"` // only for VODs
 	IsLive      bool               `json:"is_live,omitempty" bson:"is_live"`   // only for Live
 	Resolutions int                `json:"resolutions" bson:"resolutions"`     // 0:None, 1:180p, 2:360p, 3:480p, 4:720p, 5:1080p, only for VODs
+	Likes       int                `json:"likes" bson:"-"`
+	Liked       bool               `json:"liked" bson:"-"`
+	Comments    []interface{}      `json:"comments" bson:"-"`
 	CreatedAt   time.Time          `json:"created_at" bson:"created_at"`
 }
 
@@ -64,13 +67,6 @@ type CommentInsert struct {
 }
 
 type Like struct {
-	ID        primitive.ObjectID `json:"_id" bson:"_id"`
-	Hash      string             `json:"hash" bson:"hash"`
-	Author    UserItem           `json:"author" bson:"author"`
-	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
-}
-
-type LikeInsert struct {
 	ID        primitive.ObjectID `json:"_id" bson:"_id"`
 	Hash      string             `json:"hash" bson:"hash"`
 	Author    primitive.ObjectID `json:"author" bson:"author"`
