@@ -136,11 +136,20 @@ class Manage extends Component {
   submitForm(e) {
     e.preventDefault();
     let ok = true;
-    ok &= !this.state.error_title;
-    ok &= !this.state.error_description;
-    ok &= !this.state.error_tags;
-    ok &= !this.state.error_thumbnail;
-    ok &= !this.state.error_video;
+    if (!this.state.attempted) {
+      this.setState({attempted: true});
+      ok &= !this.validate("title", this.state.title);
+      ok &= !this.validate("description", this.state.description);
+      ok &= !this.validate("tags", this.state.tags);
+      ok &= !this.validate("thumbnail", this.state.thumbnail);
+      ok &= !this.validate("video", this.state.video);
+    } else {
+      ok &= !this.state.error_title;
+      ok &= !this.state.error_description;
+      ok &= !this.state.error_tags;
+      ok &= !this.state.error_thumbnail;
+      ok &= !this.state.error_video;
+    }
     if (!ok) return;
 
     this.setState({uploading: true});

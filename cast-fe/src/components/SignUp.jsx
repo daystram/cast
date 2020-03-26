@@ -126,11 +126,20 @@ class SignUp extends Component {
   submitForm(e) {
     e.preventDefault();
     let ok = true;
-    ok &= !this.state.error_name;
-    ok &= !this.state.error_username;
-    ok &= !this.state.error_email;
-    ok &= !this.state.error_password;
-    ok &= !this.state.error_password2;
+    if (!this.state.attempted) {
+      this.setState({attempted: true});
+      ok &= !this.validate("name", this.state.name);
+      ok &= !this.validate("username", this.state.username);
+      ok &= !this.validate("email", this.state.email);
+      ok &= !this.validate("password", this.state.password);
+      ok &= !this.validate("password", this.state.password2);
+    } else {
+      ok &= !this.state.error_name;
+      ok &= !this.state.error_username;
+      ok &= !this.state.error_email;
+      ok &= !this.state.error_password;
+      ok &= !this.state.error_password2;
+    }
     if (!ok) return;
     this.setState({loading: true});
     axios.post(urls().signup(), {

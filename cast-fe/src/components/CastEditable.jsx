@@ -129,9 +129,16 @@ class CastEditable extends Component {
 
   submitForm() {
     let ok = true;
-    ok &= !this.state.error_title;
-    ok &= !this.state.error_description;
-    ok &= !this.state.error_tags;
+    if (!this.state.attempted) {
+      this.setState({attempted: true});
+      ok &= !this.validate("title", this.state.title);
+      ok &= !this.validate("description", this.state.description);
+      ok &= !this.validate("tags", this.state.tags);
+    } else {
+      ok &= !this.state.error_title;
+      ok &= !this.state.error_description;
+      ok &= !this.state.error_tags;
+    }
     if (!ok) return;
     this.setState({loading_edit: true});
     axios.put(urls().edit_video(), {
