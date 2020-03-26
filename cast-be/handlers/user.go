@@ -31,6 +31,10 @@ func (m *module) UserDetails(userID primitive.ObjectID) (detail data.UserDetail,
 	return
 }
 
+func (m *module) GetUserByEmail(email string) (user data.User, err error) {
+	return m.db().userOrm.GetOneByEmail(email)
+}
+
 func (m *module) UpdateUser(user data.UserEdit, ID primitive.ObjectID) (err error) {
 	return m.db().userOrm.EditUser(data.User{
 		ID:    ID,

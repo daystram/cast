@@ -9,6 +9,7 @@ import (
 	"gitlab.com/daystram/cast/cast-be/models"
 
 	googlePS "cloud.google.com/go/pubsub"
+	"github.com/mailgun/mailgun-go"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/rtmp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,9 +17,10 @@ import (
 )
 
 type module struct {
-	db   func() *Entity
-	mq   func() *MQ
-	live Live
+	db     func() *Entity
+	mq     func() *MQ
+	mailer *mailgun.MailgunImpl
+	live   Live
 }
 
 type Live struct {
@@ -34,6 +36,7 @@ type Stream struct {
 type Component struct {
 	DB       *mongo.Client
 	MQClient *googlePS.Client
+	Mailer   *mailgun.MailgunImpl
 }
 
 type Entity struct {
@@ -53,9 +56,14 @@ type Handler interface {
 
 	CheckUniqueUserField(field, value string) (err error)
 	Register(info data.UserRegister) (err error)
+	SendVerification(user data.User) (err error)
+	Verify(key string) (err error)
 	Authenticate(info data.UserLogin) (token string, err error)
 
+	SendSingleEmail(subject, content string, user data.User)
+
 	UserDetails(userID primitive.ObjectID) (detail data.UserDetail, err error)
+	GetUserByEmail(email string) (user data.User, err error)
 	UpdateUser(user data.UserEdit, ID primitive.ObjectID) (err error)
 
 	FreshList(variant string, count, offset int) (videos []data.Video, err error)
@@ -86,5 +94,6 @@ func NewHandler(component Component) Handler {
 				completeSubscription: component.MQClient.Subscription(config.AppConfig.SubscriptionNameComplete),
 			}
 		},
+		mailer: component.Mailer,
 	}
 }
