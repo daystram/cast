@@ -11,7 +11,7 @@ type Video struct {
 	Hash        string             `json:"hash" bson:"hash"` // used for querying
 	Type        string             `json:"type" bson:"type"` // "live" or "vod"
 	Title       string             `json:"title" bson:"title"`
-	Author      UserItem           `json:"author"`
+	Author      UserItem           `json:"author" bson:"author"`
 	Description string             `json:"description" bson:"description"`
 	Views       int                `json:"views" bson:"views"`
 	Duration    int64              `json:"duration,omitempty" bson:"duration"` // only for VODs
@@ -45,4 +45,50 @@ type VideoEdit struct {
 	Title       string `form:"title"`
 	Description string `form:"description"`
 	Tags        string `form:"tags"`
+}
+
+type Comment struct {
+	ID        primitive.ObjectID `json:"_id" bson:"_id"`
+	Hash      string             `json:"hash" bson:"hash"`
+	Comment   string             `json:"comment" bson:"comment"`
+	Author    UserItem           `json:"author" bson:"author"`
+	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
+}
+
+type CommentInsert struct {
+	ID        primitive.ObjectID `json:"_id" bson:"_id"`
+	Hash      string             `json:"hash" bson:"hash"`
+	Comment   string             `json:"comment" bson:"comment"`
+	Author    primitive.ObjectID `json:"author" bson:"author"`
+	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
+}
+
+type Like struct {
+	ID        primitive.ObjectID `json:"_id" bson:"_id"`
+	Hash      string             `json:"hash" bson:"hash"`
+	Author    UserItem           `json:"author" bson:"author"`
+	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
+}
+
+type LikeInsert struct {
+	ID        primitive.ObjectID `json:"_id" bson:"_id"`
+	Hash      string             `json:"hash" bson:"hash"`
+	Author    primitive.ObjectID `json:"author" bson:"author"`
+	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
+}
+
+type Chat struct {
+	ID        primitive.ObjectID `json:"_id" bson:"_id"`
+	Hash      string             `json:"hash" bson:"hash"`
+	Chat      string             `json:"chat" bson:"chat"`
+	Author    UserItem           `json:"author" bson:"author"`
+	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
+}
+
+type ChatInsert struct {
+	ID        primitive.ObjectID `json:"_id" bson:"_id"`
+	Hash      string             `json:"hash" bson:"hash"`
+	Chat      string             `json:"chat" bson:"chat"`
+	Author    primitive.ObjectID `json:"author" bson:"author"`
+	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 }
