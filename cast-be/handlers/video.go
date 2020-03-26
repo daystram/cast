@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
 	"image"
 	"os"
 	"time"
@@ -40,6 +41,11 @@ func (m *module) VideoDetails(hash string) (video data.Video, err error) {
 	if video, err = m.db().videoOrm.GetOneByHash(hash); err != nil {
 		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] video with hash %s not found. %+v", hash, err))
 	}
+	var likes int
+	if likes, err = m.db().likeOrm.GetCountByHash(hash); err != nil {
+		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] failed getting likes count for %s. %+v", hash, err))
+	}
+	video.Likes = likes
 	video.Views++
 	if video.Type == constants.VideoTypeVOD {
 		if err = m.db().videoOrm.IncrementViews(hash); err != nil {
@@ -117,5 +123,36 @@ func (m *module) NormalizeThumbnail(ID primitive.ObjectID) (err error) {
 	}
 	reader.Close()
 	_ = os.Remove(fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, ID.Hex()))
+	return
+}
+
+func (m *module) LikeVideo(userID primitive.ObjectID, hash string, like bool) (err error) {
+	if like {
+		_, err = m.db().likeOrm.InsertLike(data.Like{
+			Hash:      hash,
+			Author:    userID,
+			CreatedAt: time.Now(),
+		})
+	} else {
+		err = m.db().likeOrm.RemoveLikeByUserIDHash(userID, hash)
+	}
+	return
+}
+
+func (m *module) CheckUserLikes(hash, username string) (liked bool, err error) {
+	var user data.User
+	if user, err = m.db().userOrm.GetOneByUsername(username); err != nil {
+		return false, errors.New(fmt.Sprintf("[CheckUserLikes] failed to get user by username. %+v", err))
+	}
+	if _, err = m.db().likeOrm.GetOneByUserIDHash(user.ID, hash); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, nil
+		}
+		return false, errors.New(fmt.Sprintf("[CheckUserLikes] failed to fetch likes by user. %+v", err))
+	}
+	return true, nil
+}
+
+func (m *module) CommentVideo(userID primitive.ObjectID, hash, comment string) (err error) {
 	return
 }

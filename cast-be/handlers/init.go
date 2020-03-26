@@ -42,6 +42,7 @@ type Component struct {
 type Entity struct {
 	videoOrm models.VideoOrmer
 	userOrm  models.UserOrmer
+	likeOrm  models.LikeOrmer
 }
 
 type MQ struct {
@@ -75,6 +76,9 @@ type Handler interface {
 	UpdateVideo(video data.VideoEdit, userID primitive.ObjectID) (err error)
 	CheckUniqueVideoTitle(title string) (err error)
 	NormalizeThumbnail(ID primitive.ObjectID) (err error)
+	LikeVideo(userID primitive.ObjectID, hash string, like bool) (err error)
+	CheckUserLikes(hash, username string) (liked bool, err error)
+	CommentVideo(userID primitive.ObjectID, hash, comment string) (err error)
 
 	TranscodeListenerWorker()
 	StartTranscode(hash string)
@@ -86,6 +90,7 @@ func NewHandler(component Component) Handler {
 			return &Entity{
 				videoOrm: models.NewVideoOrmer(component.DB),
 				userOrm:  models.NewUserOrmer(component.DB),
+				likeOrm:  models.NewLikeOrmer(component.DB),
 			}
 		},
 		mq: func() (m *MQ) {
