@@ -44,6 +44,41 @@ func (c *AuthController) PostCheckUnique(info datatransfers.UserFieldCheck) data
 	return datatransfers.Response{Code: http.StatusOK}
 }
 
+// @Title Verify
+// @Param   info    body	{datatransfers.UserVerify}	true	"verification token"
+// @Success 200 success
+// @router /verify [post]
+func (c *AuthController) PostVerify(info datatransfers.UserVerify) datatransfers.Response {
+	err := c.Handler.Verify(info.Key)
+	if err != nil {
+		log.Printf("[AuthController::PostVerify] cannot verify user. %+v\n", err)
+		return datatransfers.Response{Error: "Verification key invalid", Code: http.StatusUnauthorized}
+	}
+	return datatransfers.Response{Code: http.StatusOK}
+}
+
+// @Title Resend
+// @Param   info    body	{datatransfers.UserResend}	true	"email"
+// @Success 200 success
+// @router /resend [post]
+func (c *AuthController) PostResend(info datatransfers.UserResend) datatransfers.Response {
+	user, err := c.Handler.GetUserByEmail(info.Email)
+	if err != nil {
+		log.Printf("[AuthController::PostResend] cannot find user with email %s. %+v\n", info.Email, err)
+		return datatransfers.Response{Error: "Email not registered", Code: http.StatusNotFound}
+	}
+	if user.Verified {
+		log.Printf("[AuthController::PostResend] user already verified\n")
+		return datatransfers.Response{Error: "Already verified", Code: http.StatusConflict}
+	}
+	err = c.Handler.SendVerification(user)
+	if err != nil {
+		log.Printf("[AuthController::PostResend] cannot re-send verification email. %+v\n", err)
+		return datatransfers.Response{Error: "Failed sending email", Code: http.StatusInternalServerError}
+	}
+	return datatransfers.Response{Code: http.StatusOK}
+}
+
 // @Title Login
 // @Param   info    body	{datatransfers.UserLogin}	true	"login info"
 // @Success 200 success
@@ -60,6 +95,9 @@ func (c *AuthController) PostAuthenticate(info datatransfers.UserLogin) datatran
 	case errors.ErrIncorrectPassword:
 		log.Printf("[AuthController::PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
 		return datatransfers.Response{Error: "Incorrect password", Code: http.StatusForbidden}
+	case errors.ErrNotVerified:
+		log.Printf("[AuthController::PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
+		return datatransfers.Response{Error: "User not verified", Code: http.StatusNotAcceptable}
 	default:
 		log.Printf("[AuthController::PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
 		return datatransfers.Response{Error: "Username not registered", Code: http.StatusNotFound}
