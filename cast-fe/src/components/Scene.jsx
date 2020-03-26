@@ -19,9 +19,14 @@ class Scene extends Component {
         current: true,
         live: true,
         vod: true,
-      }
+      },
+      liked: false,
+      likes: 0,
+      comments: [],
     };
-    this.incrementView = this.incrementView.bind(this)
+    this.incrementView = this.incrementView.bind(this);
+    this.handleShare = this.handleShare.bind(this);
+    this.handleLike = this.handleLike.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -72,17 +77,50 @@ class Scene extends Component {
     axios.get(urls().cast_details(), {
       params: {
         hash: hash,
+        username: localStorage.getItem("username")
       }
     }).then((response) => {
       this.setState({loading: {...this.state.loading, current: false}});
       if (response.data.code === 200) {
         let data = response.data.data;
-        this.setState({video: data, [data.type]: {...this.state[data.type], [data.hash]: data}});
+        this.setState({
+          video: data, likes: data.likes, liked: data.liked, comments: data.comments,
+          [data.type]: {...this.state[data.type], [data.hash]: data}
+        });
         document.title = `${data.title} - ${data.author.name} | cast`;
+        if ('mediaSession' in navigator) {
+          // eslint-disable-next-line no-undef
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: data.title,
+            artist: data.author.name,
+            album: 'cast',
+            artwork: [
+              {src: urls().thumbnail(this.state.video.hash), sizes: '512x512', type: 'image/jpg'},
+            ]
+          });
+        }
       }
     }).catch((error) => {
       console.log(error);
       this.setState({loading: {...this.state.loading, current: false}});
+    });
+  }
+
+  handleShare() {
+    console.log("share video");
+  }
+
+  handleLike() {
+    if (this.state.loading.current) return;
+    axios.get(urls().like(), {
+      params: {
+        hash: this.state.video.hash,
+        like: !this.state.liked,
+      }
+    }).then(() => {
+      this.setState({likes: this.state.likes + (this.state.liked ? -1 : 1), liked: !this.state.liked});
+    }).catch((error) => {
+      console.log(error);
     });
   }
 
@@ -113,10 +151,11 @@ class Scene extends Component {
                   <Badge pill style={style.cast_tag}>another</Badge>
                 </div>
                 <div>
-                  <span style={style.cast_attrib}><i className="material-icons">share</i>{" "}share</span>
-                  <span style={style.cast_attrib}>
-                    <i className="material-icons">thumb_up</i>
-                    {" "}{(this.state.video && abbreviate().number(this.state.video.likes)) || 0} likes
+                  <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleShare}>
+                    <i className="material-icons">share</i>{" "}share</span>
+                  <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleLike}>
+                    <i style={this.state.liked ? style.liked : {}} className="material-icons">thumb_up</i>
+                    {" "}{(this.state.video && abbreviate().number(this.state.likes)) || 0} likes
                   </span>
                   <span style={style.cast_attrib}>
                     <i className="material-icons">remove_red_eye</i>
@@ -346,6 +385,12 @@ let style = {
   comment_item: {
     marginTop: 16,
     marginBottom: 16,
+  },
+  clickable: {
+    cursor: "pointer"
+  },
+  liked: {
+    color: "#E84409"
   }
 };
 
