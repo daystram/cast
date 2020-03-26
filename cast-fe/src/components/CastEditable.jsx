@@ -3,7 +3,7 @@ import {Alert, Badge, Button, Card, Col, Form, Image, Modal, Row, Spinner} from 
 import urls from "../helper/url";
 import format from "../helper/format";
 import axios from "axios";
-import {Prompt} from "react-router-dom";
+import {Prompt, Redirect} from "react-router-dom";
 
 const resolutions = ["Processing", "240p", "360p", "480p", "720p", "1080p"];
 let timeout = null;
@@ -192,9 +192,11 @@ class CastEditable extends Component {
   render() {
     return (
       <Card body style={style.card}>
+        {this.state.openVideoURL ? <Redirect to={`/w/${this.state.openVideoURL}`}/> : ""}
         <Row>
           <Col xl={3} lg={4} md={5} sm={12} className={"responsive-fold"}>
-            <Image src={urls().thumbnail(this.props.video.hash)} style={style.thumbnail}/>
+            <Image src={urls().thumbnail(this.props.video.hash)} style={style.thumbnail}
+                   onClick={() => this.setState({openVideoURL: this.props.video.hash})}/>
           </Col>
           <Col md sm={12} className={"responsive-fold"}>
             {this.state.error_edit && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
@@ -282,6 +284,7 @@ let style = {
     borderStyle: "solid",
     objectFit: "cover",
     width: "100%",
+    cursor: "pointer"
   },
   created_at: {
     fontSize: 16,

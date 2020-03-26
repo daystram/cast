@@ -47,6 +47,9 @@ let style = {
     padding: "8px 36px",
     background: "white"
   },
+  profile_image: {
+    cursor: "pointer"
+  }
 };
 
 export default Navigation
