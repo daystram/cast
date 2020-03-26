@@ -31,6 +31,7 @@ class Profile extends Component {
     this.checkAvailability = this.checkAvailability.bind(this);
     this.submitForm = this.submitForm.bind(this);
     this.fetchUser();
+    document.title = "Profile | cast";
   }
 
   fetchUser() {
