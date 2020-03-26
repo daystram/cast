@@ -16,10 +16,12 @@ import (
 
 type UserOrmer interface {
 	GetOneByID(ID primitive.ObjectID) (user datatransfers.User, err error)
+	GetOneByEmail(email string) (user datatransfers.User, err error)
 	GetOneByUsername(username string) (user datatransfers.User, err error)
 	CheckUnique(field, value string) (err error)
 	InsertUser(user datatransfers.User) (ID primitive.ObjectID, err error)
 	EditUser(user datatransfers.User) (err error)
+	SetVerified(ID primitive.ObjectID) (err error)
 	DeleteOneByID(ID primitive.ObjectID) (err error)
 }
 
@@ -33,6 +35,11 @@ func NewUserOrmer(db *mongo.Client) UserOrmer {
 
 func (o *userOrm) GetOneByID(ID primitive.ObjectID) (user datatransfers.User, err error) {
 	err = o.collection.FindOne(context.TODO(), bson.M{"_id": ID}).Decode(&user)
+	return
+}
+
+func (o *userOrm) GetOneByEmail(email string) (user datatransfers.User, err error) {
+	err = o.collection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
 	return
 }
 
@@ -70,6 +77,13 @@ func (o *userOrm) EditUser(user datatransfers.User) (err error) {
 			{"name", user.Name},
 			{"email", user.Email},
 		}}},
+	).Err()
+}
+
+func (o *userOrm) SetVerified(ID primitive.ObjectID) (err error) {
+	return o.collection.FindOneAndUpdate(context.TODO(),
+		bson.M{"_id": ID},
+		bson.D{{"$set", bson.D{{"verified", true}}}},
 	).Err()
 }
 
