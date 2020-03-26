@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"fmt"
-	errors2 "gitlab.com/daystram/cast/cast-be/errors"
 	"time"
 
 	"gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/constants"
 	"gitlab.com/daystram/cast/cast-be/datatransfers"
+	errors2 "gitlab.com/daystram/cast/cast-be/errors"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/dgrijalva/jwt-go"
@@ -34,16 +34,18 @@ func (m *module) Register(info datatransfers.UserRegister) (err error) {
 	}
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(info.Password), bcrypt.DefaultCost)
 	var userID primitive.ObjectID
-	if userID, err = m.db().userOrm.InsertUser(datatransfers.User{
+	user := datatransfers.User{
 		Name:      info.Name,
 		Username:  info.Username,
 		Email:     info.Email,
 		Password:  string(hashed),
 		CreatedAt: time.Now(),
-	}); err != nil {
+	}
+	if userID, err = m.db().userOrm.InsertUser(user); err != nil {
 		fmt.Printf("[Register] Failed adding %s user entry. %+v\n", info.Username, err)
 		return
 	}
+	user.ID = userID
 	if _, err = m.db().videoOrm.InsertVideo(datatransfers.VideoInsert{
 		ID:          primitive.NewObjectID(),
 		Hash:        info.Username,
@@ -58,7 +60,41 @@ func (m *module) Register(info datatransfers.UserRegister) (err error) {
 		fmt.Printf("[Register] Failed adding %s live video entry. %+v\n", info.Username, err)
 		return
 	}
+	if err = m.SendVerification(user); err != nil {
+		fmt.Printf("[Register] Failed sending %s verification mail. %+v\n", info.Username, err)
+	}
+	return
+}
 
+func (m *module) SendVerification(user datatransfers.User) (err error) {
+	var token string
+	if token, err = m.generateToken(datatransfers.User{ID: user.ID}); err != nil {
+		fmt.Printf("[SendVerification] Failed generating token. %+v\n", err)
+	}
+	m.SendSingleEmail("Email Verification", fmt.Sprintf(constants.EmailTemplateVerification, user.Name, config.AppConfig.Hostname, token), user)
+	return
+}
+
+func (m *module) Verify(key string) (err error) {
+	claims := jwt.MapClaims{}
+	var token *jwt.Token
+	fmt.Println(key)
+	if token, err = jwt.ParseWithClaims(key, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(config.AppConfig.JWTSecret), nil
+	}); err != nil || !token.Valid {
+		fmt.Printf("[Verify] Failed parsing activation token. %+v\n", err)
+		return
+	}
+	id, ok := claims["id"].(string)
+	if !ok {
+		fmt.Printf("[Verify] Failed retrieving id from token. %+v\n", err)
+		return
+	}
+	userID, _ := primitive.ObjectIDFromHex(id)
+	if err = m.db().userOrm.SetVerified(userID); err != nil {
+		fmt.Printf("[Verify] Failed verifying user. %+v\n", err)
+		return
+	}
 	return
 }
 
@@ -80,6 +116,9 @@ func (m *module) validate(info datatransfers.UserLogin) (user datatransfers.User
 			return datatransfers.User{}, errors2.ErrNotRegistered
 		}
 		return
+	}
+	if !user.Verified {
+		return datatransfers.User{}, errors2.ErrNotVerified
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(info.Password)); err != nil {
 		return datatransfers.User{}, errors2.ErrIncorrectPassword
