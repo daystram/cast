@@ -21,6 +21,10 @@ type Config struct {
 	SubscriptionNameComplete string
 
 	UploadsDirectory string
+
+	MailgunDomain string
+	MailgunAPIKey string
+	Hostname      string
 }
 
 func InitializeAppConfig() {
@@ -75,5 +79,20 @@ func InitializeAppConfig() {
 	// Uploads Directory
 	if AppConfig.UploadsDirectory = beego.AppConfig.String("uploads_dir"); AppConfig.UploadsDirectory == "" {
 		panic("uploads_dir is missing in app.conf")
+	}
+
+	// Mailgun Domain
+	if AppConfig.MailgunDomain = beego.AppConfig.String("mailgun_domain"); AppConfig.MailgunDomain == "" {
+		panic("mailgun_domain is missing in app.conf")
+	}
+
+	// Mailgun API Key
+	if AppConfig.MailgunAPIKey = beego.AppConfig.String("mailgun_api_key"); AppConfig.MailgunAPIKey == "" {
+		panic("mailgun_api_key is missing in app.conf")
+	}
+
+	// Hostname
+	if AppConfig.Hostname = beego.AppConfig.String("hostname"); AppConfig.Hostname == "" {
+		panic("hostname is missing in app.conf")
 	}
 }
