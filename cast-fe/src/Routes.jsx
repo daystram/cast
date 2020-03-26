@@ -1,6 +1,6 @@
 import React from "react";
 import {Redirect, Route, Switch} from 'react-router-dom'
-import {Dashboard, Home, LogOut, Scene, Profile, LogIn, SignUp} from "./components";
+import {Dashboard, Home, LogOut, Scene, Profile, LogIn, SignUp, Verify} from "./components";
 import Manage from "./components/Manage";
 
 const Routes = () => {
@@ -12,6 +12,7 @@ const Routes = () => {
       <PrivateRoute path="/profile" exact component={Profile}/>
       <PrivateRoute path="/dashboard" exact component={Dashboard}/>
       <PrivateRoute path="/manage" exact component={Manage}/>
+      <PublicRoute path="/verify/:key?" exact component={Verify}/>
       <PublicRoute path="/login" exact component={LogIn}/>
       <PublicRoute path="/signup" exact component={SignUp}/>
       <Route><Redirect to="/"/></Route>
