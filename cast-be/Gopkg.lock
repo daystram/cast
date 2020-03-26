@@ -71,6 +71,14 @@
   version = "v1.8.0"
 
 [[projects]]
+  digest = "1:95ad6540d666a04207f244dd7a44b7132f2ab3fef0a33a6291e3eaa2ca53ee38"
+  name = "github.com/gobuffalo/envy"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3dbe4c98c1c77e4a8fac053251c262a85e048f21"
+  version = "v1.9.0"
+
+[[projects]]
   branch = "master"
   digest = "1:b7cb6054d3dff43b38ad2e92492f220f57ae6087ee797dca298139776749ace8"
   name = "github.com/golang/groupcache"
@@ -130,6 +138,14 @@
   version = "v2.0.5"
 
 [[projects]]
+  digest = "1:ecd9aa82687cf31d1585d4ac61d0ba180e42e8a6182b85bd785fcca8dfeefc1b"
+  name = "github.com/joho/godotenv"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "23d116af351c84513e1946b527c88823e476be13"
+  version = "v1.3.0"
+
+[[projects]]
   digest = "1:076c531484852c227471112d49465873aaad47e5ad6e1aec3a5b092a436117ef"
   name = "github.com/jstemmer/go-junit-report"
   packages = [
@@ -154,6 +170,14 @@
   pruneopts = "UT"
   revision = "788b7f06fee85b7e1d2aa4a3a86f8dbbbcc771ae"
   version = "v1.10.3"
+
+[[projects]]
+  digest = "1:cbd169f49979ba0bc483cd418da756a21bba0081526d8af0fb0e9218deac2a08"
+  name = "github.com/mailgun/mailgun-go"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "4071f66f00fb74b08ae720f28ee9fcd98ebfd69e"
+  version = "v2.0.0"
 
 [[projects]]
   branch = "master"
@@ -186,12 +210,24 @@
   revision = "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
 
 [[projects]]
+  branch = "master"
   digest = "1:9e1d37b58d17113ec3cb5608ac0382313c5b59470b94ed97d0976e69c7022314"
   name = "github.com/pkg/errors"
   packages = ["."]
   pruneopts = "UT"
   revision = "614d223910a179a466c1767a985424175c39b465"
-  version = "v0.9.1"
+
+[[projects]]
+  digest = "1:e09ada96a5a41deda4748b1659cc8953961799e798aea557257b56baee4ecaf3"
+  name = "github.com/rogpeppe/go-internal"
+  packages = [
+    "modfile",
+    "module",
+    "semver",
+  ]
+  pruneopts = "UT"
+  revision = "bc89b17ba21ce5b8a495fa55a94e3fe32ecf4ed8"
+  version = "v1.5.2"
 
 [[projects]]
   branch = "master"
@@ -610,6 +646,7 @@
     "github.com/astaxie/beego/plugins/cors",
     "github.com/dgrijalva/jwt-go",
     "github.com/disintegration/imaging",
+    "github.com/mailgun/mailgun-go",
     "github.com/nareix/joy4/av/avutil",
     "github.com/nareix/joy4/av/pubsub",
     "github.com/nareix/joy4/format",
@@ -620,6 +657,7 @@
     "go.mongodb.org/mongo-driver/mongo",
     "go.mongodb.org/mongo-driver/mongo/options",
     "golang.org/x/crypto/bcrypt",
+    "google.golang.org/api/option",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
