@@ -15,7 +15,8 @@ export default function urls() {
     list: () => `${api_base}/video/list`,
     auth_check: () => `${api_base}/auth/check`,
     login: () => `${api_base}/auth/login`,
-    signup: () => `${api_base}/auth/signup`,
+    verify: () => `${api_base}/auth/verify`,
+    resend_verify: () => `${api_base}/auth/resend`,
     user_info: () => `${api_base}/p/user/info`,
     edit_user: () => `${api_base}/p/user/edit`,
   }
