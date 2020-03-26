@@ -3,6 +3,7 @@ package routers
 import (
 	"context"
 	"fmt"
+	"github.com/mailgun/mailgun-go"
 	conf "gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/controller/middleware"
 	v1 "gitlab.com/daystram/cast/cast-be/controller/v1"
@@ -39,7 +40,11 @@ func init() {
 	}
 	fmt.Printf("[Initialization] Google PubSub connected\n")
 
-	h := handlers.NewHandler(handlers.Component{DB: db, MQClient: pubsubClient})
+	// Init mailgun Client
+	mailer := mailgun.NewMailgun(conf.AppConfig.MailgunDomain, conf.AppConfig.MailgunAPIKey)
+	fmt.Printf("[Initialization] mailgun connected\n")
+
+	h := handlers.NewHandler(handlers.Component{DB: db, MQClient: pubsubClient, Mailer: mailer})
 	h.CreateRTMPUpLink()
 	go h.TranscodeListenerWorker()
 	fmt.Printf("[Initialization] Initialization completed\n")

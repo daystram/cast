@@ -40,8 +40,30 @@ func init() {
 
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"],
         beego.ControllerComments{
+            Method: "PostResend",
+            Router: `/resend`,
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(
+				param.New("info", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"],
+        beego.ControllerComments{
             Method: "PostRegister",
             Router: `/signup`,
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(
+				param.New("info", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"],
+        beego.ControllerComments{
+            Method: "PostVerify",
+            Router: `/verify`,
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(
 				param.New("info", param.IsRequired, param.InBody),
