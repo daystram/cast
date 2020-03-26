@@ -131,6 +131,7 @@ func init() {
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(
 				param.New("hash", param.IsRequired),
+				param.New("username"),
 			),
             Filters: nil,
             Params: nil})
@@ -189,6 +190,30 @@ func init() {
             AllowHTTPMethods: []string{"put"},
             MethodParams: param.Make(
 				param.New("video", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"],
+        beego.ControllerComments{
+            Method: "LikeVideo",
+            Router: `/like`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("hash", param.IsRequired),
+				param.New("like", param.IsRequired),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"],
+        beego.ControllerComments{
+            Method: "CommentVideo",
+            Router: `/like`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("hash", param.IsRequired),
+				param.New("comment", param.IsRequired),
 			),
             Filters: nil,
             Params: nil})

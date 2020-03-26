@@ -54,12 +54,16 @@ func (c *VideoController) Search(query string) {
 // @Title Get Details
 // @Success 200 {object} models.Object
 // @Param   hash		query	string	true	"hash"
+// @Param   username	query	string	false	"username"
 // @router /details [get]
-func (c *VideoController) GetDetails(hash string) datatransfers.Response {
+func (c *VideoController) GetDetails(hash, username string) datatransfers.Response {
 	video, err := c.Handler.VideoDetails(hash)
 	if err != nil {
 		fmt.Printf("[VideoController::GetDetails] failed retrieving video detail. %+v\n", err)
 		return datatransfers.Response{Error: "Failed retrieving video detail", Code: http.StatusInternalServerError}
+	}
+	if username != "" {
+		video.Liked, _ = c.Handler.CheckUserLikes(hash, username)
 	}
 	return datatransfers.Response{Data: video, Code: http.StatusOK}
 }
@@ -155,5 +159,33 @@ func (c *VideoControllerAuth) UploadVideo() datatransfers.Response {
 		return datatransfers.Response{Error: "Failed normalizing thumbnail image", Code: http.StatusInternalServerError}
 	}
 	c.Handler.StartTranscode(videoID.Hex())
+	return datatransfers.Response{Code: http.StatusOK}
+}
+
+// @Title Like Video
+// @Success 200 {object} models.Object
+// @Param   hash		query	string	true	"hash"
+// @Param   like		query	bool	true	"like"
+// @router /like [get]
+func (c *VideoControllerAuth) LikeVideo(hash string, like bool) datatransfers.Response {
+	err := c.Handler.LikeVideo(c.userID, hash, like)
+	if err != nil {
+		fmt.Printf("[VideoController::LikeVideo] failed liking video. %+v\n", err)
+		return datatransfers.Response{Error: "Already liked", Code: http.StatusConflict}
+	}
+	return datatransfers.Response{Code: http.StatusOK}
+}
+
+// @Title Comment Video
+// @Success 200 {object} models.Object
+// @Param   hash		query	string	true	"hash"
+// @Param   comment		query	string	true	"comment"
+// @router /like [get]
+func (c *VideoControllerAuth) CommentVideo(hash, comment string) datatransfers.Response {
+	err := c.Handler.CommentVideo(c.userID, hash, comment)
+	if err != nil {
+		fmt.Printf("[VideoController::CommentVideo] failed liking video. %+v\n", err)
+		return datatransfers.Response{Error: "Failed commenting video", Code: http.StatusInternalServerError}
+	}
 	return datatransfers.Response{Code: http.StatusOK}
 }
