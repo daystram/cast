@@ -33,6 +33,7 @@ class Manage extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleChangeFile = this.handleChangeFile.bind(this);
     this.submitForm = this.submitForm.bind(this);
+    document.title = "Manage | cast";
   }
 
   componentDidMount() {

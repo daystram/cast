@@ -14,6 +14,7 @@ class Dashboard extends Component {
       loading: false,
     };
     this.handleChange = this.handleChange.bind(this);
+    document.title = "Dashboard | cast";
   }
 
   handleChange(e) {
