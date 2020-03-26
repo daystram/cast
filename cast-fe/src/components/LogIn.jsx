@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {Alert, Button, Container, Form, Spinner} from "react-bootstrap";
 import axios from "axios";
 import urls from "../helper/url";
+import {Redirect} from "react-router-dom";
 
 class LogIn extends Component {
   constructor(props) {
@@ -13,6 +14,7 @@ class LogIn extends Component {
       error_password: "",
       error_login: "",
       loading: false,
+      verified: true
     };
     this.handleChange = this.handleChange.bind(this);
     this.submitForm = this.submitForm.bind(this);
@@ -51,7 +53,7 @@ class LogIn extends Component {
     ok &= this.validate("username", this.state.username);
     ok &= this.validate("password", this.state.password);
     if (!ok) return;
-    this.setState({loading: true});
+    this.setState({loading: true, verified: true});
     axios.post(urls().login(), {
       username: this.state.username.trim(),
       password: this.state.password.trim(),
@@ -68,6 +70,9 @@ class LogIn extends Component {
         case 403:
           this.setState({error_password: "Incorrect password"});
           return;
+        case 406:
+          this.setState({verified: false});
+          return;
         default:
           this.setState({error_login: "An error has occurred!"});
           return;
@@ -81,34 +86,43 @@ class LogIn extends Component {
 
   render() {
     return (
-      <>
-        <Container fluid style={style.content_container}>
-          <h1 style={style.h1}>Log In</h1>
-          {this.state.error_login && <Alert variant={"danger"}>{this.state.error_login}</Alert>}
-          <Form noValidate onSubmit={this.submitForm}>
-            <Form.Group>
-              <Form.Label>Username</Form.Label>
-              <Form.Control name={"username"} value={this.state.username} onBlur={this.handleChange}
-                            onChange={this.handleChange} type={"name"}
-                            isInvalid={!!this.state.error_username}/>
-              <Form.Control.Feedback type={"invalid"}>{this.state.error_username}</Form.Control.Feedback>
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Password</Form.Label>
-              <Form.Control name={"password"} value={this.state.password} onBlur={this.handleChange}
-                            onChange={this.handleChange}
-                            type={"password"} isInvalid={!!this.state.error_password}/>
-              <Form.Control.Feedback type={"invalid"}>{this.state.error_password}</Form.Control.Feedback>
-            </Form.Group>
-            <Button variant="primary" type="submit" block disabled={this.state.loading}>
-              Log In{" "}
-              {this.state.loading &&
-              <Spinner style={{verticalAlign: "initial"}} as="span" animation="grow"
-                       size="sm" role="status" aria-hidden="true"/>}
+      <Container fluid style={style.content_container}>
+        {this.state.redirectVerify ? <Redirect to={"/verify"}/> : ""}
+        <h1 style={style.h1}>Log In</h1>
+        {this.state.error_login && <Alert variant={"danger"}>{this.state.error_login}</Alert>}
+        {!this.state.verified && <Alert variant={"warning"}>
+          <Alert.Heading>Verify Your Email</Alert.Heading>
+          <p>You need to verify your email before logging in. Check your email for an activation link.</p>
+          <hr/>
+          <div className="d-flex justify-content-end">
+            <Button onClick={() => this.setState({redirectVerify: true})} variant="outline-warning">
+              Resend Link
             </Button>
-          </Form>
-        </Container>
-      </>
+          </div>
+        </Alert>}
+        <Form noValidate onSubmit={this.submitForm}>
+          <Form.Group>
+            <Form.Label>Username</Form.Label>
+            <Form.Control name={"username"} value={this.state.username} onBlur={this.handleChange}
+                          onChange={this.handleChange} type={"name"}
+                          isInvalid={!!this.state.error_username}/>
+            <Form.Control.Feedback type={"invalid"}>{this.state.error_username}</Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group>
+            <Form.Label>Password</Form.Label>
+            <Form.Control name={"password"} value={this.state.password} onBlur={this.handleChange}
+                          onChange={this.handleChange}
+                          type={"password"} isInvalid={!!this.state.error_password}/>
+            <Form.Control.Feedback type={"invalid"}>{this.state.error_password}</Form.Control.Feedback>
+          </Form.Group>
+          <Button variant="primary" type="submit" block disabled={this.state.loading}>
+            Log In{" "}
+            {this.state.loading &&
+            <Spinner style={{verticalAlign: "initial"}} as="span" animation="grow"
+                     size="sm" role="status" aria-hidden="true"/>}
+          </Button>
+        </Form>
+      </Container>
     )
   }
 }
