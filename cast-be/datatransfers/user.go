@@ -13,15 +13,15 @@ type User struct {
 	Email       string             `json:"email" bson:"email"`
 	Password    string             `json:"-" bson:"password"`
 	Subscribers int                `json:"-" bson:"subscribers"`
-	//Subscribing []primitive.ObjectID // TODO: normalize to other table
-	//Likes       []primitive.ObjectID // TODO: normalize to other table
-	CreatedAt time.Time `json:"created_at,omitempty" bson:"created_at"`
+	Verified    bool               `json:"verified" bson:"verified"`
+	CreatedAt   time.Time          `json:"created_at,omitempty" bson:"created_at"`
 }
 
 type UserDetail struct {
 	Name        string `json:"name"`
 	Email       string `json:"email"`
 	Password    string `json:"password"`
+	Verified    bool   `json:"verified" bson:"verified"`
 	Subscribers int    `json:"subscribers" bson:"subscribers"`
 	Views       int    `json:"views" bson:"views"`
 	Uploads     int    `json:"uploads" bson:"uploads"`
@@ -43,6 +43,14 @@ type UserRegister struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type UserVerify struct {
+	Key string `json:"key"`
+}
+
+type UserResend struct {
+	Email string `json:"email"`
 }
 
 type UserFieldCheck struct {
