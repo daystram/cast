@@ -8,6 +8,8 @@ export default function urls() {
     vod: (hash) => `${cdn_base}/${hash}/manifest.mpd`,
     live: (username) => `${api_base}/live/stream/${username}`,
     cast_details: () => `${api_base}/video/details`,
+    like: () => `${api_base}/p/video/like`,
+    comment: () => `${api_base}/p/video/comment`,
     title_check: () => `${api_base}/p/video/check`,
     upload: () => `${api_base}/p/video/upload`,
     edit_video: () => `${api_base}/p/video/edit`,
