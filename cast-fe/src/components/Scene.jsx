@@ -1,5 +1,19 @@
 import React, {Component} from 'react';
-import {Badge, Button, Card, Col, Container, FormControl, Image, InputGroup, Row, Spinner} from "react-bootstrap";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Col,
+  Container,
+  Form,
+  FormControl,
+  Image,
+  InputGroup,
+  Modal,
+  Row,
+  Spinner
+} from "react-bootstrap";
 import Cast from "./Cast"
 import Sidebar from "./Sidebar";
 import {HybridPlayer} from "./player";
@@ -7,6 +21,7 @@ import abbreviate from "../helper/abbreviate";
 import axios from "axios";
 import urls from "../helper/url";
 import format from "../helper/format";
+import {Redirect} from "react-router-dom";
 
 class Scene extends Component {
   constructor(props) {
@@ -19,19 +34,27 @@ class Scene extends Component {
         current: true,
         live: true,
         vod: true,
+        comment: false
       },
       liked: false,
       likes: 0,
+      comment: "",
       comments: [],
+      error_comment: "",
     };
     this.incrementView = this.incrementView.bind(this);
     this.handleShare = this.handleShare.bind(this);
     this.handleLike = this.handleLike.bind(this);
+    this.handleComment = this.handleComment.bind(this);
+    this.writeComment = this.writeComment.bind(this);
+    this.handleSubscribe = this.handleSubscribe.bind(this);
+    this.handleTip = this.handleTip.bind(this);
+    this.promptSignup = this.promptSignup.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (this.props.match.params.hash !== prevProps.match.params.hash) {
-      this.setState({loading: {...this.state.loading, current: true}});
+      this.setState({comment: "", error_comment: "", loading: {...this.state.loading, current: true}});
       this.fetchDetail(this.props.match.params.hash);
     }
   }
@@ -112,16 +135,77 @@ class Scene extends Component {
 
   handleLike() {
     if (this.state.loading.current) return;
-    axios.get(urls().like(), {
-      params: {
-        hash: this.state.video.hash,
-        like: !this.state.liked,
+    if (localStorage.getItem("username")) {
+      axios.get(urls().like(), {
+        params: {
+          hash: this.state.video.hash,
+          like: !this.state.liked,
+        }
+      }).then(() => {
+        this.setState({likes: this.state.likes + (this.state.liked ? -1 : 1), liked: !this.state.liked});
+      }).catch((error) => {
+        console.log(error);
+      });
+    } else {
+      this.promptSignup();
+    }
+  }
+
+  writeComment(e) {
+    this.setState({comment: e.target.value, error_comment: "", error_submit: ""});
+  }
+
+  handleComment(e) {
+    e.preventDefault();
+    if (this.state.loading.current) return;
+    if (localStorage.getItem("username")) {
+      if (!this.state.comment.trim() || this.state.error_comment) {
+        this.setState({error_comment: "Please enter comment"});
+        return;
       }
-    }).then(() => {
-      this.setState({likes: this.state.likes + (this.state.liked ? -1 : 1), liked: !this.state.liked});
-    }).catch((error) => {
-      console.log(error);
-    });
+      if (this.state.loading.comment) return;
+      this.setState({loading: {...this.state.loading, comment: true}});
+      this.setState({error_submit: ""});
+      axios.get(urls().comment(), {
+        params: {
+          hash: this.state.video.hash,
+          content: this.state.comment.trim(),
+        }
+      }).then((response) => {
+        this.setState({
+          comment: "",
+          comments: this.state.comments === null ? [response.data.data] : [response.data.data, ...this.state.comments],
+          loading: {...this.state.loading, comment: false}
+        });
+      }).catch((error) => {
+        console.log(error);
+        this.setState({error_submit: "Failed submitting comment! Try again later"})
+      });
+    } else {
+      this.promptSignup();
+    }
+  }
+
+  handleSubscribe() {
+    if (this.state.loading.current) return;
+    if (localStorage.getItem("username")) {
+      // TODO: subscribe
+    } else {
+      this.promptSignup();
+    }
+  }
+
+  handleTip() {
+    if (this.state.loading.current) return;
+    if (localStorage.getItem("username")) {
+      // TODO: subscribe
+    } else {
+      this.promptSignup();
+    }
+  }
+
+  promptSignup() {
+    this.setState({prompt: true})
   }
 
   render() {
@@ -167,18 +251,18 @@ class Scene extends Component {
               <p style={{marginTop: 4}}>{this.state.video && format().date(this.state.video.created_at)}</p>
               <div style={style.author_bar}>
                 <div style={style.author_profile}>
-                  <Image src={this.state.video && urls().profile(this.state.video.author.username)} height={42}
-                         width={42}
-                         style={style.profile_image} roundedCircle/>
+                  <Image src={this.state.video && urls().profile(this.state.video.author.username)}
+                         width={42} height={42} style={style.profile_image} roundedCircle/>
                   <div style={style.cast_author_details}>
                     <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
-                    <p
-                      style={style.cast_author_sub}>{(this.state.video && abbreviate().number(this.state.video.author.subscribers)) || 0} subscribers</p>
+                    <p style={style.cast_author_sub}>
+                      {(this.state.video && abbreviate().number(this.state.video.author.subscribers)) || 0} subscribers
+                    </p>
                   </div>
                 </div>
                 <div>
-                  <Button style={style.tip_button}><i className="material-icons">attach_money</i></Button>
-                  <Button style={style.sub_button}
+                  <Button style={style.tip_button} onClick={this.handleTip}><i className="material-icons">attach_money</i></Button>
+                  <Button style={style.sub_button} onClick={this.handleSubscribe}
                           disabled={this.state.video && this.state.video.author.isSubscribed}>SUBSCRIBE</Button>
                 </div>
               </div>
@@ -191,69 +275,43 @@ class Scene extends Component {
               </Row>
               <hr/>
               <h3>Comments</h3>
-              <Row noGutters>
+              <Row noGutters style={{marginTop: 28}}>
                 <Col xl={1} sm={0}/>
                 <Col>
-                  <InputGroup style={style.comment_input}>
-                    <FormControl type="text" placeholder="Comment"/>
-                    <InputGroup.Append>
-                      <Button variant="outline-primary"><i className="material-icons">send</i></Button>
-                    </InputGroup.Append>
-                  </InputGroup>
+                  <Form noValidate onSubmit={this.handleComment}>
+                    {this.state.error_submit && <Alert variant={"danger"}>{this.state.error_submit}</Alert>}
+                    <Form.Group>
+                      <InputGroup style={style.comment_input}>
+                        <Form.Control type="text" placeholder="Comment" value={this.state.comment}
+                                      onChange={this.writeComment} isInvalid={!!this.state.error_comment}/>
+                        <InputGroup.Append>
+                          <Button variant="outline-primary" type="submit">
+                            <i className="material-icons">send</i></Button>
+                        </InputGroup.Append>
+                      </InputGroup>
+                    </Form.Group>
+                  </Form>
                   <div style={style.comment_list}>
-                    <div style={{...style.author_profile, ...style.comment_item}}>
-                      <Image src={urls().profile("daystram")} height={42} width={42}
-                             style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
-                      <div style={{...style.cast_author_details, minWidth: 0}}>
-                        <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
-                        <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>
-                          This is a comment. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                        </p>
-                      </div>
-                    </div>
-                    <div style={{...style.author_profile, ...style.comment_item}}>
-                      <Image src={urls().profile("daystram")} height={42} width={42}
-                             style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
-                      <div style={{...style.cast_author_details, minWidth: 0}}>
-                        <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
-                        <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>
-                          This is a comment. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                        </p>
-                      </div>
-                    </div>
-                    <div style={{...style.author_profile, ...style.comment_item}}>
-                      <Image src={urls().profile("daystram")} height={42} width={42}
-                             style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
-                      <div style={{...style.cast_author_details, minWidth: 0}}>
-                        <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
-                        <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>
-                          This is a comment. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                        </p>
-                      </div>
-                    </div>
-                    <div style={{...style.author_profile, ...style.comment_item}}>
-                      <Image src={urls().profile("daystram")} height={42} width={42}
-                             style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
-                      <div style={{...style.cast_author_details, minWidth: 0}}>
-                        <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
-                        <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>
-                          This is a comment. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                        </p>
-                      </div>
-                    </div>
+                    {this.state.comments ? Object.values(this.state.comments).map(comment => {
+                      let duration = abbreviate().time(Date.now() - new Date(comment.created_at));
+                      return (
+                        <div style={{...style.author_profile, ...style.comment_item}}>
+                          <Image src={urls().profile("daystram")} height={42} width={42}
+                                 style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
+                          <div style={{...style.cast_author_details, minWidth: 0}}>
+                            <p style={style.cast_author_name}>{comment.author.name}</p>
+                            <p style={{marginBottom: 0, color: "grey"}}>
+                              {`${duration} ${duration === "Yesterday" ? "" : "ago"}`}
+                            </p>
+                            <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>{comment.content}</p>
+                          </div>
+                        </div>
+                      )
+                    }) : <h5 style={style.h5}>Post the first comment!</h5>}
                   </div>
                 </Col>
                 <Col xl={1} sm={0}/>
               </Row>
-
             </Col>
             <Col xl={{span: 2, order: 3}} sm={{span: 6, order: 3}} xs={{span: 12, order: 3}}>
               <Card style={style.live_chat}>
@@ -282,6 +340,25 @@ class Scene extends Component {
             </Col>
           </Row>
         </Container>
+        <Modal show={this.state.prompt} size={"md"} onHide={() => this.setState({prompt: false})} centered>
+          <Modal.Header closeButton>
+            <Modal.Title id="contained-modal-title-vcenter">
+              Join today!
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>You need to be logged in to like, comment, subscribe or tip. By signing in, you can start sharing your
+              own videos and livestream too!</p>
+            <p>Log In or Sign Up today!</p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant={"outline-primary"}
+                    onClick={() => this.setState({redirect: <Redirect to={"/login"}/>})}>Log In</Button>
+            <Button variant={"primary"}
+                    onClick={() => this.setState({redirect: <Redirect to={"/signup"}/>})}>Sign Up</Button>
+          </Modal.Footer>
+        </Modal>
+        {this.state.redirect}
       </>
     );
   }
@@ -391,7 +468,14 @@ let style = {
   },
   liked: {
     color: "#E84409"
-  }
+  },
+  h5: {
+    fontFamily: "Open Sans",
+    fontSize: 18,
+    fontStyle: "italic",
+    marginTop: 16,
+    textAlign: "center"
+  },
 };
 
 export default Scene

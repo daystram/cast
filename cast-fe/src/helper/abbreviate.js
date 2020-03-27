@@ -17,27 +17,27 @@ export default function abbreviate() {
     },
     time: (diff) => {
       diff = Math.round(diff / 1000);
-      if (diff > 29030400) {
+      if (diff >= 29030400) {
         diff = Math.round(diff / 29030400);
         return `${diff} year${diff === 1 ? "" : "s"}`
       }
-      if (diff > 2419200) {
+      if (diff >= 2419200) {
         diff = Math.round(diff / 2419200);
         return `${diff} month${diff === 1 ? "" : "s"}`
       }
-      if (diff > 604600) {
+      if (diff >= 604600) {
         diff = Math.round(diff / 604600);
         return `${diff} week${diff === 1 ? "" : "s"}`
       }
-      if (diff > 86400) {
+      if (diff >= 86400) {
         diff = Math.round(diff / 86400);
         return diff === 1 ? "Yesterday" : `${diff} days`
       }
-      if (diff > 3600) {
+      if (diff >= 3600) {
         diff = Math.round(diff / 3600);
         return `${diff} hour${diff === 1 ? "" : "s"}`
       }
-      if (diff > 60) {
+      if (diff >= 60) {
         diff = Math.round(diff / 60);
         return `${diff} minute${diff === 1 ? "" : "s"}`
       }
