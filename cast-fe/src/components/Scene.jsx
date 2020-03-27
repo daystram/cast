@@ -296,7 +296,7 @@ class Scene extends Component {
                       let duration = abbreviate().time(Date.now() - new Date(comment.created_at));
                       return (
                         <div style={{...style.author_profile, ...style.comment_item}}>
-                          <Image src={urls().profile("daystram")} height={42} width={42}
+                          <Image src={urls().profile(comment.author.username)} height={42} width={42}
                                  style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
                           <div style={{...style.cast_author_details, minWidth: 0}}>
                             <p style={style.cast_author_name}>{comment.author.name}</p>
