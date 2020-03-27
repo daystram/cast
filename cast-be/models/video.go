@@ -13,11 +13,11 @@ import (
 )
 
 type VideoOrmer interface {
-	GetRecent(variant string, count int, offset int) ([]datatransfers.Video, error)
-	GetAllVODByAuthor(author primitive.ObjectID) ([]datatransfers.Video, error)
-	GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) ([]datatransfers.Video, error)
+	GetRecent(variant string, count int, offset int) (videos []datatransfers.Video, err error)
+	GetAllVODByAuthor(author primitive.ObjectID) (videos []datatransfers.Video, err error)
+	GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error)
 	GetOneByHash(hash string) (datatransfers.Video, error)
-	IncrementViews(hash string) error
+	IncrementViews(hash string) (err error)
 	SetLive(authorID primitive.ObjectID, live bool) (err error)
 	SetResolution(hash string, resolution int) (err error)
 	InsertVideo(video datatransfers.VideoInsert) (ID primitive.ObjectID, err error)
@@ -66,7 +66,7 @@ func (o *videoOrm) GetRecent(variant string, count int, offset int) (result []da
 	return
 }
 
-func (o *videoOrm) GetAllVODByAuthor(author primitive.ObjectID) (result []datatransfers.Video, err error) {
+func (o *videoOrm) GetAllVODByAuthor(author primitive.ObjectID) (videos []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
 		{{"$match", bson.D{{"author", author}}}},
@@ -86,12 +86,12 @@ func (o *videoOrm) GetAllVODByAuthor(author primitive.ObjectID) (result []datatr
 		if err = query.Decode(&video); err != nil {
 			return
 		}
-		result = append(result, video)
+		videos = append(videos, video)
 	}
 	return
 }
 
-func (o *videoOrm) GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) (result []datatransfers.Video, err error) {
+func (o *videoOrm) GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
 		{{"$match", bson.D{{"author", author}}}},
@@ -113,7 +113,7 @@ func (o *videoOrm) GetAllVODByAuthorPaginated(author primitive.ObjectID, count i
 		if err = query.Decode(&video); err != nil {
 			return
 		}
-		result = append(result, video)
+		videos = append(videos, video)
 	}
 	return
 }
