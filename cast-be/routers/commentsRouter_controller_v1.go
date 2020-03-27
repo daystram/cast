@@ -174,6 +174,18 @@ func init() {
 
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"],
         beego.ControllerComments{
+            Method: "CommentVideo",
+            Router: `/comment`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("hash", param.IsRequired),
+				param.New("content", param.IsRequired),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"],
+        beego.ControllerComments{
             Method: "DeleteVideo",
             Router: `/delete`,
             AllowHTTPMethods: []string{"delete"},
@@ -202,18 +214,6 @@ func init() {
             MethodParams: param.Make(
 				param.New("hash", param.IsRequired),
 				param.New("like", param.IsRequired),
-			),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"],
-        beego.ControllerComments{
-            Method: "CommentVideo",
-            Router: `/like`,
-            AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(
-				param.New("hash", param.IsRequired),
-				param.New("comment", param.IsRequired),
 			),
             Filters: nil,
             Params: nil})

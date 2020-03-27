@@ -19,7 +19,7 @@ type Video struct {
 	Resolutions int                `json:"resolutions" bson:"resolutions"`     // 0:None, 1:180p, 2:360p, 3:480p, 4:720p, 5:1080p, only for VODs
 	Likes       int                `json:"likes" bson:"-"`
 	Liked       bool               `json:"liked" bson:"-"`
-	Comments    []interface{}      `json:"comments" bson:"-"`
+	Comments    []Comment          `json:"comments" bson:"-"`
 	CreatedAt   time.Time          `json:"created_at" bson:"created_at"`
 }
 
@@ -51,9 +51,9 @@ type VideoEdit struct {
 }
 
 type Comment struct {
-	ID        primitive.ObjectID `json:"_id" bson:"_id"`
-	Hash      string             `json:"hash" bson:"hash"`
-	Comment   string             `json:"comment" bson:"comment"`
+	ID        primitive.ObjectID `json:"-" bson:"_id"`
+	Hash      string             `json:"-" bson:"hash"`
+	Content   string             `json:"content" bson:"content"`
 	Author    UserItem           `json:"author" bson:"author"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 }
@@ -61,7 +61,7 @@ type Comment struct {
 type CommentInsert struct {
 	ID        primitive.ObjectID `json:"_id" bson:"_id"`
 	Hash      string             `json:"hash" bson:"hash"`
-	Comment   string             `json:"comment" bson:"comment"`
+	Content   string             `json:"content" bson:"content"`
 	Author    primitive.ObjectID `json:"author" bson:"author"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 }

@@ -176,16 +176,16 @@ func (c *VideoControllerAuth) LikeVideo(hash string, like bool) datatransfers.Re
 	return datatransfers.Response{Code: http.StatusOK}
 }
 
-// @Title Comment Video
+// @Title Content Video
 // @Success 200 {object} models.Object
 // @Param   hash		query	string	true	"hash"
-// @Param   comment		query	string	true	"comment"
-// @router /like [get]
-func (c *VideoControllerAuth) CommentVideo(hash, comment string) datatransfers.Response {
-	err := c.Handler.CommentVideo(c.userID, hash, comment)
+// @Param   content		query	string	true	"content"
+// @router /comment [get]
+func (c *VideoControllerAuth) CommentVideo(hash, content string) datatransfers.Response {
+	comment, err := c.Handler.CommentVideo(c.userID, hash, content)
 	if err != nil {
 		fmt.Printf("[VideoController::CommentVideo] failed liking video. %+v\n", err)
 		return datatransfers.Response{Error: "Failed commenting video", Code: http.StatusInternalServerError}
 	}
-	return datatransfers.Response{Code: http.StatusOK}
+	return datatransfers.Response{Data: comment, Code: http.StatusOK}
 }
