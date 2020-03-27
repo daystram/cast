@@ -38,15 +38,20 @@ func (m *module) Search(query string, tags []string) (videos []data.Video, err e
 }
 
 func (m *module) VideoDetails(hash string) (video data.Video, err error) {
+	var likes int
+	var comments []data.Comment
 	if video, err = m.db().videoOrm.GetOneByHash(hash); err != nil {
 		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] video with hash %s not found. %+v", hash, err))
 	}
-	var likes int
 	if likes, err = m.db().likeOrm.GetCountByHash(hash); err != nil {
 		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] failed getting likes count for %s. %+v", hash, err))
 	}
-	video.Likes = likes
+	if comments, err = m.db().commentOrm.GetAllByHash(hash); err != nil {
+		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] failed getting comment list for %s. %+v", hash, err))
+	}
 	video.Views++
+	video.Likes = likes
+	video.Comments = comments
 	if video.Type == constants.VideoTypeVOD {
 		if err = m.db().videoOrm.IncrementViews(hash); err != nil {
 			return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] failed incrementing views of %s. %+v", hash, err))
@@ -153,6 +158,29 @@ func (m *module) CheckUserLikes(hash, username string) (liked bool, err error) {
 	return true, nil
 }
 
-func (m *module) CommentVideo(userID primitive.ObjectID, hash, comment string) (err error) {
-	return
+func (m *module) CommentVideo(userID primitive.ObjectID, hash, content string) (comment data.Comment, err error) {
+	var commentID primitive.ObjectID
+	var user data.User
+	now := time.Now()
+	if commentID, err = m.db().commentOrm.InsertComment(data.CommentInsert{
+		Hash:      hash,
+		Content:   content,
+		Author:    userID,
+		CreatedAt: now,
+	}); err != nil {
+		return data.Comment{}, errors.New(fmt.Sprintf("[CommentVideo] failed to insert comment. %+v", err))
+	}
+	if user, err = m.db().userOrm.GetOneByID(userID); err != nil {
+		return data.Comment{}, errors.New(fmt.Sprintf("[CommentVideo] failed to retrieve user info. %+v", err))
+	}
+	return data.Comment{
+		ID:      commentID,
+		Hash:    hash,
+		Content: content,
+		Author: data.UserItem{
+			Name:     user.Name,
+			Username: user.Username,
+		},
+		CreatedAt: now,
+	}, nil
 }
