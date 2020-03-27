@@ -12,7 +12,7 @@ const Routes = () => {
       <PrivateRoute path="/profile" exact component={Profile}/>
       <PrivateRoute path="/dashboard" exact component={Dashboard}/>
       <PrivateRoute path="/manage" exact component={Manage}/>
-      <PublicRoute path="/verify/:key?" exact component={Verify}/>
+      <PublicRoute path="/verify" exact component={Verify}/>
       <PublicRoute path="/login" exact component={LogIn}/>
       <PublicRoute path="/signup" exact component={SignUp}/>
       <Route><Redirect to="/"/></Route>

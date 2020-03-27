@@ -7,11 +7,12 @@ import {Redirect} from "react-router-dom";
 class Verify extends Component {
   constructor(props) {
     super(props);
+    let params = new URLSearchParams(this.props.location.search);
     this.state = {
-      key: this.props.match.params.key,
+      key: params.get("key"),
       email: "",
       error_verify: "",
-      loading: this.props.match.params.key
+      loading: params.get("key")
     };
     this.handleChange = this.handleChange.bind(this);
     this.submitForm = this.submitForm.bind(this);
