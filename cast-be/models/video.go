@@ -178,6 +178,7 @@ func (o *videoOrm) EditVideo(video datatransfers.VideoInsert) (err error) {
 		bson.D{{"$set", bson.D{
 			{"title", video.Title},
 			{"description", video.Description},
+			{"tags", video.Tags},
 		}}},
 	).Err()
 }
