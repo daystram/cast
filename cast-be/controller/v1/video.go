@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/constants"
@@ -133,6 +134,7 @@ func (c *VideoControllerAuth) UploadVideo() datatransfers.Response {
 		fmt.Printf("[VideoController::UploadVideo] failed parsing video details. %+v\n", err)
 		return datatransfers.Response{Error: "Failed parsing video detail", Code: http.StatusInternalServerError}
 	}
+	upload.Tags = strings.Split(upload.Tags[0], ",")
 	var videoID primitive.ObjectID
 	videoID, err = c.Handler.CreateVOD(upload, c.userID)
 	if err != nil {
