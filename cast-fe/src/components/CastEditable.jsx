@@ -4,6 +4,7 @@ import urls from "../helper/url";
 import format from "../helper/format";
 import axios from "axios";
 import {Prompt, Redirect} from "react-router-dom";
+import {WithContext as ReactTags} from "react-tag-input";
 
 const resolutions = ["Processing", "240p", "360p", "480p", "720p", "1080p"];
 let timeout = null;
@@ -13,7 +14,9 @@ class CastEditable extends Component {
     super(props);
     this.state = {
       title: this.props.video.title,
-      tags: "",
+      tags: this.props.video.tags.map(tag => {
+        return {id: tag, text: tag}
+      }),
       description: this.props.video.description,
       error_title: "",
       error_tags: "",
@@ -30,6 +33,9 @@ class CastEditable extends Component {
     this.pressEdit = this.pressEdit.bind(this);
     this.pressDelete = this.pressDelete.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.handleTagAdd = this.handleTagAdd.bind(this);
+    this.handleTagDelete = this.handleTagDelete.bind(this);
+    this.handleTagDrag = this.handleTagDrag.bind(this);
     this.submitForm = this.submitForm.bind(this);
     this.deleteVideo = this.deleteVideo.bind(this);
   }
@@ -78,6 +84,27 @@ class CastEditable extends Component {
     this.validate(e.target.name, e.target.value);
   }
 
+  handleTagAdd(tag) {
+    if (this.validate("tag", tag.text)) {
+      this.setState(state => ({tags: [...state.tags, tag]}));
+    }
+  }
+
+  handleTagDelete(i) {
+    const {tags} = this.state;
+    this.setState({
+      tags: tags.filter((tag, index) => index !== i),
+    });
+  }
+
+  handleTagDrag(tag, currPos, newPos) {
+    const tags = [...this.state.tags];
+    const newTags = tags.slice();
+    newTags.splice(currPos, 1);
+    newTags.splice(newPos, 0, tag);
+    this.setState({tags: newTags});
+  }
+
   validate(field, value) {
     switch (field) {
       case "title":
@@ -88,8 +115,16 @@ class CastEditable extends Component {
         this.setState({error_title: ""});
         if (value.toLowerCase().trim() !== this.state.before.title.toLowerCase().trim()) this.checkAvailability(value);
         return true;
+      case "tag":
+        let tagRe = /^[A-Za-z0-9]+$/;
+        if (!tagRe.test(value.trim())) {
+          this.setState({error_tags: "Please insert alphanumeric tags"});
+          return false;
+        }
+        this.setState({error_tags: ""});
+        return true;
       case "tags":
-        if (!value.trim()) {
+        if (value.length === 0) {
           this.setState({error_tags: "Please enter video tags"});
           return false;
         }
@@ -131,9 +166,9 @@ class CastEditable extends Component {
     let ok = true;
     if (!this.state.attempted) {
       this.setState({attempted: true});
-      ok &= !this.validate("title", this.state.title);
-      ok &= !this.validate("description", this.state.description);
-      ok &= !this.validate("tags", this.state.tags);
+      ok &= this.validate("title", this.state.title);
+      ok &= this.validate("description", this.state.description);
+      ok &= this.validate("tags", this.state.tags);
     } else {
       ok &= !this.state.error_title;
       ok &= !this.state.error_description;
@@ -145,7 +180,7 @@ class CastEditable extends Component {
         hash: this.props.video.hash,
         title: this.state.title,
         description: this.state.description,
-        tags: this.state.tags,
+        tags: this.state.tags.map(tag => tag.text),
       }
     ).then((response) => {
       if (response.data.code === 200) {
@@ -215,9 +250,35 @@ class CastEditable extends Component {
                 <Badge pill style={style.cast_tag_resolution}>{resolutions[this.props.video.resolutions]}
                   {" "} {this.props.video.resolutions === 5 ? "" :
                     <Spinner animation="grow" style={style.spinner}/>}</Badge>
-                <Badge pill style={style.cast_tag}>tag</Badge>
-                <Badge pill style={style.cast_tag}>another</Badge>
+                <Badge pill style={style.cast_tag}>
+                  {`${this.props.video.views} view${this.props.video.views === 1 ? "" : "s"}`}</Badge>
+                <Badge pill style={style.cast_tag}>
+                  {`${this.props.video.likes} like${this.props.video.likes === 1 ? "" : "s"}`}</Badge>
               </div>
+            </div>
+            <div style={style.cast_tag_bar}>
+              {this.state.editing ?
+                <Form.Group style={{width: "100%"}}>
+                  <ReactTags
+                    classNames={{
+                      tags: this.state.error_tags ? "ReactTags__tags__error" : (this.state.uploading ? "ReactTags__tags__disabled" : "ReactTags__tags"),
+                      tagInput: this.state.tags.length === 3 ? "ReactTags__tagInput__disabled" : "ReactTags__tagInput"
+                    }}
+                    tags={this.state.tags} autofocus={false} delimiters={[13, 32, 188]} maxLength={8}
+                    placeholder={this.state.tags.length ? "" : "Tags"} readOnly={this.state.uploading}
+                    handleAddition={this.handleTagAdd} handleDelete={this.handleTagDelete}
+                    handleDrag={this.handleTagDrag} handleInputChange={() => this.setState({error_tags: ""})}
+                    handleInputBlur={() => this.validate("tags", this.state.tags)}
+                    handleTagClick={this.handleTagClick}/>
+                  {this.state.error_tags &&
+                  <div style={style.invalidText}>{this.state.error_tags}</div>}
+                </Form.Group> :
+                <div>
+                  {this.state.tags && Object.values(this.state.tags).map(tag =>
+                    <Badge pill style={style.cast_tag}>{tag.text}</Badge>
+                  )}
+                </div>
+              }
             </div>
             {this.state.editing ?
               <Form.Group>
@@ -295,8 +356,6 @@ let style = {
     textOverflow: "ellipsis",
   },
   cast_tag_bar: {
-    marginTop: 8,
-    marginBottom: 8,
     display: "flex",
     justifyContent: "space-between"
   },
@@ -308,12 +367,14 @@ let style = {
     borderStyle: "solid",
     fontSize: 14,
     fontWeight: 400,
-    marginRight: 8
+    marginRight: 8,
+    marginBottom: 8,
   },
   cast_tag_resolution: {
     background: "#E84409",
     color: "white",
     marginRight: 8,
+    marginBottom: 8,
     borderRadius: 8,
     fontSize: 14,
     fontWeight: 400
