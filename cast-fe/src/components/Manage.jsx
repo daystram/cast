@@ -2,10 +2,13 @@ import React, {Component} from 'react';
 import {Alert, Button, Col, Container, Form, ProgressBar, Row, Spinner} from "react-bootstrap";
 import axios from "axios";
 import bsCustomFileInput from 'bs-custom-file-input'
+import {WithContext as ReactTags} from 'react-tag-input';
 import SidebarProfile from "./SidebarProfile";
 import urls from "../helper/url";
 import CastEditable from "./CastEditable";
 import {Prompt} from "react-router-dom";
+
+import './tags.css'
 
 let timeout = null;
 
@@ -15,7 +18,7 @@ class Manage extends Component {
     this.state = {
       title: "",
       description: "",
-      tags: "",
+      tags: [],
       thumbnail: "",
       video: "",
       error_title: "",
@@ -31,6 +34,9 @@ class Manage extends Component {
       success: false,
     };
     this.handleChange = this.handleChange.bind(this);
+    this.handleTagAdd = this.handleTagAdd.bind(this);
+    this.handleTagDelete = this.handleTagDelete.bind(this);
+    this.handleTagDrag = this.handleTagDrag.bind(this);
     this.handleChangeFile = this.handleChangeFile.bind(this);
     this.submitForm = this.submitForm.bind(this);
     document.title = "Manage | cast";
@@ -65,6 +71,27 @@ class Manage extends Component {
     this.validate(e.target.name, e.target.value);
   }
 
+  handleTagAdd(tag) {
+    if (this.validate("tag", tag.text)) {
+      this.setState(state => ({tags: [...state.tags, tag]}));
+    }
+  }
+
+  handleTagDelete(i) {
+    const {tags} = this.state;
+    this.setState({
+      tags: tags.filter((tag, index) => index !== i),
+    });
+  }
+
+  handleTagDrag(tag, currPos, newPos) {
+    const tags = [...this.state.tags];
+    const newTags = tags.slice();
+    newTags.splice(currPos, 1);
+    newTags.splice(newPos, 0, tag);
+    this.setState({tags: newTags});
+  }
+
   handleChangeFile(e) {
     this.setState({error_upload: ""});
     this.setState({[e.target.name]: e.target.files[0]});
@@ -88,8 +115,16 @@ class Manage extends Component {
         }
         this.setState({error_description: ""});
         return true;
+      case "tag":
+        let tagRe = /^[A-Za-z0-9]+$/;
+        if (!tagRe.test(value.trim())) {
+          this.setState({error_tags: "Please insert alphanumeric tags"});
+          return false;
+        }
+        this.setState({error_tags: ""});
+        return true;
       case "tags":
-        if (!value.trim()) {
+        if (value.length === 0) {
           this.setState({error_tags: "Please enter video tags"});
           return false;
         }
@@ -139,11 +174,11 @@ class Manage extends Component {
     let ok = true;
     if (!this.state.attempted) {
       this.setState({attempted: true});
-      ok &= !this.validate("title", this.state.title);
-      ok &= !this.validate("description", this.state.description);
-      ok &= !this.validate("tags", this.state.tags);
-      ok &= !this.validate("thumbnail", this.state.thumbnail);
-      ok &= !this.validate("video", this.state.video);
+      ok &= this.validate("title", this.state.title);
+      ok &= this.validate("description", this.state.description);
+      ok &= this.validate("tags", this.state.tags);
+      ok &= this.validate("thumbnail", this.state.thumbnail);
+      ok &= this.validate("video", this.state.video);
     } else {
       ok &= !this.state.error_title;
       ok &= !this.state.error_description;
@@ -157,7 +192,7 @@ class Manage extends Component {
     const form = new FormData();
     form.append("title", this.state.title);
     form.append("description", this.state.description);
-    form.append("tags", this.state.tags);
+    form.append("tags", this.state.tags.map(tag => tag.text));
     form.append("thumbnail", this.state.thumbnail);
     form.append("video", this.state.video);
     axios.post(urls().upload(), form, {
@@ -174,7 +209,7 @@ class Manage extends Component {
       this.setState({
         title: "",
         description: "",
-        tags: "",
+        tags: [],
         thumbnail: "",
         video: "",
         progress: 0,
@@ -228,10 +263,19 @@ class Manage extends Component {
                   <Col md={6} sm={12}>
                     <Form.Group>
                       <Form.Label>Tags</Form.Label>
-                      <Form.Control name={"tags"} value={this.state.tags} onBlur={this.handleChange}
-                                    onChange={this.handleChange} type={"text"}
-                                    isInvalid={!!this.state.error_tags} disabled={this.state.uploading}/>
-                      <Form.Control.Feedback type={"invalid"}>{this.state.error_tags}</Form.Control.Feedback>
+                      <ReactTags
+                        classNames={{
+                          tags: this.state.error_tags ? "ReactTags__tags__error" : (this.state.uploading ? "ReactTags__tags__disabled" : "ReactTags__tags"),
+                          tagInput: this.state.tags.length === 3 ? "ReactTags__tagInput__disabled" : "ReactTags__tagInput"
+                        }}
+                        tags={this.state.tags} autofocus={false} delimiters={[13, 32, 188]} maxLength={8}
+                        placeholder={""} readOnly={this.state.uploading} handleAddition={this.handleTagAdd}
+                        handleDelete={this.handleTagDelete} handleDrag={this.handleTagDrag}
+                        handleInputChange={() => this.setState({error_tags: ""})}
+                        handleInputBlur={() => this.validate("tags", this.state.tags)}
+                        handleTagClick={this.handleTagClick}/>
+                      {this.state.error_tags &&
+                      <div style={style.invalidText}>{this.state.error_tags}</div>}
                     </Form.Group>
                     <Form.Group>
                       <Form.Label>Thumbnail</Form.Label>
@@ -306,6 +350,21 @@ let style = {
     margin: "32px auto 64px auto",
     display: "block"
   },
+  invalidInput: {
+    borderColor: "#dc3545",
+    paddingRight: "calc(1.5em + .75rem)",
+    backgroundImage: "url(data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' hei…circle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e)",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right calc(.375em + .1875rem) center",
+    backgroundSize: "calc(.75em + .375rem) calc(.75em + .375rem)",
+  },
+  invalidText: {
+    display: "block",
+    width: "100%",
+    marginTop: ".25rem",
+    fontSize: "80%",
+    color: "#dc3545",
+  }
 };
 
 export default Manage
