@@ -13,6 +13,7 @@ type Video struct {
 	Title       string             `json:"title" bson:"title"`
 	Author      UserItem           `json:"author" bson:"author"`
 	Description string             `json:"description" bson:"description"`
+	Tags        []string           `json:"tags" bson:"tags"`
 	Views       int                `json:"views" bson:"views"`
 	Duration    int64              `json:"duration,omitempty" bson:"duration"` // only for VODs
 	IsLive      bool               `json:"is_live,omitempty" bson:"is_live"`   // only for Live
@@ -30,6 +31,7 @@ type VideoInsert struct {
 	Title       string             `bson:"title"`
 	Author      primitive.ObjectID `bson:"author"`
 	Description string             `bson:"description"`
+	Tags        []string           `bson:"tags"`
 	Views       int                `json:"views" bson:"views"`
 	Duration    int64              `bson:"duration"`    // only for VODs
 	IsLive      bool               `bson:"is_live"`     // only for Live
@@ -38,16 +40,16 @@ type VideoInsert struct {
 }
 
 type VideoUpload struct {
-	Title       string `form:"title"`
-	Description string `form:"description"`
-	Tags        string `form:"tags"`
+	Title       string   `form:"title"`
+	Description string   `form:"description"`
+	Tags        []string `form:"tags"`
 }
 
 type VideoEdit struct {
-	Hash        string `form:"hash"`
-	Title       string `form:"title"`
-	Description string `form:"description"`
-	Tags        string `form:"tags"`
+	Hash        string   `form:"hash"`
+	Title       string   `form:"title"`
+	Description string   `form:"description"`
+	Tags        []string `form:"tags"`
 }
 
 type Comment struct {
