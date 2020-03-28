@@ -408,7 +408,7 @@ let style = {
     borderStyle: "solid",
     fontSize: 16,
     fontWeight: 400,
-    marginRight: 8,
+    marginRight: 80,
     marginBottom: 8,
   },
   cast_attrib: {

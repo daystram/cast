@@ -76,7 +76,9 @@ let style = {
     borderColor: "lightgray",
     borderStyle: "solid",
     fontSize: 16,
-    fontWeight: 400
+    fontWeight: 400,
+    marginRight: 8,
+    marginBottom: 8,
   },
   cast_detail: {
     display: "flex",

@@ -262,9 +262,9 @@ class CastEditable extends Component {
                   <ReactTags
                     classNames={{
                       tags: this.state.error_tags ? "ReactTags__tags__error" : (this.state.uploading ? "ReactTags__tags__disabled" : "ReactTags__tags"),
-                      tagInput: this.state.tags.length === 3 ? "ReactTags__tagInput__disabled" : "ReactTags__tagInput"
+                      tagInput: this.state.tags.length === 5 ? "ReactTags__tagInput__disabled" : "ReactTags__tagInput"
                     }}
-                    tags={this.state.tags} autofocus={false} delimiters={[13, 32, 188]} maxLength={8}
+                    tags={this.state.tags} autofocus={false} delimiters={[13, 32, 188]} maxLength={12}
                     placeholder={this.state.tags.length ? "" : "Tags"} readOnly={this.state.uploading}
                     handleAddition={this.handleTagAdd} handleDelete={this.handleTagDelete}
                     handleDrag={this.handleTagDrag} handleInputChange={() => this.setState({error_tags: ""})}
