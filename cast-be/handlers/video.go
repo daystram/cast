@@ -66,6 +66,7 @@ func (m *module) CreateVOD(upload data.VideoUpload, userID primitive.ObjectID) (
 		Title:       upload.Title,
 		Author:      userID,
 		Description: upload.Description,
+		Tags:        upload.Tags,
 		Views:       0,
 		Duration:    0,
 		IsLive:      false,
@@ -103,6 +104,7 @@ func (m *module) UpdateVideo(video data.VideoEdit, userID primitive.ObjectID) (e
 		Title:       video.Title,
 		Author:      userID,
 		Description: video.Description,
+		Tags:        video.Tags,
 	}); err != nil {
 		return errors.New(fmt.Sprintf("[UpdateVideo] error updating video. %+v", err))
 	}
