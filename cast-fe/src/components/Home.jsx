@@ -9,8 +9,8 @@ class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      live: [],
-      vod: [],
+      live: null,
+      vod: null,
       loading: {
         live: true,
         vod: true,

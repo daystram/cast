@@ -59,12 +59,12 @@ let style = {
   },
   cast_tag_bar: {
     marginTop: 8,
-    marginBottom: 8,
   },
   cast_live_tag: {
     background: "red",
     color: "white",
     marginRight: 8,
+    marginBottom: 8,
     borderRadius: 8,
     fontSize: 16,
     fontWeight: 400

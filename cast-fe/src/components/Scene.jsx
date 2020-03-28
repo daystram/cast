@@ -231,8 +231,9 @@ class Scene extends Component {
                 live={this.state.video && this.state.video.is_live}/>
               <div style={style.cast_tag_bar}>
                 <div>
-                  <Badge pill style={style.cast_tag}>tag</Badge>
-                  <Badge pill style={style.cast_tag}>another</Badge>
+                  {this.state.video && this.state.video.tags && Object.values(this.state.video.tags).map(tag =>
+                    <Badge pill style={style.cast_tag}>{tag}</Badge>
+                  )}
                 </div>
                 <div>
                   <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleShare}>
@@ -261,7 +262,8 @@ class Scene extends Component {
                   </div>
                 </div>
                 <div>
-                  <Button style={style.tip_button} onClick={this.handleTip}><i className="material-icons">attach_money</i></Button>
+                  <Button style={style.tip_button} onClick={this.handleTip}><i
+                    className="material-icons">attach_money</i></Button>
                   <Button style={style.sub_button} onClick={this.handleSubscribe}
                           disabled={this.state.video && this.state.video.author.isSubscribed}>SUBSCRIBE</Button>
                 </div>
@@ -395,7 +397,6 @@ let style = {
   },
   cast_tag_bar: {
     marginTop: 8,
-    marginBottom: 8,
     display: "flex",
     justifyContent: "space-between"
   },
@@ -407,7 +408,8 @@ let style = {
     borderStyle: "solid",
     fontSize: 16,
     fontWeight: 400,
-    marginRight: 8
+    marginRight: 8,
+    marginBottom: 8,
   },
   cast_attrib: {
     marginLeft: 16
