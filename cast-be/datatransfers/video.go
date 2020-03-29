@@ -42,14 +42,16 @@ type VideoInsert struct {
 type VideoUpload struct {
 	Title       string   `form:"title"`
 	Description string   `form:"description"`
-	Tags        []string `form:"tags"`
+	TagsMerged  string   `form:"tags"`
+	Tags        []string `form:"-"`
 }
 
 type VideoEdit struct {
 	Hash        string   `form:"hash"`
 	Title       string   `form:"title"`
 	Description string   `form:"description"`
-	Tags        []string `form:"tags"`
+	TagsMerged  string   `form:"tags"`
+	Tags        []string `form:"-"`
 }
 
 type Comment struct {
