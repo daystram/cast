@@ -29,7 +29,7 @@ class HybridPlayer extends React.Component {
       responsive: true,
       aspectRatio: "16:9",
       // liveui: true,
-      preload: true,
+      preload: "auto",
       controls: true,
       flvjs: {
         mediaDataSource: {
@@ -38,7 +38,6 @@ class HybridPlayer extends React.Component {
           withCredentials: false,
         },
       },
-      smoothQualityChange: true,
       autoplay: this.props.live,
       poster: this.props.thumbnail,
     };
