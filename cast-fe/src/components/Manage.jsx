@@ -192,7 +192,7 @@ class Manage extends Component {
     const form = new FormData();
     form.append("title", this.state.title);
     form.append("description", this.state.description);
-    form.append("tags", this.state.tags.map(tag => tag.text));
+    form.append("tags", this.state.tags.map(tag => tag.text).join(","));
     form.append("thumbnail", this.state.thumbnail);
     form.append("video", this.state.video);
     axios.post(urls().upload(), form, {

@@ -165,7 +165,7 @@ class CastEditable extends Component {
   submitForm() {
     let ok = true;
     if (!this.state.attempted) {
-      this.setState({attempted: true});
+      this.setState({error_edit: "", attempted: true});
       ok &= this.validate("title", this.state.title);
       ok &= this.validate("description", this.state.description);
       ok &= this.validate("tags", this.state.tags);
@@ -180,7 +180,7 @@ class CastEditable extends Component {
         hash: this.props.video.hash,
         title: this.state.title,
         description: this.state.description,
-        tags: this.state.tags.map(tag => tag.text),
+        tags: this.state.tags.map(tag => tag.text).join(","),
       }
     ).then((response) => {
       if (response.data.code === 200) {
