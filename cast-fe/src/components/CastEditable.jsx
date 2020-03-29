@@ -14,9 +14,9 @@ class CastEditable extends Component {
     super(props);
     this.state = {
       title: this.props.video.title,
-      tags: this.props.video.tags.map(tag => {
+      tags: this.props.video.tags ? this.props.video.tags.map(tag => {
         return {id: tag, text: tag}
-      }),
+      }) : [],
       description: this.props.video.description,
       error_title: "",
       error_tags: "",

@@ -19,6 +19,7 @@ class HybridPlayer extends React.Component {
 
   componentWillUnmount() {
     if (this.player) {
+      console.log("broken")
       this.player.dispose()
     }
   }
@@ -46,17 +47,18 @@ class HybridPlayer extends React.Component {
   }
 
   updatePlayer() {
-    this.player.pause();
     if (!this.props.url) return;
-    this.player.poster(this.props.thumbnail);
+    this.player.pause();
     this.player.src({
       src: this.props.url,
       type: this.props.live ? 'video/x-flv' : 'application/dash+xml',
     });
     this.player.autoplay(this.props.live);
-    if (this.props.live) this.player.play();
-    else this.player.pause();
-    this.player.load();
+    // if (this.props.live) this.player.play();
+    // this.player.load();
+    // else this.player.pause();
+    this.player.reset();
+    this.player.poster(this.props.thumbnail);
   }
 
   render() {
