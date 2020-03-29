@@ -39,19 +39,30 @@ type VideoInsert struct {
 	CreatedAt   time.Time          `bson:"created_at"`
 }
 
+type VideoUploadForm struct {
+	Title       string `form:"title"`
+	Description string `form:"description"`
+	Tags        string `form:"tags"`
+}
+
 type VideoUpload struct {
-	Title       string   `form:"title"`
-	Description string   `form:"description"`
-	TagsMerged  string   `form:"tags"`
-	Tags        []string `form:"-"`
+	Title       string
+	Description string
+	Tags        []string
+}
+
+type VideoEditForm struct {
+	Hash        string `form:"hash"`
+	Title       string `form:"title"`
+	Description string `form:"description"`
+	Tags        string `form:"tags"`
 }
 
 type VideoEdit struct {
-	Hash        string   `form:"hash"`
-	Title       string   `form:"title"`
-	Description string   `form:"description"`
-	TagsMerged  string   `form:"tags"`
-	Tags        []string `form:"-"`
+	Hash        string
+	Title       string
+	Description string
+	Tags        []string
 }
 
 type Comment struct {

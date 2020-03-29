@@ -95,11 +95,16 @@ func (c *VideoControllerAuth) GetCheckUnique(title string) datatransfers.Respons
 
 // @Title Edit Video
 // @Success 200 {object} models.Object
-// @Param   video    body	{datatransfers.VideoEdit}	true	"video"
+// @Param   video    body	{datatransfers.VideoEditForm}	true	"video"
 // @router /edit [put]
-func (c *VideoControllerAuth) EditVideo(video datatransfers.VideoEdit) datatransfers.Response {
-	video.Tags = strings.Split(video.TagsMerged, ",")
-	err := c.Handler.UpdateVideo(video, c.userID)
+func (c *VideoControllerAuth) EditVideo(video datatransfers.VideoEditForm) datatransfers.Response {
+	fmt.Println(video.Tags)
+	err := c.Handler.UpdateVideo(datatransfers.VideoEdit{
+		Hash:        video.Hash,
+		Title:       video.Title,
+		Description: video.Description,
+		Tags:        strings.Split(video.Tags, ","),
+	}, c.userID)
 	if err != nil {
 		fmt.Printf("[VideoController::EditVideo] failed editing video. %+v\n", err)
 		return datatransfers.Response{Error: "Failed editing video", Code: http.StatusInternalServerError}
@@ -129,15 +134,18 @@ func (c *VideoControllerAuth) DeleteVideo(hash string) datatransfers.Response {
 // @Success 200 {object} models.Object
 // @router /upload [post]
 func (c *VideoControllerAuth) UploadVideo() datatransfers.Response {
-	upload := datatransfers.VideoUpload{}
+	upload := datatransfers.VideoUploadForm{}
 	err := c.ParseForm(&upload)
 	if err != nil {
 		fmt.Printf("[VideoController::UploadVideo] failed parsing video details. %+v\n", err)
 		return datatransfers.Response{Error: "Failed parsing video detail", Code: http.StatusInternalServerError}
 	}
-	upload.Tags = strings.Split(upload.TagsMerged, ",")
 	var videoID primitive.ObjectID
-	videoID, err = c.Handler.CreateVOD(upload, c.userID)
+	videoID, err = c.Handler.CreateVOD(datatransfers.VideoUpload{
+		Title:       upload.Title,
+		Description: upload.Description,
+		Tags:        strings.Split(upload.Tags, ","),
+	}, c.userID)
 	if err != nil {
 		fmt.Printf("[VideoController::UploadVideo] failed creating video. %+v\n", err)
 		return datatransfers.Response{Error: "Failed creating video", Code: http.StatusInternalServerError}
