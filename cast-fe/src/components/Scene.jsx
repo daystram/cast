@@ -106,6 +106,7 @@ class Scene extends Component {
       this.setState({loading: {...this.state.loading, current: false}});
       if (response.data.code === 200) {
         let data = response.data.data;
+        console.log("DETAIL RECEIVED")
         this.setState({
           video: data, likes: data.likes, liked: data.liked, comments: data.comments,
           [data.type]: {...this.state[data.type], [data.hash]: data}

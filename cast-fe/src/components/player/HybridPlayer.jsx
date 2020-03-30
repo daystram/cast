@@ -42,11 +42,11 @@ class HybridPlayer extends React.Component {
           withCredentials: false,
         },
       },
-      autoplay: this.props.live,
-      poster: this.props.thumbnail,
+      // autoplay: this.props.live,
+      // poster: this.props.thumbnail,
     };
     this.player = videojs(this.videoNode, options);
-    this.player.httpSourceSelector();
+    // this.player.httpSourceSelector();
   }
 
   updatePlayer() {
@@ -58,7 +58,7 @@ class HybridPlayer extends React.Component {
       src: this.props.url,
       type: this.props.live ? 'video/x-flv' : 'application/dash+xml',
     });
-    this.player.autoplay(this.props.live);
+    // this.player.autoplay(this.props.live);
     // if (this.props.live) this.player.play();
     // this.player.load();
     // else this.player.pause();
