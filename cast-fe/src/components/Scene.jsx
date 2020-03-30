@@ -111,17 +111,18 @@ class Scene extends Component {
           [data.type]: {...this.state[data.type], [data.hash]: data}
         });
         document.title = `${data.title} - ${data.author.name} | cast`;
-        if ('mediaSession' in navigator) {
-          // eslint-disable-next-line no-undef
-          navigator.mediaSession.metadata = new MediaMetadata({
-            title: data.title,
-            artist: data.author.name,
-            album: 'cast',
-            artwork: [
-              {src: urls().thumbnail(this.state.video.hash), sizes: '512x512', type: 'image/jpg'},
-            ]
-          });
-        }
+        console.log("DETAIL READY")
+        // if ('mediaSession' in navigator) {
+        //   // eslint-disable-next-line no-undef
+        //   navigator.mediaSession.metadata = new MediaMetadata({
+        //     title: data.title,
+        //     artist: data.author.name,
+        //     album: 'cast',
+        //     artwork: [
+        //       {src: urls().thumbnail(this.state.video.hash), sizes: '512x512', type: 'image/jpg'},
+        //     ]
+        //   });
+        // }
       }
     }).catch((error) => {
       console.log(error);
