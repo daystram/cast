@@ -1,19 +1,14 @@
 import React from 'react';
 import 'dashjs'
 import videojs from 'video.js'
+import 'videojs-contrib-quality-levels'
+import 'videojs-http-source-selector'
 import 'videojs-contrib-dash'
 import 'video.js/dist/video-js.css'
 import 'videojs-flvjs-es6'
-import 'videojs-contrib-quality-levels'
-import 'videojs-http-source-selector'
 import './player.css'
 
 class HybridPlayer extends React.Component {
-  constructor(props) {
-    super(props);
-    this.videoNode = React.createRef();
-  }
-
   componentDidMount() {
     this.initPlayer()
   }
@@ -53,7 +48,7 @@ class HybridPlayer extends React.Component {
       // autoplay: this.props.live,
       // poster: this.props.thumbnail,
     };
-    this.player = videojs(this.videoNode.current, options);
+    this.player = videojs(this.videoNode, options);
     this.player.httpSourceSelector();
   }
 
@@ -70,18 +65,16 @@ class HybridPlayer extends React.Component {
     // if (this.props.live) this.player.play();
     // this.player.load();
     // else this.player.pause();
-    this.player.reset();
     this.player.load();
     this.player.httpSourceSelector();
     this.player.poster(this.props.thumbnail);
-    this.videoNode.current.focus();
   }
 
   render() {
     return (
       <div>
         <div data-vjs-player style={style.player}>
-          <video ref={this.videoNode} className="video-js"/>
+          <video ref={ref => this.videoNode = ref} className="video-js"/>
         </div>
       </div>
     )
