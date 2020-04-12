@@ -6,6 +6,7 @@ export default function urls() {
     thumbnail: (hash) => `${cdn_base}/thumbnail/${hash}.jpg`,
     profile: (username) => `${cdn_base}/profile/${username}.png`,
     vod: (hash) => `${cdn_base}/${hash}/manifest.mpd`,
+    download: (hash) => `${cdn_base}/${hash}/video.mp4`,
     live: (username) => `${api_base}/live/stream/${username}`,
     cast_details: () => `${api_base}/video/details`,
     like: () => `${api_base}/p/video/like`,

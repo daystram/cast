@@ -42,7 +42,7 @@ class Scene extends Component {
       comments: [],
       error_comment: "",
     };
-    this.incrementView = this.incrementView.bind(this);
+    this.handleDownload = this.handleDownload.bind(this);
     this.handleShare = this.handleShare.bind(this);
     this.handleLike = this.handleLike.bind(this);
     this.handleComment = this.handleComment.bind(this);
@@ -113,22 +113,32 @@ class Scene extends Component {
         });
         document.title = `${data.title} - ${data.author.name} | cast`;
         console.log("DETAIL READY")
-        // if ('mediaSession' in navigator) {
-        //   // eslint-disable-next-line no-undef
-        //   navigator.mediaSession.metadata = new MediaMetadata({
-        //     title: data.title,
-        //     artist: data.author.name,
-        //     album: 'cast',
-        //     artwork: [
-        //       {src: urls().thumbnail(this.state.video.hash), sizes: '512x512', type: 'image/jpg'},
-        //     ]
-        //   });
-        // }
+        if ('mediaSession' in navigator) {
+          // eslint-disable-next-line no-undef
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: data.title,
+            artist: data.author.name,
+            album: 'cast',
+            artwork: [
+              {src: urls().thumbnail(this.state.video.hash), sizes: '512x512', type: 'image/jpg'},
+            ]
+          });
+        }
       }
     }).catch((error) => {
       console.log(error);
       this.setState({loading: {...this.state.loading, current: false}});
     });
+  }
+
+  handleDownload() {
+    console.log("download video");
+    let link = document.createElement('a');
+    link.href = urls().download(this.state.video.hash);
+    link.download = `${this.state.video.title} by ${this.state.video.author.name} - cast`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   handleShare() {
@@ -238,6 +248,8 @@ class Scene extends Component {
                   )}
                 </div>
                 <div>
+                  <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleDownload}>
+                    <i className="material-icons">get_app</i>{" "}download</span>
                   <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleShare}>
                     <i className="material-icons">share</i>{" "}share</span>
                   <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleLike}>
