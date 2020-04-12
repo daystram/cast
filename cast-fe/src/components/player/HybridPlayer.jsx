@@ -38,7 +38,7 @@ class HybridPlayer extends React.Component {
       flvjs: {
         mediaDataSource: {
           isLive: true,
-          cors: true,     // TODO: NOTICE!
+          cors: false,     // TODO: NOTICE!
           withCredentials: false,
         },
       },
