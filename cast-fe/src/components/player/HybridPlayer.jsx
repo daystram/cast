@@ -1,5 +1,7 @@
 import React from 'react';
+import 'dashjs'
 import videojs from 'video.js'
+import 'videojs-contrib-dash'
 import 'video.js/dist/video-js.css'
 import 'videojs-flvjs-es6'
 import 'videojs-contrib-quality-levels'

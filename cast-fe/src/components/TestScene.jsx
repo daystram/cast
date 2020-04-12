@@ -22,8 +22,9 @@ import urls from "../helper/url";
 import format from "../helper/format";
 import {Redirect} from "react-router-dom";
 
-
+import 'dashjs'
 import videojs from 'video.js'
+import 'videojs-contrib-dash'
 import 'video.js/dist/video-js.css'
 import 'videojs-flvjs-es6'
 import 'videojs-contrib-quality-levels'
@@ -228,6 +229,10 @@ class TestScene extends Component {
       // liveui: true,
       // preload: "auto",
       controls: true,
+      src: {
+        src: this.state.video.is_live ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash),
+        type: this.state.video.is_live ? 'video/x-flv' : 'application/dash+xml',
+      },
       // flvjs: {
       //   mediaDataSource: {
       //     isLive: true,
@@ -239,10 +244,6 @@ class TestScene extends Component {
       // poster: this.props.thumbnail,
     };
     this.player = videojs(this.videoNode, options);
-    this.player.src({
-      src: this.state.video.is_live ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash),
-      type: this.state.video.is_live ? 'video/x-flv' : 'application/dash+xml',
-    });
     // this.updatePlayer();
     // this.player.httpSourceSelector();
   }
@@ -270,23 +271,11 @@ class TestScene extends Component {
       <>
         <Container fluid style={style.content_container}>
           <Row>
-            <Col xl={{span: 2, order: 1}} sm={{span: 6, order: 2}} xs={{span: 12, order: 2}}>
-              <Sidebar/>
-              <div style={style.cast_list}>
-                {this.state.live && Object.values(this.state.live).map(video =>
-                  <Row noGutters style={{padding: "0 0 16px 0"}}>
-                    <Cast video={video} onClick={(a, b) => this.incrementView(a, b)}/>
-                  </Row>
-                )}
-                {this.state.loading.live && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
-              </div>
-            </Col>
             <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 1}}>
               {/*<HybridPlayer*/}
               {/*  url={this.state.video && (this.state.video.is_live ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}*/}
               {/*  thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}*/}
               {/*  live={this.state.video && this.state.video.is_live}/>*/}
-
               <div data-vjs-player style={style.player}>
                 <video ref={node => this.videoNode = node} className="video-js"/>
               </div>
@@ -375,31 +364,6 @@ class TestScene extends Component {
                 </Col>
                 <Col xl={1} sm={0}/>
               </Row>
-            </Col>
-            <Col xl={{span: 2, order: 3}} sm={{span: 6, order: 3}} xs={{span: 12, order: 3}}>
-              <Card style={style.live_chat}>
-                <Card.Body style={style.live_chat_body}>
-                  <p style={style.live_chat_item}><b>User1</b>: Hello! Hello! Hello! Hello! Hello! Hello! Hello!</p>
-                  <p style={style.live_chat_item}><b>User2</b>: Hello!</p>
-                  <p style={style.live_chat_item}><b>User1</b>: Hello!</p>
-                  <p style={style.live_chat_item}><b>User2</b>: Hello!</p>
-                  <p style={style.live_chat_item}><b>User1</b>: Hello!</p>
-                  <InputGroup style={style.live_chat_input}>
-                    <FormControl type="text" placeholder="Chat"/>
-                    <InputGroup.Append>
-                      <Button variant="outline-primary"><i className="material-icons">send</i></Button>
-                    </InputGroup.Append>
-                  </InputGroup>
-                </Card.Body>
-              </Card>
-              <div style={style.cast_list}>
-                {this.state.vod && Object.values(this.state.vod).map(video =>
-                  <Row noGutters style={{padding: "0 0 16px 0"}}>
-                    <Cast video={video} onClick={(a, b) => this.incrementView(a, b)}/>
-                  </Row>
-                )}
-                {this.state.loading.vod && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
-              </div>
             </Col>
           </Row>
         </Container>
