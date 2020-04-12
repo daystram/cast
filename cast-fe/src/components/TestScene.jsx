@@ -28,7 +28,7 @@ import 'video.js/dist/video-js.css'
 import 'videojs-flvjs-es6'
 import 'videojs-contrib-quality-levels'
 import 'videojs-http-source-selector'
-import './player.css'
+import './player/player.css'
 
 class TestScene extends Component {
   constructor(props) {
