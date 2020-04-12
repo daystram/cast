@@ -1,25 +1,13 @@
 import React, {Component} from 'react';
 import {
-  Alert,
-  Badge,
   Button,
-  Card,
   Col,
   Container,
-  Form,
-  FormControl,
-  Image,
-  InputGroup,
   Modal,
   Row,
-  Spinner
 } from "react-bootstrap";
-import Cast from "./Cast"
-import Sidebar from "./Sidebar";
-import abbreviate from "../helper/abbreviate";
 import axios from "axios";
 import urls from "../helper/url";
-import format from "../helper/format";
 import {Redirect} from "react-router-dom";
 
 import 'dashjs'
@@ -30,6 +18,7 @@ import 'videojs-flvjs-es6'
 import 'videojs-contrib-quality-levels'
 import 'videojs-http-source-selector'
 import './player/player.css'
+import HybridPlayer from "./player/HybridPlayer";
 
 class TestScene extends Component {
   constructor(props) {
@@ -272,98 +261,16 @@ class TestScene extends Component {
         <Container fluid style={style.content_container}>
           <Row>
             <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 1}}>
-              {/*<HybridPlayer*/}
-              {/*  url={this.state.video && (this.state.video.is_live ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}*/}
-              {/*  thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}*/}
-              {/*  live={this.state.video && this.state.video.is_live}/>*/}
+              <HybridPlayer
+                url={this.state.video && (this.state.video.is_live ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}
+                thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}
+                live={this.state.video && this.state.video.is_live}/>
+              <br/>
+              <br/>
+              <br/>
               <div data-vjs-player style={style.player}>
                 <video ref={node => this.videoNode = node} className="video-js"/>
               </div>
-              <div style={style.cast_tag_bar}>
-                <div>
-                  {this.state.video && this.state.video.tags && Object.values(this.state.video.tags).map(tag =>
-                    <Badge pill style={style.cast_tag}>{tag}</Badge>
-                  )}
-                </div>
-                <div>
-                  <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleShare}>
-                    <i className="material-icons">share</i>{" "}share</span>
-                  <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleLike}>
-                    <i style={this.state.liked ? style.liked : {}} className="material-icons">thumb_up</i>
-                    {" "}{(this.state.video && abbreviate().number(this.state.likes)) || 0} likes
-                  </span>
-                  <span style={style.cast_attrib}>
-                    <i className="material-icons">remove_red_eye</i>
-                    {" "}{(this.state.video && abbreviate().number(this.state.video.views)) || 0} {this.state.video && (this.state.video.is_live ? 'viewers' : 'views')}
-                  </span>
-                </div>
-              </div>
-              <h1 style={style.title}>{this.state.video && this.state.video.title}</h1>
-              <p style={{marginTop: 4}}>{this.state.video && format().date(this.state.video.created_at)}</p>
-              <div style={style.author_bar}>
-                <div style={style.author_profile}>
-                  <Image src={this.state.video && urls().profile(this.state.video.author.username)}
-                         width={42} height={42} style={style.profile_image} roundedCircle/>
-                  <div style={style.cast_author_details}>
-                    <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
-                    <p style={style.cast_author_sub}>
-                      {(this.state.video && abbreviate().number(this.state.video.author.subscribers)) || 0} subscribers
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <Button style={style.tip_button} onClick={this.handleTip}><i
-                    className="material-icons">attach_money</i></Button>
-                  <Button style={style.sub_button} onClick={this.handleSubscribe}
-                          disabled={this.state.video && this.state.video.author.isSubscribed}>SUBSCRIBE</Button>
-                </div>
-              </div>
-              <Row noGutters>
-                <Col xl={1} sm={0}/>
-                <Col>
-                  <div style={style.description}>{this.state.video && this.state.video.description}</div>
-                </Col>
-                <Col xl={1} sm={0}/>
-              </Row>
-              <hr/>
-              <h3>Comments</h3>
-              <Row noGutters style={{marginTop: 28}}>
-                <Col xl={1} sm={0}/>
-                <Col>
-                  <Form noValidate onSubmit={this.handleComment}>
-                    {this.state.error_submit && <Alert variant={"danger"}>{this.state.error_submit}</Alert>}
-                    <Form.Group>
-                      <InputGroup style={style.comment_input}>
-                        <Form.Control type="text" placeholder="Comment" value={this.state.comment}
-                                      onChange={this.writeComment} isInvalid={!!this.state.error_comment}/>
-                        <InputGroup.Append>
-                          <Button variant="outline-primary" type="submit">
-                            <i className="material-icons">send</i></Button>
-                        </InputGroup.Append>
-                      </InputGroup>
-                    </Form.Group>
-                  </Form>
-                  <div style={style.comment_list}>
-                    {this.state.comments ? Object.values(this.state.comments).map(comment => {
-                      let duration = abbreviate().time(Date.now() - new Date(comment.created_at));
-                      return (
-                        <div style={{...style.author_profile, ...style.comment_item}}>
-                          <Image src={urls().profile(comment.author.username)} height={42} width={42}
-                                 style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
-                          <div style={{...style.cast_author_details, minWidth: 0}}>
-                            <p style={style.cast_author_name}>{comment.author.name}</p>
-                            <p style={{marginBottom: 0, color: "grey"}}>
-                              {`${duration} ${duration === "Yesterday" ? "" : "ago"}`}
-                            </p>
-                            <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>{comment.content}</p>
-                          </div>
-                        </div>
-                      )
-                    }) : <h5 style={style.h5}>Post the first comment!</h5>}
-                  </div>
-                </Col>
-                <Col xl={1} sm={0}/>
-              </Row>
             </Col>
           </Row>
         </Container>
