@@ -1,8 +1,8 @@
 import React from 'react';
-import 'dashjs'
-import videojs from 'video.js'
 import 'videojs-contrib-quality-levels'
 import 'videojs-http-source-selector'
+import 'dashjs'
+import videojs from 'video.js'
 import 'videojs-contrib-dash'
 import 'video.js/dist/video-js.css'
 import 'videojs-flvjs-es6'
@@ -38,6 +38,11 @@ class HybridPlayer extends React.Component {
       preload: "true",
       controls: true,
       userActions: {hotkeys: true},
+      plugins: {
+        httpSourceSelector: {
+          default: 'auto'
+        }
+      },
       flvjs: {
         mediaDataSource: {
           isLive: true,
