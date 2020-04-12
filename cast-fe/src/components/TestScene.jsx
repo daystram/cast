@@ -49,6 +49,7 @@ class TestScene extends Component {
       comments: [],
       error_comment: "",
     };
+    this.initPlayer = this.initPlayer.bind(this);
     this.incrementView = this.incrementView.bind(this);
     this.handleShare = this.handleShare.bind(this);
     this.handleLike = this.handleLike.bind(this);
@@ -218,7 +219,6 @@ class TestScene extends Component {
     this.setState({prompt: true})
   }
 
-
   initPlayer() {
     console.log("INIT")
     let options = {
@@ -226,40 +226,44 @@ class TestScene extends Component {
       responsive: true,
       aspectRatio: "16:9",
       // liveui: true,
-      preload: "auto",
+      // preload: "auto",
       controls: true,
-      flvjs: {
-        mediaDataSource: {
-          isLive: true,
-          cors: true,     // TODO: NOTICE!
-          withCredentials: false,
-        },
-      },
+      // flvjs: {
+      //   mediaDataSource: {
+      //     isLive: true,
+      //     cors: true,     // TODO: NOTICE!
+      //     withCredentials: false,
+      //   },
+      // },
       // autoplay: this.props.live,
       // poster: this.props.thumbnail,
     };
     this.player = videojs(this.videoNode, options);
-    this.updatePlayer();
+    this.player.src({
+      src: this.state.video.is_live ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash),
+      type: this.state.video.is_live ? 'video/x-flv' : 'application/dash+xml',
+    });
+    // this.updatePlayer();
     // this.player.httpSourceSelector();
   }
 
-  updatePlayer() {
-    console.log("UPDATE PLAYER")
-    if (!this.props.url) return;
-    console.log("UPDATE PLAYER SKIPPED")
-    this.player.pause();
-    this.player.src({
-      src: this.props.url,
-      type: this.props.live ? 'video/x-flv' : 'application/dash+xml',
-    });
-    // this.player.autoplay(this.props.live);
-    // if (this.props.live) this.player.play();
-    // this.player.load();
-    // else this.player.pause();
-    this.player.reset();
-    this.player.load();
-    this.player.poster(this.props.thumbnail);
-  }
+  // updatePlayer() {
+  //   console.log("UPDATE PLAYER")
+  //   if (!this.props.url) return;
+  //   console.log("UPDATE PLAYER SKIPPED")
+  //   this.player.pause();
+  //   this.player.src({
+  //     src: this.props.url,
+  //     type: this.props.live ? 'video/x-flv' : 'application/dash+xml',
+  //   });
+  //   // this.player.autoplay(this.props.live);
+  //   // if (this.props.live) this.player.play();
+  //   // this.player.load();
+  //   // else this.player.pause();
+  //   this.player.reset();
+  //   this.player.load();
+  //   this.player.poster(this.props.thumbnail);
+  // }
 
   render() {
     return (
