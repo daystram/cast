@@ -9,6 +9,11 @@ import 'videojs-http-source-selector'
 import './player.css'
 
 class HybridPlayer extends React.Component {
+  constructor(props) {
+    super(props);
+    this.videoNode = React.createRef();
+  }
+
   componentDidMount() {
     this.initPlayer()
   }
@@ -35,8 +40,9 @@ class HybridPlayer extends React.Component {
       responsive: true,
       aspectRatio: "16:9",
       // liveui: true,
-      preload: "auto",
+      preload: "true",
       controls: true,
+      userActions: {hotkeys: true},
       flvjs: {
         mediaDataSource: {
           isLive: true,
@@ -47,7 +53,7 @@ class HybridPlayer extends React.Component {
       // autoplay: this.props.live,
       // poster: this.props.thumbnail,
     };
-    this.player = videojs(this.videoNode, options);
+    this.player = videojs(this.videoNode.current, options);
     this.player.httpSourceSelector();
   }
 
@@ -66,14 +72,16 @@ class HybridPlayer extends React.Component {
     // else this.player.pause();
     this.player.reset();
     this.player.load();
+    this.player.httpSourceSelector();
     this.player.poster(this.props.thumbnail);
+    this.videoNode.current.focus();
   }
 
   render() {
     return (
       <div>
         <div data-vjs-player style={style.player}>
-          <video ref={node => this.videoNode = node} className="video-js"/>
+          <video ref={this.videoNode} className="video-js"/>
         </div>
       </div>
     )
