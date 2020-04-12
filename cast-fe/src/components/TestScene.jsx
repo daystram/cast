@@ -16,14 +16,21 @@ import {
 } from "react-bootstrap";
 import Cast from "./Cast"
 import Sidebar from "./Sidebar";
-import {HybridPlayer} from "./player";
 import abbreviate from "../helper/abbreviate";
 import axios from "axios";
 import urls from "../helper/url";
 import format from "../helper/format";
 import {Redirect} from "react-router-dom";
 
-class Scene extends Component {
+
+import videojs from 'video.js'
+import 'video.js/dist/video-js.css'
+import 'videojs-flvjs-es6'
+import 'videojs-contrib-quality-levels'
+import 'videojs-http-source-selector'
+import './player.css'
+
+class TestScene extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -113,6 +120,7 @@ class Scene extends Component {
         });
         document.title = `${data.title} - ${data.author.name} | cast`;
         console.log("DETAIL READY")
+        this.initPlayer();
         // if ('mediaSession' in navigator) {
         //   // eslint-disable-next-line no-undef
         //   navigator.mediaSession.metadata = new MediaMetadata({
@@ -210,6 +218,49 @@ class Scene extends Component {
     this.setState({prompt: true})
   }
 
+
+  initPlayer() {
+    console.log("INIT")
+    let options = {
+      fluid: true,
+      responsive: true,
+      aspectRatio: "16:9",
+      // liveui: true,
+      preload: "auto",
+      controls: true,
+      flvjs: {
+        mediaDataSource: {
+          isLive: true,
+          cors: true,     // TODO: NOTICE!
+          withCredentials: false,
+        },
+      },
+      // autoplay: this.props.live,
+      // poster: this.props.thumbnail,
+    };
+    this.player = videojs(this.videoNode, options);
+    this.updatePlayer();
+    // this.player.httpSourceSelector();
+  }
+
+  updatePlayer() {
+    console.log("UPDATE PLAYER")
+    if (!this.props.url) return;
+    console.log("UPDATE PLAYER SKIPPED")
+    this.player.pause();
+    this.player.src({
+      src: this.props.url,
+      type: this.props.live ? 'video/x-flv' : 'application/dash+xml',
+    });
+    // this.player.autoplay(this.props.live);
+    // if (this.props.live) this.player.play();
+    // this.player.load();
+    // else this.player.pause();
+    this.player.reset();
+    this.player.load();
+    this.player.poster(this.props.thumbnail);
+  }
+
   render() {
     return (
       <>
@@ -227,10 +278,14 @@ class Scene extends Component {
               </div>
             </Col>
             <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 1}}>
-              <HybridPlayer
-                url={this.state.video && (this.state.video.is_live ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}
-                thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}
-                live={this.state.video && this.state.video.is_live}/>
+              {/*<HybridPlayer*/}
+              {/*  url={this.state.video && (this.state.video.is_live ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}*/}
+              {/*  thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}*/}
+              {/*  live={this.state.video && this.state.video.is_live}/>*/}
+
+              <div data-vjs-player style={style.player}>
+                <video ref={node => this.videoNode = node} className="video-js"/>
+              </div>
               <div style={style.cast_tag_bar}>
                 <div>
                   {this.state.video && this.state.video.tags && Object.values(this.state.video.tags).map(tag =>
@@ -482,4 +537,4 @@ let style = {
   },
 };
 
-export default Scene
+export default TestScene

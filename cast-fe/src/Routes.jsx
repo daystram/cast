@@ -1,6 +1,6 @@
 import React from "react";
 import {Redirect, Route, Switch} from 'react-router-dom'
-import {Dashboard, Home, LogOut, Scene, Profile, LogIn, SignUp, Verify} from "./components";
+import {Dashboard, Home, LogOut, Scene, TestScene, Profile, LogIn, SignUp, Verify} from "./components";
 import Manage from "./components/Manage";
 
 const Routes = () => {
@@ -8,6 +8,7 @@ const Routes = () => {
     <Switch>
       <Route path={"/"} exact component={Home}/>
       <Route path="/w/:hash" exact component={Scene}/>
+      <Route path="/w/test/:hash" exact component={TestScene}/>
       <Route path="/logout" component={LogOut}/>
       <PrivateRoute path="/profile" exact component={Profile}/>
       <PrivateRoute path="/dashboard" exact component={Dashboard}/>
