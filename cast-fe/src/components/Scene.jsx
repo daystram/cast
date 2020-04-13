@@ -23,6 +23,7 @@ import urls from "../helper/url";
 import format from "../helper/format";
 import {Redirect} from "react-router-dom";
 import auth from "../helper/auth";
+import TimeAgo from "react-timeago";
 
 class Scene extends Component {
   constructor(props) {
@@ -311,16 +312,13 @@ class Scene extends Component {
                   </Form>
                   <div style={style.comment_list}>
                     {this.state.comments ? Object.values(this.state.comments).map(comment => {
-                      let duration = abbreviate().time(Date.now() - new Date(comment.created_at));
                       return (
                         <div style={{...style.author_profile, ...style.comment_item}}>
                           <Image src={urls().profile(comment.author.username)} height={42} width={42}
                                  style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
                           <div style={{...style.cast_author_details, minWidth: 0}}>
                             <p style={style.cast_author_name}>{comment.author.name}</p>
-                            <p style={{marginBottom: 0, color: "grey"}}>
-                              {`${duration} ${duration === "Yesterday" ? "" : "ago"}`}
-                            </p>
+                            <p style={{marginBottom: 0, color: "grey"}}><TimeAgo date={comment.created_at}/></p>
                             <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>{comment.content}</p>
                           </div>
                         </div>
