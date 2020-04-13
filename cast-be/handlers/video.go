@@ -94,6 +94,7 @@ func (m *module) DeleteVideo(ID, userID primitive.ObjectID) (err error) {
 		return errors.New(fmt.Sprintf("[DeleteVideo] cannot delete others' video."))
 	}
 	_ = os.RemoveAll(fmt.Sprintf(fmt.Sprintf("%s/%s", config.AppConfig.UploadsDirectory, ID.Hex())))
+	_ = os.Remove(fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, ID.Hex()))
 	_ = os.Remove(fmt.Sprintf("%s/thumbnail/%s.jpg", config.AppConfig.UploadsDirectory, ID.Hex()))
 	return m.db().videoOrm.DeleteOneByID(ID)
 }
