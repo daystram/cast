@@ -61,7 +61,6 @@ class LogIn extends Component {
       this.setState({loading: false});
       switch (response.data.code) {
         case 200:
-          localStorage.setItem("username", this.state.username.trim());
           this.props.history.push("/");
           return;
         case 404:

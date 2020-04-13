@@ -22,6 +22,7 @@ import axios from "axios";
 import urls from "../helper/url";
 import format from "../helper/format";
 import {Redirect} from "react-router-dom";
+import auth from "../helper/auth";
 
 class Scene extends Component {
   constructor(props) {
@@ -100,7 +101,7 @@ class Scene extends Component {
     axios.get(urls().cast_details(), {
       params: {
         hash: hash,
-        username: localStorage.getItem("username")
+        username: auth().username()
       }
     }).then((response) => {
       this.setState({loading: {...this.state.loading, current: false}});
@@ -147,7 +148,7 @@ class Scene extends Component {
 
   handleLike() {
     if (this.state.loading.current) return;
-    if (localStorage.getItem("username")) {
+    if (auth().is_authenticated()) {
       axios.get(urls().like(), {
         params: {
           hash: this.state.video.hash,
@@ -170,7 +171,7 @@ class Scene extends Component {
   handleComment(e) {
     e.preventDefault();
     if (this.state.loading.current) return;
-    if (localStorage.getItem("username")) {
+    if (auth().is_authenticated()) {
       if (!this.state.comment.trim() || this.state.error_comment) {
         this.setState({error_comment: "Please enter comment"});
         return;
@@ -200,7 +201,7 @@ class Scene extends Component {
 
   handleSubscribe() {
     if (this.state.loading.current) return;
-    if (localStorage.getItem("username")) {
+    if (auth().is_authenticated()) {
       // TODO: subscribe
     } else {
       this.promptSignup();
@@ -209,7 +210,7 @@ class Scene extends Component {
 
   handleTip() {
     if (this.state.loading.current) return;
-    if (localStorage.getItem("username")) {
+    if (auth().is_authenticated()) {
       // TODO: subscribe
     } else {
       this.promptSignup();
@@ -248,8 +249,9 @@ class Scene extends Component {
                   )}
                 </div>
                 <div>
+                  {this.state.video && !this.state.video.is_live &&
                   <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleDownload}>
-                    <i className="material-icons">get_app</i>{" "}download</span>
+                    <i className="material-icons">get_app</i>{" "}download</span>}
                   <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleShare}>
                     <i className="material-icons">share</i>{" "}share</span>
                   <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleLike}>

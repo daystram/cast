@@ -9,6 +9,7 @@ import CastEditable from "./CastEditable";
 import {Prompt} from "react-router-dom";
 
 import './tags.css'
+import auth from "../helper/auth";
 
 let timeout = null;
 
@@ -50,7 +51,7 @@ class Manage extends Component {
   fetchVideos() {
     axios.get(urls().list(), {
       params: {
-        author: localStorage.getItem("username"),
+        author: auth().username(),
         count: 8,
         offset: 0,
       }
@@ -216,6 +217,7 @@ class Manage extends Component {
         uploading: false,
         success: true
       });
+      this.setState({loading: true, list: []});
       this.fetchVideos();
     }).catch((error) => {
       console.log(error);

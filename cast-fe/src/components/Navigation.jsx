@@ -3,6 +3,7 @@ import {useHistory} from 'react-router-dom';
 import {Button, FormControl, Image, InputGroup, Nav, Navbar} from "react-bootstrap";
 import logo from './logo.svg'
 import urls from "../helper/url";
+import auth from "../helper/auth";
 
 function Navigation() {
   const history = useHistory();
@@ -23,8 +24,8 @@ function Navigation() {
           </InputGroup.Append>
         </InputGroup>
       </Nav>
-      {localStorage.getItem("username") ?
-        <Image src={urls().profile(localStorage.getItem("username"))}
+      {auth().username() ?
+        <Image src={urls().profile(auth().username())}
                height={42} width={42}
                style={style.profile_image} onClick={() => history.push("/profile")} roundedCircle/> :
         <>

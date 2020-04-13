@@ -4,6 +4,7 @@ import SidebarProfile from "./SidebarProfile";
 import axios from "axios";
 import urls from "../helper/url";
 import abbreviate from "../helper/abbreviate";
+import auth from "../helper/auth";
 
 let timeout = {};
 
@@ -11,7 +12,7 @@ class Profile extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: localStorage.getItem("username"),
+      username: auth().username(),
       subscribers: 0,
       views: 0,
       video_count: 0,

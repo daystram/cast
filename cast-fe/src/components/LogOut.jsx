@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
 import {Redirect} from 'react-router-dom';
+import auth from "../helper/auth";
 
 class Logout extends Component {
   constructor(props) {
     super(props);
-    localStorage.removeItem("username");
-    localStorage.removeItem("auth_token");
+    auth().deauthenticate();
   }
   render() {
     return (

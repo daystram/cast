@@ -1,7 +1,8 @@
 import React from "react";
 import {Redirect, Route, Switch} from 'react-router-dom'
-import {Dashboard, Home, LogOut, Scene, Profile, LogIn, SignUp, Verify} from "./components";
+import {Dashboard, Home, LogIn, LogOut, Profile, Scene, SignUp, Verify} from "./components";
 import Manage from "./components/Manage";
+import auth from "./helper/auth";
 
 const Routes = () => {
   return (
@@ -22,7 +23,7 @@ const Routes = () => {
 
 const PrivateRoute = ({component: Component, ...rest}) => (
   <Route {...rest} render={(props) => (
-    localStorage.getItem("username")
+    auth().is_authenticated()
       ? <Component {...props} />
       : <Redirect to={{pathname: '/login', state: {from: props.location}}}/>
   )}/>
@@ -30,7 +31,7 @@ const PrivateRoute = ({component: Component, ...rest}) => (
 
 const PublicRoute = ({component: Component, ...rest}) => (
   <Route {...rest} render={(props) => (
-    localStorage.getItem("username")
+    auth().is_authenticated()
       ? <Redirect to={{pathname: '/', state: {from: props.location}}}/>
       : <Component {...props} />
   )}/>
