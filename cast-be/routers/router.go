@@ -96,7 +96,7 @@ func init() {
 	)
 	beego.AddNamespace(nsPublic)
 	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
-		AllowAllOrigins:  true,
+		AllowOrigins:     []string{"http://localhost:3000", "https://dev.cast.daystram.com", "https://cast.daystram.com"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin"},
