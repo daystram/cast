@@ -78,9 +78,16 @@ func (j *JwtAuthorization) parseJwtClaims(claims jwt.MapClaims) (err error) {
 }
 
 func AuthenticateJWT(ctx *context.Context) {
-	bearerTokenStr := ctx.Input.Query("access_token")
+	bearerTokenStr := ctx.Input.Query("access_token") // TODO: WS authing
+	cookie := ctx.GetCookie(constants.AuthenticationCookieKey)
 	if bearerTokenStr == "" {
-		bearerTokenStr = ctx.Input.Header("Authorization")
+		if cookie == "" {
+			log.Println("[AuthFilter] invalid auth cookie", )
+			ctx.SetCookie(constants.AuthenticationCookieKey, "", -1)
+			ctx.ResponseWriter.WriteHeader(http.StatusForbidden)
+			return
+		}
+		bearerTokenStr = strings.Split(cookie, "|")[1]
 	}
 	jwtAuthorization := NewJwtAuthorization(config.AppConfig.JWTSecret, bearerTokenStr)
 	id, expiry, err := jwtAuthorization.ExtractClaimsFromToken()
@@ -91,18 +98,17 @@ func AuthenticateJWT(ctx *context.Context) {
 		log.Printf("[AuthFilter] failed to get jwt token. %+v\n", err)
 		errMessage, _ := json.Marshal(map[string]interface{}{"message": "JWT is invalid"})
 		ctx.ResponseWriter.WriteHeader(http.StatusForbidden)
-		ctx.ResponseWriter.Header().Set("Authorization", "NONE")
 		_, _ = ctx.ResponseWriter.Write(errMessage)
 		return
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":     id,
-		"expiry": time.Now().Add(24 * time.Hour).Unix(),
+		"expiry": time.Now().Add(constants.AuthenticationTimeout).Unix(),
 	})
 	tokenString, err := token.SignedString([]byte(config.AppConfig.JWTSecret))
 	if err != nil {
 		return
 	}
-	ctx.ResponseWriter.Header().Add("Authorization", fmt.Sprintf("Bearer %v", tokenString))
+	ctx.SetCookie(constants.AuthenticationCookieKey, fmt.Sprintf("%s|Bearer %s", strings.Split(cookie, "|")[0], tokenString), int(constants.AuthenticationTimeout.Seconds()))
 	ctx.Input.SetParam(constants.ContextParamUserID, id)
 }
