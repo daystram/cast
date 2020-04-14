@@ -4,7 +4,7 @@ const api_base = '/api/v1';
 export default function urls() {
   return {
     thumbnail: (hash) => `${cdn_base}/thumbnail/${hash}.jpg`,
-    profile: (username) => `${cdn_base}/profile/${username}.png`,
+    profile: (username) => `${cdn_base}/profile/${username}.jpg`,
     vod: (hash) => `${cdn_base}/${hash}/manifest.mpd`,
     download: (hash) => `${cdn_base}/${hash}/video.mp4`,
     live: (username) => `${api_base}/live/stream/${username}`,
