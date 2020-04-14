@@ -19,8 +19,8 @@ type User struct {
 
 type UserDetail struct {
 	Name        string `json:"name"`
+	Username    string `json:"username"`
 	Email       string `json:"email"`
-	Password    string `json:"password"`
 	Verified    bool   `json:"verified" bson:"verified"`
 	Subscribers int    `json:"subscribers" bson:"subscribers"`
 	Views       int    `json:"views" bson:"views"`
@@ -58,7 +58,7 @@ type UserFieldCheck struct {
 	Value string
 }
 
-type UserEdit struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+type UserEditForm struct {
+	Name  string `form:"name"`
+	Email string `form:"email"`
 }

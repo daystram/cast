@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"gitlab.com/daystram/cast/cast-be/util"
 	"time"
 
 	"gitlab.com/daystram/cast/cast-be/config"
@@ -63,6 +64,10 @@ func (m *module) Register(info datatransfers.UserRegister) (err error) {
 	if err = m.SendVerification(user); err != nil {
 		fmt.Printf("[Register] Failed sending %s verification mail. %+v\n", info.Username, err)
 	}
+	_ = util.Copy(
+		fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ProfileRootDir, constants.ProfileDefault),
+		fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ProfileRootDir, userID),
+	)
 	return
 }
 

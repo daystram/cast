@@ -66,7 +66,8 @@ type Handler interface {
 
 	UserDetails(userID primitive.ObjectID) (detail data.UserDetail, err error)
 	GetUserByEmail(email string) (user data.User, err error)
-	UpdateUser(user data.UserEdit, ID primitive.ObjectID) (err error)
+	UpdateUser(user data.UserEditForm, ID primitive.ObjectID) (err error)
+	NormalizeProfile(username string) (err error)
 
 	FreshList(variant string, count, offset int) (videos []data.Video, err error)
 	AuthorList(author string, count, offset int) (videos []data.Video, err error)

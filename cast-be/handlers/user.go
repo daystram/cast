@@ -3,7 +3,11 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"gitlab.com/daystram/cast/cast-be/constants"
+
 	data "gitlab.com/daystram/cast/cast-be/datatransfers"
+	"gitlab.com/daystram/cast/cast-be/util"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -22,8 +26,8 @@ func (m *module) UserDetails(userID primitive.ObjectID) (detail data.UserDetail,
 	}
 	detail = data.UserDetail{
 		Name:        user.Name,
+		Username:    user.Username,
 		Email:       user.Email,
-		Password:    user.Password,
 		Subscribers: user.Subscribers,
 		Views:       views,
 		Uploads:     len(videos),
@@ -35,10 +39,14 @@ func (m *module) GetUserByEmail(email string) (user data.User, err error) {
 	return m.db().userOrm.GetOneByEmail(email)
 }
 
-func (m *module) UpdateUser(user data.UserEdit, ID primitive.ObjectID) (err error) {
+func (m *module) UpdateUser(user data.UserEditForm, ID primitive.ObjectID) (err error) {
 	return m.db().userOrm.EditUser(data.User{
 		ID:    ID,
 		Name:  user.Name,
 		Email: user.Email,
 	})
+}
+
+func (m *module) NormalizeProfile(username string) (err error) {
+	return util.NormalizeImage(constants.ProfileRootDir, username, constants.ProfileWidth, constants.ProfileHeight)
 }
