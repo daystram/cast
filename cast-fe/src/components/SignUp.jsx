@@ -28,12 +28,13 @@ class SignUp extends Component {
   }
 
   handleChange(e) {
-    this.setState({error_signup: ""});
+    this.setState({error_signup: "", success: false});
     this.setState({[e.target.name]: e.target.value});
     this.validate(e.target.name, e.target.value);
   }
 
   validate(field, value) {
+    if (this.state.success) return;
     switch (field) {
       case "name":
         if (!value.trim()) {
@@ -111,6 +112,7 @@ class SignUp extends Component {
         field: field.trim(),
         value: value.trim()
       }).then((response) => {
+        if (this.state.success) return;
         if (response.data.code !== 200) {
           this.setState({[`error_${field}`]: response.data.error});
         } else {
