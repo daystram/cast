@@ -148,7 +148,7 @@ class SignUp extends Component {
       email: this.state.email.trim(),
       password: this.state.password.trim(),
     }).then((response) => {
-      this.setState({loading: false});
+      this.setState({loading: false, name: "", username: "", email: "", password: "", password2: ""});
       if (response.data.code === 200) {
         this.setState({success: true});
       } else {
