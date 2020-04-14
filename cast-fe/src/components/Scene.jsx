@@ -11,6 +11,8 @@ import {
   Image,
   InputGroup,
   Modal,
+  OverlayTrigger,
+  Popover,
   Row,
   Spinner
 } from "react-bootstrap";
@@ -24,6 +26,7 @@ import format from "../helper/format";
 import {Redirect} from "react-router-dom";
 import auth from "../helper/auth";
 import TimeAgo from "react-timeago";
+import queryString from 'query-string';
 
 class Scene extends Component {
   constructor(props) {
@@ -144,7 +147,7 @@ class Scene extends Component {
   }
 
   handleShare() {
-    console.log("share video");
+    this.setState({prompt_share: true})
   }
 
   handleLike() {
@@ -219,10 +222,15 @@ class Scene extends Component {
   }
 
   promptSignup() {
-    this.setState({prompt: true})
+    this.setState({prompt_auth: true})
   }
 
   render() {
+    const share_pop = (
+      <Popover id="popover-basic">
+        <Popover.Content>Link copied!</Popover.Content>
+      </Popover>
+    );
     return (
       <>
         <Container fluid style={style.content_container}>
@@ -243,28 +251,6 @@ class Scene extends Component {
                 url={this.state.video && (this.state.video.is_live ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}
                 thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}
                 live={this.state.video && this.state.video.is_live}/>
-              {/*<div style={style.cast_tag_bar}>*/}
-              {/*  <div>*/}
-              {/*    {this.state.video && this.state.video.tags && Object.values(this.state.video.tags).map(tag =>*/}
-              {/*      <Badge pill style={style.cast_tag}>{tag}</Badge>*/}
-              {/*    )}*/}
-              {/*  </div>*/}
-              {/*  <div>*/}
-              {/*    {this.state.video && !this.state.video.is_live &&*/}
-              {/*    <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleDownload}>*/}
-              {/*      <i className="material-icons">get_app</i>{" "}download</span>}*/}
-              {/*    <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleShare}>*/}
-              {/*      <i className="material-icons">share</i>{" "}share</span>*/}
-              {/*    <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleLike}>*/}
-              {/*      <i style={this.state.liked ? style.liked : {}} className="material-icons">thumb_up</i>*/}
-              {/*      {" "}{(this.state.video && abbreviate().number(this.state.likes)) || 0} likes*/}
-              {/*    </span>*/}
-              {/*    <span style={style.cast_attrib}>*/}
-              {/*      <i className="material-icons">remove_red_eye</i>*/}
-              {/*      {" "}{(this.state.video && abbreviate().number(this.state.video.views)) || 0} {this.state.video && (this.state.video.is_live ? 'viewers' : 'views')}*/}
-              {/*    </span>*/}
-              {/*  </div>*/}
-              {/*</div>*/}
               <Row noGutters style={style.cast_tag_bar}>
                 <Col md={true}>
                   {this.state.video && this.state.video.tags && Object.values(this.state.video.tags).map(tag =>
@@ -378,7 +364,7 @@ class Scene extends Component {
             </Col>
           </Row>
         </Container>
-        <Modal show={this.state.prompt} size={"md"} onHide={() => this.setState({prompt: false})} centered>
+        <Modal show={this.state.prompt_auth} size={"md"} onHide={() => this.setState({prompt_auth: false})} centered>
           <Modal.Header closeButton>
             <Modal.Title id="contained-modal-title-vcenter">
               Join today!
@@ -395,6 +381,40 @@ class Scene extends Component {
             <Button variant={"primary"}
                     onClick={() => this.setState({redirect: <Redirect to={"/signup"}/>})}>Sign Up</Button>
           </Modal.Footer>
+        </Modal>
+        <Modal show={this.state.prompt_share} size={"md"} onHide={() => this.setState({prompt_share: false})} centered>
+          <Modal.Header closeButton>
+            <Modal.Title id="contained-modal-title-vcenter">
+              Share Video
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <div style={{display: "flex", justifyContent: "space-evenly", marginBottom: 16}}>
+              <Button className={"share-twitter"}
+                      onClick={() => window.open("https://twitter.com/intent/tweet?" + queryString.stringify({text: `Watch ${this.state.video && this.state.video.title} by ${this.state.video && this.state.video.author.name} at cast! ${window.location.href.split('?')[0]}`}), 'Share', `width=600,height=400,left=${(window.outerWidth - 600) / 2},top=${(window.outerHeight - 400) / 2}`)}>
+                <span className={"fa fa-twitter"}/> Tweet</Button>
+              <Button className={"share-facebook"}
+                      onClick={() => window.open("https://www.facebook.com/sharer/sharer.php?display=popup&" + queryString.stringify({u: window.location.href.split('?')[0]}), 'Share', `width=600,height=400,left=${(window.outerWidth - 600) / 2},top=${(window.outerHeight - 400) / 2}`)}>
+                <span className={"fa fa-facebook"}/> Share</Button>
+              <a
+                href={`mailto:?body=Watch ${this.state.video && this.state.video.title} by ${this.state.video && this.state.video.author.name} at cast! ${window.location.href.split('?')[0]}`}>
+                <Button><span className={"fa fa-envelope"}/> Email</Button></a>
+            </div>
+            <Form.Group>
+              <InputGroup>
+                <Form.Control type="text" value={window.location.href.split('?')[0]}
+                              ref={ref => this.shareField = ref}/>
+                <InputGroup.Append>
+                  <OverlayTrigger trigger="click" placement="right" overlay={share_pop}>
+                    <Button variant="outline-primary" onClick={() => {
+                      this.shareField.select();
+                      document.execCommand("copy")
+                    }}>Copy</Button>
+                  </OverlayTrigger>
+                </InputGroup.Append>
+              </InputGroup>
+            </Form.Group>
+          </Modal.Body>
         </Modal>
         {this.state.redirect}
       </>

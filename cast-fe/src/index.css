@@ -11,6 +11,7 @@ body {
     .responsive-fold {
         margin-bottom: 16px;
     }
+
     body {
         margin: 0 12px;
     }
@@ -79,4 +80,53 @@ body {
     border-radius: 8px;
     padding-right: 8px;
 }
+
+.share-twitter.btn-primary, .share-twitter.btn-primary:focus, .share-twitter.btn-primary:disabled {
+    background-color: #55ACEE;
+    color: white;
+    border-color: #55ACEE;
+}
+
+.share-twitter.btn-primary:focus {
+    box-shadow: 0 0 0 0.2rem rgba(85, 172, 238, 0.5);
+}
+
+.share-twitter.btn-primary:hover {
+    background-color: #4da3dc;
+    border-color: #4da3dc;
+}
+
+.share-twitter.btn-primary:active {
+    background-color: #4c94cd !important;
+    border-color: #4c94cd !important;
+    box-shadow: 0 0 0 0.2rem rgba(85, 172, 238, 0.5) !important;
+}
+
+.share-facebook.btn-primary, .share-facebook.btn-primary:focus, .share-facebook.btn-primary:disabled {
+    background-color: #3B5998;
+    color: white;
+    border-color: #3B5998;
+}
+
+.share-facebook.btn-primary:focus {
+    box-shadow: 0 0 0 0.2rem rgba(59, 89, 152, 0.5);
+}
+
+.share-facebook.btn-primary:hover {
+    background-color: #3c4f8f;
+    border-color: #3c4f8f;
+}
+
+.share-facebook.btn-primary:active {
+    background-color: #3c4787 !important;
+    border-color: #3c4787 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 89, 152, 0.5) !important;
+}
+
+.btn-primary:active, .btn-outline-primary:active {
+    background-color: #cf490a !important;
+    border-color: #cf490a !important;
+    box-shadow: 0 0 0 0.2rem rgba(232, 68, 9, 0.5) !important;
+}
+
 

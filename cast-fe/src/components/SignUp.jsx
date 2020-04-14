@@ -152,6 +152,7 @@ class SignUp extends Component {
     }).then((response) => {
       this.setState({loading: false, name: "", username: "", email: "", password: "", password2: ""});
       if (response.data.code === 200) {
+        Object.keys(timeout).map(field => clearTimeout(timeout[field]));
         this.setState({success: true});
       } else {
         this.setState({error_signup: "An error has occurred!"});
@@ -213,7 +214,6 @@ class SignUp extends Component {
                               type={"password"} isInvalid={!!this.state.error_password2}/>
                 <Form.Control.Feedback type={"invalid"}>{this.state.error_password2}</Form.Control.Feedback>
               </Form.Group>
-
             </Form.Row>
             <Button variant="primary" type="submit" block disabled={this.state.loading}>
               Sign Up{" "}
