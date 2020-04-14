@@ -106,7 +106,7 @@ func (c *VideoControllerAuth) EditVideo(video datatransfers.VideoEditForm) datat
 		Tags:        strings.Split(video.Tags, ","),
 	}, c.userID)
 	if err != nil {
-		fmt.Printf("[VideoController::EditVideo] failed editing video. %+v\n", err)
+		fmt.Printf("[VideoControllerAuth::EditVideo] failed editing video. %+v\n", err)
 		return datatransfers.Response{Error: "Failed editing video", Code: http.StatusInternalServerError}
 	}
 	return datatransfers.Response{Code: http.StatusOK}
@@ -119,12 +119,12 @@ func (c *VideoControllerAuth) EditVideo(video datatransfers.VideoEditForm) datat
 func (c *VideoControllerAuth) DeleteVideo(hash string) datatransfers.Response {
 	videoID, err := primitive.ObjectIDFromHex(hash)
 	if err != nil {
-		fmt.Printf("[VideoController::DeleteVideo] invalid video hash. %+v\n", err)
+		fmt.Printf("[VideoControllerAuth::DeleteVideo] invalid video hash. %+v\n", err)
 		return datatransfers.Response{Error: "Invalid video hash", Code: http.StatusInternalServerError}
 	}
 	err = c.Handler.DeleteVideo(videoID, c.userID)
 	if err != nil {
-		fmt.Printf("[VideoController::DeleteVideo] failed deleting video. %+v\n", err)
+		fmt.Printf("[VideoControllerAuth::DeleteVideo] failed deleting video. %+v\n", err)
 		return datatransfers.Response{Error: "Failed deleting video", Code: http.StatusInternalServerError}
 	}
 	return datatransfers.Response{Code: http.StatusOK}
@@ -132,12 +132,13 @@ func (c *VideoControllerAuth) DeleteVideo(hash string) datatransfers.Response {
 
 // @Title Upload Video
 // @Success 200 {object} models.Object
+// @Param   stub		query	string	false	"stub"
 // @router /upload [post]
-func (c *VideoControllerAuth) UploadVideo() datatransfers.Response {
+func (c *VideoControllerAuth) UploadVideo(stub string) datatransfers.Response {
 	upload := datatransfers.VideoUploadForm{}
 	err := c.ParseForm(&upload)
 	if err != nil {
-		fmt.Printf("[VideoController::UploadVideo] failed parsing video details. %+v\n", err)
+		fmt.Printf("[VideoControllerAuth::UploadVideo] failed parsing video details. %+v\n", err)
 		return datatransfers.Response{Error: "Failed parsing video detail", Code: http.StatusInternalServerError}
 	}
 	var videoID primitive.ObjectID
@@ -147,26 +148,26 @@ func (c *VideoControllerAuth) UploadVideo() datatransfers.Response {
 		Tags:        strings.Split(upload.Tags, ","),
 	}, c.userID)
 	if err != nil {
-		fmt.Printf("[VideoController::UploadVideo] failed creating video. %+v\n", err)
+		fmt.Printf("[VideoControllerAuth::UploadVideo] failed creating video. %+v\n", err)
 		return datatransfers.Response{Error: "Failed creating video", Code: http.StatusInternalServerError}
 	}
 	_ = os.Mkdir(fmt.Sprintf("%s/%s", config.AppConfig.UploadsDirectory, videoID.Hex()), 755)
 	err = c.SaveToFile("video", fmt.Sprintf("%s/%s/video.mp4", config.AppConfig.UploadsDirectory, videoID.Hex()))
 	if err != nil {
 		_ = c.Handler.DeleteVideo(videoID, c.userID)
-		fmt.Printf("[VideoController::UploadVideo] failed saving video file. %+v\n", err)
+		fmt.Printf("[VideoControllerAuth::UploadVideo] failed saving video file. %+v\n", err)
 		return datatransfers.Response{Error: "Failed saving video file", Code: http.StatusInternalServerError}
 	}
 	err = c.SaveToFile("thumbnail", fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, videoID.Hex()))
 	if err != nil {
 		_ = c.Handler.DeleteVideo(videoID, c.userID)
-		fmt.Printf("[VideoController::UploadVideo] failed saving thumbnail file. %+v\n", err)
-		return datatransfers.Response{Error: "Failed saving thumbnail file", Code: http.StatusInternalServerError}
+		fmt.Printf("[VideoControllerAuth::UploadVideo] failed saving thumbnail file. %+v\n", err)
+		return datatransfers.Response{Error: "Failed saving thumbnail image", Code: http.StatusInternalServerError}
 	}
 	err = c.Handler.NormalizeThumbnail(videoID)
 	if err != nil {
 		_ = c.Handler.DeleteVideo(videoID, c.userID)
-		fmt.Printf("[VideoController::UploadVideo] failed normalizing thumbnail image. %+v\n", err)
+		fmt.Printf("[VideoControllerAuth::UploadVideo] failed normalizing thumbnail image. %+v\n", err)
 		return datatransfers.Response{Error: "Failed normalizing thumbnail image", Code: http.StatusInternalServerError}
 	}
 	c.Handler.StartTranscode(videoID.Hex())

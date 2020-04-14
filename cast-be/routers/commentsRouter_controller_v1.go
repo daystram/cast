@@ -108,7 +108,7 @@ func init() {
             Router: `/edit`,
             AllowHTTPMethods: []string{"put"},
             MethodParams: param.Make(
-				param.New("info", param.IsRequired, param.InBody),
+				param.New("stub"),
 			),
             Filters: nil,
             Params: nil})
@@ -223,7 +223,9 @@ func init() {
             Method: "UploadVideo",
             Router: `/upload`,
             AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("stub"),
+			),
             Filters: nil,
             Params: nil})
 
