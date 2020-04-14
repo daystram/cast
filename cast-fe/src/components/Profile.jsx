@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {Alert, Button, Card, Col, Container, Form, Image, Row, Spinner} from "react-bootstrap";
+import Dropzone from "react-dropzone";
 import SidebarProfile from "./SidebarProfile";
 import axios from "axios";
 import urls from "../helper/url";
@@ -54,7 +55,6 @@ class Profile extends Component {
     });
   }
 
-
   handleChange(e) {
     this.setState({error_edit: ""});
     this.setState({[e.target.name]: e.target.value});
@@ -70,6 +70,7 @@ class Profile extends Component {
           name: this.state.name,
           email: this.state.email,
         },
+        new_profile: "",
         error_name: "",
         error_email: "",
         editing: true
@@ -82,6 +83,7 @@ class Profile extends Component {
       this.setState({
         name: this.state.before.name,
         email: this.state.before.email,
+        new_profile: "",
         before: {},
         editing: false
       })
@@ -148,10 +150,16 @@ class Profile extends Component {
     ok &= !this.state.error_name;
     ok &= !this.state.error_email;
     if (!ok) return;
-    this.setState({loading_edit: true});
-    axios.put(urls().edit_user(), {
-        name: this.state.name,
-        email: this.state.email,
+    this.setState({error_edit: "", loading_edit: true});
+    const form = new FormData();
+    form.append("name", this.state.name);
+    form.append("email", this.state.email);
+    if (this.state.new_profile) form.append("profile", this.state.new_profile);
+    axios.put(urls().edit_user(), form, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "multipart/form-data"
+        },
       }
     ).then((response) => {
       if (response.data.code === 200) {
@@ -184,9 +192,33 @@ class Profile extends Component {
               <Row>
                 <Col md sm={12} className={"responsive-fold"}>
                   <div style={style.profile_bar}>
-                    <Image src={urls().profile(this.state.username)}
-                           height={128} width={128} roundedCircle
-                           style={style.profile_image}/>
+                    {this.state.editing ?
+                      <Dropzone accept={"image/*"} multiple={false}
+                                onDrop={files => this.setState({new_profile: files[0]})}
+                                disabled={this.state.loading_edit}>
+                        {({getRootProps, getInputProps}) => (
+                          <>
+                            <Image
+                              src={this.state.new_profile ? URL.createObjectURL(this.state.new_profile) : urls().profile(this.state.username)}
+                              height={128} width={128} roundedCircle
+                              style={{position: "absolute", zIndex: 0, objectFit: "cover"}}/>
+                            <section
+                              style={{...style.profile_upload, ...(this.state.new_profile ? style.profile_upload_modified : {})}}>
+                              <div {...getRootProps()}>
+                                <input {...getInputProps()} />
+                                <p style={{textAlign: "center", lineHeight: "128px"}}>
+                                  {!this.state.new_profile &&
+                                  <span className="material-icons"
+                                        style={{fontSize: 32, color: "dimgray"}}>publish</span>
+                                  }
+                                </p>
+                              </div>
+                            </section>
+                          </>
+                        )}
+                      </Dropzone> :
+                      <Image src={urls().profile(this.state.username)}
+                             height={128} width={128} roundedCircle/>}
                     <div style={style.profile_name}>
                       {this.state.loading_info && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
                       {this.state.error_edit && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
@@ -229,7 +261,8 @@ class Profile extends Component {
                           <Form.Label>Email</Form.Label>
                           <Form.Control name={"email"} value={this.state.email} onBlur={this.handleChange}
                                         onChange={this.handleChange} type={"text"} style={style.email}
-                                        isInvalid={this.state.error_email} disabled={!this.state.editing}/>
+                                        isInvalid={this.state.editing ? this.state.error_email : false}
+                                        disabled={!this.state.editing}/>
                           <Form.Control.Feedback type={"invalid"}>{this.state.error_email}</Form.Control.Feedback>
                         </Form.Group>
                       </Col>
@@ -246,7 +279,7 @@ class Profile extends Component {
                 <Col md={"auto"} sm={12}>
                   <Button variant={"success"} block size={"sm"} style={style.button} onClick={this.pressEdit}
                           disabled={this.state.before && (this.state.name === this.state.before.name &&
-                            this.state.email === this.state.before.email)}>
+                            this.state.email === this.state.before.email && !this.state.new_profile)}>
                     {this.state.loading_edit ?
                       <Spinner animation="grow" style={style.spinner}/> :
                       <span className="material-icons">{this.state.editing ? "check" : "edit"}</span>
@@ -276,9 +309,22 @@ let style = {
     margin: 0,
     fontSize: "3.5rem"
   },
+  profile_upload: {
+    width: 128,
+    height: 128,
+    background: "#f0f0f088",
+    border: "3px dashed #ddddddaa",
+    flexShrink: 0,
+    borderRadius: 64,
+    zIndex: 100,
+  },
+  profile_upload_modified: {
+    background: "#f0f0f022",
+    border: ""
+  },
   profile_bar: {
     display: "flex",
-    marginBottom: 48
+    marginBottom: 48,
   },
   profile_name: {
     marginLeft: 16,
