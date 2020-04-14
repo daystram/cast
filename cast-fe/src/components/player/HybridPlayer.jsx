@@ -1,9 +1,9 @@
 import React from 'react';
-// import 'dashjs'
+import 'dashjs'
 import videojs from 'video.js'
-import 'videojs-http-source-selector'
 import 'videojs-contrib-quality-levels'
-// import 'videojs-contrib-dash'
+import 'videojs-http-source-selector'
+import 'videojs-contrib-dash'
 import 'video.js/dist/video-js.css'
 import 'videojs-flvjs-es6'
 import './player.css'
@@ -71,7 +71,6 @@ class HybridPlayer extends React.Component {
     // this.player.load();
     // else this.player.pause();
     this.player.load();
-    this.player.httpSourceSelector();
     this.player.poster(this.props.thumbnail);
   }
 
