@@ -66,7 +66,7 @@ func (m *module) Register(info datatransfers.UserRegister) (err error) {
 	}
 	_ = util.Copy(
 		fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ProfileRootDir, constants.ProfileDefault),
-		fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ProfileRootDir, userID),
+		fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ProfileRootDir, user.Username),
 	)
 	return
 }
