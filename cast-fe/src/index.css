@@ -11,6 +11,9 @@ body {
     .responsive-fold {
         margin-bottom: 16px;
     }
+    body {
+        margin: 0 12px;
+    }
 }
 
 .material-icons {

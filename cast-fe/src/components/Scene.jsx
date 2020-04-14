@@ -243,13 +243,35 @@ class Scene extends Component {
                 url={this.state.video && (this.state.video.is_live ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}
                 thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}
                 live={this.state.video && this.state.video.is_live}/>
-              <div style={style.cast_tag_bar}>
-                <div>
+              {/*<div style={style.cast_tag_bar}>*/}
+              {/*  <div>*/}
+              {/*    {this.state.video && this.state.video.tags && Object.values(this.state.video.tags).map(tag =>*/}
+              {/*      <Badge pill style={style.cast_tag}>{tag}</Badge>*/}
+              {/*    )}*/}
+              {/*  </div>*/}
+              {/*  <div>*/}
+              {/*    {this.state.video && !this.state.video.is_live &&*/}
+              {/*    <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleDownload}>*/}
+              {/*      <i className="material-icons">get_app</i>{" "}download</span>}*/}
+              {/*    <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleShare}>*/}
+              {/*      <i className="material-icons">share</i>{" "}share</span>*/}
+              {/*    <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleLike}>*/}
+              {/*      <i style={this.state.liked ? style.liked : {}} className="material-icons">thumb_up</i>*/}
+              {/*      {" "}{(this.state.video && abbreviate().number(this.state.likes)) || 0} likes*/}
+              {/*    </span>*/}
+              {/*    <span style={style.cast_attrib}>*/}
+              {/*      <i className="material-icons">remove_red_eye</i>*/}
+              {/*      {" "}{(this.state.video && abbreviate().number(this.state.video.views)) || 0} {this.state.video && (this.state.video.is_live ? 'viewers' : 'views')}*/}
+              {/*    </span>*/}
+              {/*  </div>*/}
+              {/*</div>*/}
+              <Row noGutters style={style.cast_tag_bar}>
+                <Col md={true}>
                   {this.state.video && this.state.video.tags && Object.values(this.state.video.tags).map(tag =>
                     <Badge pill style={style.cast_tag}>{tag}</Badge>
                   )}
-                </div>
-                <div>
+                </Col>
+                <Col md={true} style={{display: "flex", justifyContent: "flex-end"}}>
                   {this.state.video && !this.state.video.is_live &&
                   <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleDownload}>
                     <i className="material-icons">get_app</i>{" "}download</span>}
@@ -263,8 +285,8 @@ class Scene extends Component {
                     <i className="material-icons">remove_red_eye</i>
                     {" "}{(this.state.video && abbreviate().number(this.state.video.views)) || 0} {this.state.video && (this.state.video.is_live ? 'viewers' : 'views')}
                   </span>
-                </div>
-              </div>
+                </Col>
+              </Row>
               <h1 style={style.title}>{this.state.video && this.state.video.title}</h1>
               <p style={{marginTop: 4}}>{this.state.video && format().date(this.state.video.created_at)}</p>
               <div style={style.author_bar}>
@@ -411,8 +433,6 @@ let style = {
   },
   cast_tag_bar: {
     marginTop: 8,
-    display: "flex",
-    justifyContent: "space-between"
   },
   cast_tag: {
     background: "white",
@@ -426,7 +446,8 @@ let style = {
     marginBottom: 8,
   },
   cast_attrib: {
-    marginLeft: 16
+    marginLeft: 16,
+    marginBottom: 8,
   },
   author_bar: {
     display: "flex",
