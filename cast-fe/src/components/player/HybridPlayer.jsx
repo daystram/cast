@@ -14,22 +14,21 @@ class HybridPlayer extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    console.log("UPDATE")
     if (this.props.url !== prevProps.url) {
-      console.log("UPDATE SKIP")
+      console.log("[HybridPlayer] Update");
       this.updatePlayer();
     }
   }
 
   componentWillUnmount() {
     if (this.player) {
-      console.log("UNMOUNT")
+      console.log("[HybridPlayer] Dismount");
       this.player.dispose()
     }
   }
 
   initPlayer() {
-    console.log("INIT")
+    console.log("[HybridPlayer] Initialize");
     let options = {
       fluid: true,
       responsive: true,
@@ -58,9 +57,7 @@ class HybridPlayer extends React.Component {
   }
 
   updatePlayer() {
-    console.log("UPDATE PLAYER")
     if (!this.props.url) return;
-    console.log("UPDATE PLAYER SKIPPED")
     this.player.pause();
     this.player.src({
       src: this.props.url,
