@@ -129,4 +129,11 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(232, 68, 9, 0.5) !important;
 }
 
+::-moz-selection {
+    background: rgba(232, 68, 9, 0.25);
+}
+
+::selection {
+    background: rgba(232, 68, 9, 0.25);
+}
 
