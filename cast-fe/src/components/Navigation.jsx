@@ -1,11 +1,13 @@
-import React from 'react';
-import {useHistory} from 'react-router-dom';
-import {Button, FormControl, Image, InputGroup, Nav, Navbar} from "react-bootstrap";
+import React, {useRef, useState} from 'react';
+import {useHistory, useLocation} from 'react-router-dom';
+import {Button, Form, FormControl, Image, InputGroup, Nav, Navbar} from "react-bootstrap";
 import logo from './logo.svg'
 import urls from "../helper/url";
 import auth from "../helper/auth";
 
 function Navigation() {
+  const [query, setQuery] = useState(new URLSearchParams(useLocation().search).get("query") || "");
+  const inputRef = useRef();
   const history = useHistory();
   return (
     <Navbar style={style.navbar} sticky="top">
@@ -17,12 +19,19 @@ function Navigation() {
           alt="cast"
         /></Navbar.Brand>
       <Nav className="m-auto">
-        <InputGroup>
-          <FormControl type="text" placeholder="Search"/>
-          <InputGroup.Append>
-            <Button variant="outline-primary"><i className="material-icons">search</i></Button>
-          </InputGroup.Append>
-        </InputGroup>
+        <Form noValidate onSubmit={(e) => {
+          e.preventDefault();
+          inputRef.current.blur();
+          if (query.trim()) history.push(`/s?query=${query}`);
+        }}>
+          <InputGroup>
+            <FormControl type="text" placeholder="Search" value={query} onChange={e => setQuery(e.target.value)}
+                         ref={inputRef}/>
+            <InputGroup.Append>
+              <Button variant="outline-primary" type="submit"><i className="material-icons">search</i></Button>
+            </InputGroup.Append>
+          </InputGroup>
+        </Form>
       </Nav>
       {auth().username() ?
         <Image src={urls().profile(auth().username())}
