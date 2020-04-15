@@ -5,7 +5,6 @@ import Sidebar from "./Sidebar";
 import axios from "axios";
 import urls from "../helper/url";
 import {Redirect} from "react-router-dom";
-import Author from "./Author";
 
 class Search extends Component {
   constructor(props) {
@@ -50,11 +49,6 @@ class Search extends Component {
   }
 
   render() {
-    const authorData = {
-      name: "Wahoo Token",
-      username: "wtoken",
-      subscribers: 12378512
-    };
     return (
       <>
         {!this.state.query && <Redirect to={"/"}/>}

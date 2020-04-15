@@ -32,81 +32,14 @@ function Author(props) {
 }
 
 let style = {
-  cast_card: {
-    cursor: "pointer"
-  },
-  cast_thumbnail: {
-    borderRadius: "8px 48px 8px 8px",
-    borderWidth: 1,
-    borderColor: "lightgray",
-    borderStyle: "solid",
-    objectFit: "cover",
-    width: "100%",
-  },
-  cast_tag_bar: {
-    marginTop: 8,
-  },
-  cast_live_tag: {
-    background: "red",
-    color: "white",
-    marginRight: 8,
-    marginBottom: 8,
-    borderRadius: 8,
-    fontSize: 16,
-    fontWeight: 400
-  },
-  cast_viewer_tag: {
-    background: "white",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "lightgray",
-    borderStyle: "solid",
-    fontSize: 16,
-    fontWeight: 400,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  cast_detail: {
-    display: "flex",
-  },
-  // cast_author_details: {
-  //   display: "grid"
-  // },
   sub_button: {
     fontWeight: 600,
     height: "fit-content",
     alignSelf: "center"
   },
-  cast_title: {
-    fontSize: 18,
-    fontWeight: 600,
-    margin: 0
-  },
-  cast_author: {
-    fontSize: 16,
-    fontWeight: 400,
-    margin: 0
-  },
-  cast_duration: {
-    fontSize: 16,
-    fontWeight: 300,
-    margin: 0,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
   profile_image: {
     marginRight: 8,
     alignSelf: "start"
-  },
-
-  author_bar: {
-    display: "flex",
-    justifyContent: "space-between"
-  },
-  author_profile: {
-    display: "flex",
-    width: "100%"
   },
   cast_author_details: {
     display: "flex",
