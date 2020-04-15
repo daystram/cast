@@ -54,7 +54,7 @@ class Home extends Component {
               <h1 style={style.h1}>Live Casts</h1>
               <Row noGutters>
                 {!this.state.loading.live && (this.state.live ? this.state.live.map(video =>
-                  <Col xl={3} lg={4} md={6} sm={12} style={{padding: "0 8px 16px 8px"}}><Cast video={video}/></Col>
+                  <Col xl={3} lg={4} md={6} sm={12} key={video.hash} style={{padding: "0 8px 16px 8px"}}><Cast video={video}/></Col>
                 ) : <h5 style={style.h5}>No live casts today!</h5>)}
                 {this.state.loading.live && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
               </Row>
@@ -62,7 +62,7 @@ class Home extends Component {
               <h1 style={style.h1}>Fresh Casts</h1>
               <Row noGutters>
                 {!this.state.loading.vod && (this.state.vod ? this.state.vod.map(video =>
-                  <Col xl={3} lg={4} md={6} sm={12} style={{padding: "0 8px 16px 8px"}}><Cast video={video}/></Col>
+                  <Col xl={3} lg={4} md={6} sm={12} key={video.hash} style={{padding: "0 8px 16px 8px"}}><Cast video={video}/></Col>
                 ) : <h5 style={style.h5}>No fresh casts today!</h5>)}
                 {this.state.loading.vod && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
               </Row>

@@ -27,6 +27,7 @@ import {Redirect} from "react-router-dom";
 import auth from "../helper/auth";
 import TimeAgo from "react-timeago";
 import queryString from 'query-string';
+import logo from "./logo.svg";
 
 class Scene extends Component {
   constructor(props) {
@@ -46,6 +47,7 @@ class Scene extends Component {
       comment: "",
       comments: [],
       error_comment: "",
+      not_found: false,
     };
     this.handleDownload = this.handleDownload.bind(this);
     this.handleShare = this.handleShare.bind(this);
@@ -111,13 +113,12 @@ class Scene extends Component {
       this.setState({loading: {...this.state.loading, current: false}});
       if (response.data.code === 200) {
         let data = response.data.data;
-        console.log("DETAIL RECEIVED")
         this.setState({
+          not_found: false,
           video: data, likes: data.likes, liked: data.liked, comments: data.comments,
           [data.type]: {...this.state[data.type], [data.hash]: data}
         });
         document.title = `${data.title} - ${data.author.name} | cast`;
-        console.log("DETAIL READY")
         if ('mediaSession' in navigator) {
           // eslint-disable-next-line no-undef
           navigator.mediaSession.metadata = new MediaMetadata({
@@ -129,6 +130,8 @@ class Scene extends Component {
             ]
           });
         }
+      } else {
+        this.setState({not_found: true})
       }
     }).catch((error) => {
       console.log(error);
@@ -233,137 +236,145 @@ class Scene extends Component {
     );
     return (
       <>
-        <Container fluid style={style.content_container}>
-          <Row>
-            <Col xl={{span: 2, order: 1}} sm={{span: 6, order: 2}} xs={{span: 12, order: 2}}>
-              <Sidebar/>
-              <div style={style.cast_list}>
-                {this.state.live && Object.values(this.state.live).map(video =>
-                  <Row noGutters style={{padding: "0 0 16px 0"}}>
-                    <Cast video={video} onClick={(a, b) => this.incrementView(a, b)}/>
-                  </Row>
-                )}
-                {this.state.loading.live && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
-              </div>
-            </Col>
-            <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 1}}>
-              <HybridPlayer
-                url={this.state.video && (this.state.video.is_live ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}
-                thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}
-                live={this.state.video && this.state.video.is_live}/>
-              <Row noGutters style={style.cast_tag_bar}>
-                <Col md={true}>
-                  {this.state.video && this.state.video.tags && Object.values(this.state.video.tags).map(tag =>
-                    <Badge pill style={style.cast_tag}>{tag}</Badge>
+        {!this.state.not_found ?
+          <Container fluid style={style.content_container}>
+            <Row>
+              <Col xl={{span: 2, order: 1}} sm={{span: 6, order: 2}} xs={{span: 12, order: 2}}>
+                <Sidebar/>
+                <div style={style.cast_list}>
+                  {this.state.live && Object.values(this.state.live).map(video =>
+                    <Row key={video.hash} noGutters style={{padding: "0 0 16px 0"}}>
+                      <Cast video={video} onClick={(a, b) => this.incrementView(a, b)}/>
+                    </Row>
                   )}
-                </Col>
-                <Col md={true} style={{display: "flex", justifyContent: "flex-end"}}>
-                  {this.state.video && !this.state.video.is_live &&
-                  <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleDownload}>
+                  {this.state.loading.live && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
+                </div>
+              </Col>
+              <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 1}}>
+                <HybridPlayer
+                  url={this.state.video && (this.state.video.type === "live" ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}
+                  thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}
+                  live={this.state.video && this.state.video.type === "live"}/>
+                <Row noGutters style={style.cast_tag_bar}>
+                  <Col md={true}>
+                    {this.state.video && this.state.video.tags && Object.values(this.state.video.tags).map(tag =>
+                      <Badge pill key={tag} style={style.cast_tag}>{tag}</Badge>
+                    )}
+                  </Col>
+                  <Col md={true} style={{display: "flex", justifyContent: "flex-end"}}>
+                    {this.state.video && this.state.video.type === "vod" &&
+                    <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleDownload}>
                     <i className="material-icons">get_app</i>{" "}download</span>}
-                  <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleShare}>
+                    <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleShare}>
                     <i className="material-icons">share</i>{" "}share</span>
-                  <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleLike}>
+                    <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleLike}>
                     <i style={this.state.liked ? style.liked : {}} className="material-icons">thumb_up</i>
-                    {" "}{(this.state.video && abbreviate().number(this.state.likes)) || 0} likes
+                      {" "}{(this.state.video && abbreviate().number(this.state.likes)) || 0} likes
                   </span>
-                  <span style={style.cast_attrib}>
+                    <span style={style.cast_attrib}>
                     <i className="material-icons">remove_red_eye</i>
-                    {" "}{(this.state.video && abbreviate().number(this.state.video.views)) || 0} {this.state.video && (this.state.video.is_live ? 'viewers' : 'views')}
+                      {" "}{(this.state.video && abbreviate().number(this.state.video.views)) || 0} {this.state.video && (this.state.video.type === "live" ? 'viewers' : 'views')}
                   </span>
-                </Col>
-              </Row>
-              <h1 style={style.title}>{this.state.video && this.state.video.title}</h1>
-              <p style={{marginTop: 4}}>{this.state.video && format().date(this.state.video.created_at)}</p>
-              <div style={style.author_bar}>
-                <div style={style.author_profile}>
-                  <Image src={this.state.video && urls().profile(this.state.video.author.username)}
-                         width={42} height={42} style={style.profile_image} roundedCircle/>
-                  <div style={style.cast_author_details}>
-                    <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
-                    <p style={style.cast_author_sub}>
-                      {(this.state.video && abbreviate().number(this.state.video.author.subscribers)) || 0} subscribers
-                    </p>
+                  </Col>
+                </Row>
+                <h1 style={style.title}>{this.state.video && this.state.video.title}</h1>
+                <p style={{marginTop: 4}}>{this.state.video && format().date(this.state.video.created_at)}</p>
+                <div style={style.author_bar}>
+                  <div style={style.author_profile}>
+                    <Image src={this.state.video && urls().profile(this.state.video.author.username)}
+                           width={42} height={42} style={style.profile_image} roundedCircle/>
+                    <div style={style.cast_author_details}>
+                      <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
+                      <p style={style.cast_author_sub}>
+                        {(this.state.video && abbreviate().number(this.state.video.author.subscribers)) || 0} subscriber{this.state.video && this.state.video.author.subscribers !== 1 && "s"}
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <Button style={style.tip_button} onClick={this.handleTip}><i
+                      className="material-icons">attach_money</i></Button>
+                    <Button style={style.sub_button} onClick={this.handleSubscribe}
+                            disabled={this.state.video && this.state.video.author.isSubscribed}>SUBSCRIBE</Button>
                   </div>
                 </div>
-                <div>
-                  <Button style={style.tip_button} onClick={this.handleTip}><i
-                    className="material-icons">attach_money</i></Button>
-                  <Button style={style.sub_button} onClick={this.handleSubscribe}
-                          disabled={this.state.video && this.state.video.author.isSubscribed}>SUBSCRIBE</Button>
-                </div>
-              </div>
-              <Row noGutters>
-                <Col xl={1} sm={0}/>
-                <Col>
-                  <div style={style.description}>{this.state.video && this.state.video.description}</div>
-                </Col>
-                <Col xl={1} sm={0}/>
-              </Row>
-              <hr/>
-              <h3>Comments</h3>
-              <Row noGutters style={{marginTop: 28}}>
-                <Col xl={1} sm={0}/>
-                <Col>
-                  <Form noValidate onSubmit={this.handleComment}>
-                    {this.state.error_submit && <Alert variant={"danger"}>{this.state.error_submit}</Alert>}
-                    <Form.Group>
-                      <InputGroup style={style.comment_input}>
-                        <Form.Control type="text" placeholder="Comment" value={this.state.comment}
-                                      onChange={this.writeComment} isInvalid={!!this.state.error_comment}/>
-                        <InputGroup.Append>
-                          <Button variant="outline-primary" type="submit">
-                            <i className="material-icons">send</i></Button>
-                        </InputGroup.Append>
-                      </InputGroup>
-                    </Form.Group>
-                  </Form>
-                  <div style={style.comment_list}>
-                    {this.state.comments ? Object.values(this.state.comments).map(comment => {
-                      return (
-                        <div style={{...style.author_profile, ...style.comment_item}}>
-                          <Image src={urls().profile(comment.author.username)} height={42} width={42}
-                                 style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
-                          <div style={{...style.cast_author_details, minWidth: 0}}>
-                            <p style={style.cast_author_name}>{comment.author.name}</p>
-                            <p style={{marginBottom: 0, color: "grey"}}><TimeAgo date={comment.created_at}/></p>
-                            <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>{comment.content}</p>
+                <Row noGutters>
+                  <Col xl={1} sm={0}/>
+                  <Col>
+                    <div style={style.description}>{this.state.video && this.state.video.description}</div>
+                  </Col>
+                  <Col xl={1} sm={0}/>
+                </Row>
+                <hr/>
+                <h3>Comments</h3>
+                <Row noGutters style={{marginTop: 28}}>
+                  <Col xl={1} sm={0}/>
+                  <Col>
+                    <Form noValidate onSubmit={this.handleComment}>
+                      {this.state.error_submit && <Alert variant={"danger"}>{this.state.error_submit}</Alert>}
+                      <Form.Group>
+                        <InputGroup style={style.comment_input}>
+                          <Form.Control type="text" placeholder="Comment" value={this.state.comment}
+                                        onChange={this.writeComment} isInvalid={!!this.state.error_comment}/>
+                          <InputGroup.Append>
+                            <Button variant="outline-primary" type="submit">
+                              <i className="material-icons">send</i></Button>
+                          </InputGroup.Append>
+                        </InputGroup>
+                      </Form.Group>
+                    </Form>
+                    <div style={style.comment_list}>
+                      {this.state.comments ? Object.values(this.state.comments).map(comment => {
+                        return (
+                          <div key={comment.created_at} style={{...style.author_profile, ...style.comment_item}}>
+                            <Image src={urls().profile(comment.author.username)} height={42} width={42}
+                                   style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
+                            <div style={{...style.cast_author_details, minWidth: 0}}>
+                              <p style={style.cast_author_name}>{comment.author.name}</p>
+                              <p style={{marginBottom: 0, color: "grey"}}><TimeAgo date={comment.created_at}/></p>
+                              <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>{comment.content}</p>
+                            </div>
                           </div>
-                        </div>
-                      )
-                    }) : <h5 style={style.h5}>Post the first comment!</h5>}
-                  </div>
-                </Col>
-                <Col xl={1} sm={0}/>
-              </Row>
-            </Col>
-            <Col xl={{span: 2, order: 3}} sm={{span: 6, order: 3}} xs={{span: 12, order: 3}}>
-              <Card style={style.live_chat}>
-                <Card.Body style={style.live_chat_body}>
-                  <p style={style.live_chat_item}><b>User1</b>: Hello! Hello! Hello! Hello! Hello! Hello! Hello!</p>
-                  <p style={style.live_chat_item}><b>User2</b>: Hello!</p>
-                  <p style={style.live_chat_item}><b>User1</b>: Hello!</p>
-                  <p style={style.live_chat_item}><b>User2</b>: Hello!</p>
-                  <p style={style.live_chat_item}><b>User1</b>: Hello!</p>
-                  <InputGroup style={style.live_chat_input}>
-                    <FormControl type="text" placeholder="Chat"/>
-                    <InputGroup.Append>
-                      <Button variant="outline-primary"><i className="material-icons">send</i></Button>
-                    </InputGroup.Append>
-                  </InputGroup>
-                </Card.Body>
-              </Card>
-              <div style={style.cast_list}>
-                {this.state.vod && Object.values(this.state.vod).map(video =>
-                  <Row noGutters style={{padding: "0 0 16px 0"}}>
-                    <Cast video={video} onClick={(a, b) => this.incrementView(a, b)}/>
-                  </Row>
-                )}
-                {this.state.loading.vod && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
-              </div>
-            </Col>
-          </Row>
-        </Container>
+                        )
+                      }) : <h5 style={style.h5}>Post the first comment!</h5>}
+                    </div>
+                  </Col>
+                  <Col xl={1} sm={0}/>
+                </Row>
+              </Col>
+              <Col xl={{span: 2, order: 3}} sm={{span: 6, order: 3}} xs={{span: 12, order: 3}}>
+                <Card style={style.live_chat}>
+                  <Card.Body style={style.live_chat_body}>
+                    <p style={style.live_chat_item}><b>User1</b>: Hello! Hello! Hello! Hello! Hello! Hello! Hello!</p>
+                    <p style={style.live_chat_item}><b>User2</b>: Hello!</p>
+                    <p style={style.live_chat_item}><b>User1</b>: Hello!</p>
+                    <p style={style.live_chat_item}><b>User2</b>: Hello!</p>
+                    <p style={style.live_chat_item}><b>User1</b>: Hello!</p>
+                    <InputGroup style={style.live_chat_input}>
+                      <FormControl type="text" placeholder="Chat"/>
+                      <InputGroup.Append>
+                        <Button variant="outline-primary"><i className="material-icons">send</i></Button>
+                      </InputGroup.Append>
+                    </InputGroup>
+                  </Card.Body>
+                </Card>
+                <div style={style.cast_list}>
+                  {this.state.vod && Object.values(this.state.vod).map(video =>
+                    <Row key={video.hash} noGutters style={{padding: "0 0 16px 0"}}>
+                      <Cast video={video} onClick={(a, b) => this.incrementView(a, b)}/>
+                    </Row>
+                  )}
+                  {this.state.loading.vod && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
+                </div>
+              </Col>
+            </Row>
+          </Container> :
+          <>
+            <img src={logo} height={"120"} alt={"Video Unavailable"}
+                 style={{display: "block", margin: "auto", opacity: 0.25, marginTop: "25vh"}}/>
+            <h1 style={{fontFamily: "Comfortaa", textAlign: "center", marginTop: 18, opacity: 0.85}}>Video
+              Unavailable</h1>
+          </>
+        }
         <Modal show={this.state.prompt_auth} size={"md"} onHide={() => this.setState({prompt_auth: false})} centered>
           <Modal.Header closeButton>
             <Modal.Title id="contained-modal-title-vcenter">

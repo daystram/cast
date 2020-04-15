@@ -315,7 +315,7 @@ class Manage extends Component {
               <h1 style={style.h1}>Manage</h1>
               <Col>
                 {!this.state.loading && (this.state.list ? this.state.list.map(video =>
-                  <Row>
+                  <Row key={video.hash}>
                     <CastEditable video={video} onDelete={() => this.fetchVideos()}/>
                   </Row>
                 ) : <h5 style={style.h5}>No videos uploaded yet!</h5>)}

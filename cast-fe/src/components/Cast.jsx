@@ -23,9 +23,9 @@ function Cast(props) {
       <Image src={urls().thumbnail(props.video.hash)}
              style={style.cast_thumbnail}/>
       <div style={style.cast_tag_bar}>
-        {props.video.is_live && <Badge pill style={style.cast_live_tag}>LIVE</Badge>}
+        {props.video.type === "live" && <Badge pill style={style.cast_live_tag}>LIVE</Badge>}
         <Badge pill
-               style={style.cast_viewer_tag}>{abbreviate().number(props.video.views)} {props.video.is_live ? 'viewers' : 'views'}</Badge>
+               style={style.cast_viewer_tag}>{abbreviate().number(props.video.views)} {props.video.type === "live" ? 'viewers' : 'views'}</Badge>
       </div>
       <div style={style.cast_detail}>
         <Image src={urls().profile(props.video.author.username)}
@@ -35,7 +35,7 @@ function Cast(props) {
           <p style={style.cast_title}>{props.video.title}</p>
           <p style={style.cast_author} onClick={viewAuthor}>{props.video.author.name}</p>
           <p style={style.cast_duration}>
-            {props.video.is_live ?
+            {props.video.type === "live" ?
               <TimeAgo date={props.video.created_at} formatter={(value, unit, _) => {
                 return `Streaming for ${value} ${unit}${value === 1 ? "" : "s"}`
               }}/> :
