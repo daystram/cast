@@ -16,6 +16,7 @@ export default function urls() {
     edit_video: () => `${api_base}/p/video/edit`,
     delete: () => `${api_base}/p/video/delete`,
     list: () => `${api_base}/video/list`,
+    search: () => `${api_base}/video/search`,
     auth_check: () => `${api_base}/auth/check`,
     login: () => `${api_base}/auth/login`,
     signup: () => `${api_base}/auth/signup`,
