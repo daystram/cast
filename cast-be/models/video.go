@@ -16,6 +16,7 @@ type VideoOrmer interface {
 	GetRecent(variant string, count int, offset int) (videos []datatransfers.Video, err error)
 	GetAllVODByAuthor(author primitive.ObjectID) (videos []datatransfers.Video, err error)
 	GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error)
+	Search(query string, count, offset int) (videos []datatransfers.Video, err error)
 	GetOneByHash(hash string) (datatransfers.Video, error)
 	IncrementViews(hash string) (err error)
 	SetLive(authorID primitive.ObjectID, live bool) (err error)
@@ -35,15 +36,11 @@ func NewVideoOrmer(db *mongo.Client) VideoOrmer {
 }
 
 func (o *videoOrm) GetRecent(variant string, count int, offset int) (result []datatransfers.Video, err error) {
-	resolution := -1
-	if variant == constants.VideoTypeVOD {
-		resolution = 0
-	}
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
 		{{"$match", bson.D{{"type", variant}}}},
-		{{"$match", bson.D{{"resolutions", bson.D{{"$gt", resolution}}}}}},
-		{{"$match", bson.D{{"is_live", variant == constants.VideoTypeLive}}}},
+		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
+		{{"$match", bson.D{{"is_live", true}}}},
 		{{"$sort", bson.D{{"created_at", -1}}}},
 		{{"$skip", offset}},
 		{{"$limit", count}},
@@ -114,6 +111,34 @@ func (o *videoOrm) GetAllVODByAuthorPaginated(author primitive.ObjectID, count i
 			return
 		}
 		videos = append(videos, video)
+	}
+	return
+}
+
+func (o *videoOrm) Search(queryString string, count int, offset int) (result []datatransfers.Video, err error) {
+	query := &mongo.Cursor{}
+	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+		{{"$match", bson.D{{"$text", bson.D{{"$search", queryString}}}}}},
+		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
+		{{"$match", bson.D{{"is_live", true}}}},
+		{{"$sort", bson.D{{"created_at", -1}}}},
+		{{"$skip", offset}},
+		{{"$limit", count}},
+		{{"$lookup", bson.D{
+			{"from", constants.DBCollectionUser},
+			{"localField", "author"},
+			{"foreignField", "_id"},
+			{"as", "author"},
+		}}},
+		{{"$unwind", "$author"}}}); err != nil {
+		return
+	}
+	for query.Next(context.TODO()) {
+		var video datatransfers.Video
+		if err = query.Decode(&video); err != nil {
+			return
+		}
+		result = append(result, video)
 	}
 	return
 }
