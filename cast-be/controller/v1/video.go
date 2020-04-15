@@ -47,9 +47,18 @@ func (c *VideoController) GetList(variant, author string, count, offset int) dat
 // @Title Search
 // @Success 200 {object} models.Object
 // @Param   query		query	string	true	"query"
+// @Param   count		query   int 	false 8	"count"
+// @Param   offset		query   int 	false 0	"offset"
 // @router /search [get]
-func (c *VideoController) Search(query string) {
-
+func (c *VideoController) Search(query string, count, offset int) datatransfers.Response {
+	var videos []datatransfers.Video
+	var err error
+	videos, err = c.Handler.SearchVideo(query, []string{}, count, offset)
+	if err != nil {
+		fmt.Printf("[VideoController::Search] failed searching videos. %+v\n", err)
+		return datatransfers.Response{Error: "Failed searching videos", Code: http.StatusInternalServerError}
+	}
+	return datatransfers.Response{Data: videos, Code: http.StatusOK}
 }
 
 // @Title Get Details
@@ -60,8 +69,8 @@ func (c *VideoController) Search(query string) {
 func (c *VideoController) GetDetails(hash, username string) datatransfers.Response {
 	video, err := c.Handler.VideoDetails(hash)
 	if err != nil {
-		fmt.Printf("[VideoController::GetDetails] failed retrieving video detail. %+v\n", err)
-		return datatransfers.Response{Error: "Failed retrieving video detail", Code: http.StatusInternalServerError}
+		fmt.Printf("[VideoController::GetDetails] video not found. %+v\n", err)
+		return datatransfers.Response{Code: http.StatusNotFound}
 	}
 	if username != "" {
 		video.Liked, _ = c.Handler.CheckUserLikes(hash, username)
