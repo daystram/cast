@@ -32,8 +32,11 @@ func (m *module) AuthorList(username string, count, offset int) (videos []data.V
 	return
 }
 
-func (m *module) Search(query string, tags []string) (videos []data.Video, err error) {
-	return nil, nil
+func (m *module) SearchVideo(query string, _ []string, count, offset int) (videos []data.Video, err error) {
+	if videos, err = m.db().videoOrm.Search(query, count, offset); err != nil {
+		return nil, errors.New(fmt.Sprintf("[SearchVideo] error searching videos. %+v", err))
+	}
+	return
 }
 
 func (m *module) VideoDetails(hash string) (video data.Video, err error) {
@@ -68,7 +71,7 @@ func (m *module) CreateVOD(upload data.VideoUpload, userID primitive.ObjectID) (
 		Tags:        upload.Tags,
 		Views:       0,
 		Duration:    0,
-		IsLive:      false,
+		IsLive:      true,
 		Resolutions: 0,
 		CreatedAt:   time.Now(),
 	}); err != nil {

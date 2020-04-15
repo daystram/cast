@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"fmt"
-	"gitlab.com/daystram/cast/cast-be/util"
 	"time"
 
 	"gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/constants"
 	"gitlab.com/daystram/cast/cast-be/datatransfers"
 	errors2 "gitlab.com/daystram/cast/cast-be/errors"
+	"gitlab.com/daystram/cast/cast-be/util"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/dgrijalva/jwt-go"
@@ -54,6 +54,7 @@ func (m *module) Register(info datatransfers.UserRegister) (err error) {
 		Author:      userID,
 		Title:       fmt.Sprintf("%s's Livestream", info.Name),
 		Description: "",
+		Resolutions: -1,
 		IsLive:      false,
 		CreatedAt:   time.Now(),
 	}); err != nil {

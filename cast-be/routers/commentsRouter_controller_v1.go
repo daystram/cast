@@ -157,6 +157,8 @@ func init() {
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(
 				param.New("query", param.IsRequired),
+				param.New("count", param.Default("false")),
+				param.New("offset", param.Default("false")),
 			),
             Filters: nil,
             Params: nil})

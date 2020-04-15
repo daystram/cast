@@ -71,7 +71,7 @@ type Handler interface {
 
 	FreshList(variant string, count, offset int) (videos []data.Video, err error)
 	AuthorList(author string, count, offset int) (videos []data.Video, err error)
-	Search(query string, tags []string) (videos []data.Video, err error)
+	SearchVideo(query string, tags []string, count, offset int) (videos []data.Video, err error)
 	VideoDetails(hash string) (video data.Video, err error)
 	CreateVOD(upload data.VideoUpload, userID primitive.ObjectID) (ID primitive.ObjectID, err error)
 	DeleteVideo(ID, userID primitive.ObjectID) (err error)
