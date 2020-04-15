@@ -163,6 +163,7 @@ class Profile extends Component {
       }
     ).then((response) => {
       if (response.data.code === 200) {
+        if (this.state.new_profile) window.location.reload();
         this.setState({
           editing: false,
           loading_edit: false,
@@ -171,7 +172,6 @@ class Profile extends Component {
           error_email: "",
           new_profile: "",
         });
-        if (this.state.new_profile) window.location.reload();
         console.log(response.data);
         this.setState({error_edit: response.data.error, loading_edit: false});
       }

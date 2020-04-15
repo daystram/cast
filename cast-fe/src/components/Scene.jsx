@@ -63,6 +63,7 @@ class Scene extends Component {
     if (this.props.match.params.hash !== prevProps.match.params.hash) {
       this.setState({comment: "", error_comment: "", loading: {...this.state.loading, current: true}});
       this.fetchDetail(this.props.match.params.hash);
+      window.scroll({top: 0, left: 0, behavior: 'smooth'})
     }
   }
 
