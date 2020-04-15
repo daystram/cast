@@ -169,8 +169,9 @@ class Profile extends Component {
           before: {},
           error_name: "",
           error_email: "",
+          new_profile: "",
         });
-      } else {
+        if (this.state.new_profile) window.location.reload();
         console.log(response.data);
         this.setState({error_edit: response.data.error, loading_edit: false});
       }
