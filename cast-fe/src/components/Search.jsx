@@ -57,7 +57,7 @@ class Search extends Component {
             <Col md={2} sm={12} style={{marginBottom: 32}}>
               <Sidebar/>
             </Col>
-            <Col md={10} sm={12}>
+            <Col md={10} sm={12} className={"mid-container-right"}>
               <h1 style={style.h1}>"{this.state.query}"</h1>
               <Row noGutters>
                 {!this.state.loading && (this.state.results ? this.state.results.map(video =>
@@ -88,7 +88,7 @@ let style = {
     margin: "32px auto 64px auto",
   },
   content_container: {
-    padding: "36px 0 0 0"
+    padding: 0,
   },
 };
 

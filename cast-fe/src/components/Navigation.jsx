@@ -55,7 +55,8 @@ let style = {
     borderStyle: "solid",
     height: 64,
     padding: "8px 36px",
-    background: "white"
+    background: "white",
+    marginBottom: 16
   },
   profile_image: {
     cursor: "pointer"

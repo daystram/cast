@@ -191,7 +191,7 @@ class Profile extends Component {
             <Col md={2} sm={12} style={{marginBottom: 32}}>
               <SidebarProfile/>
             </Col>
-            <Col md={10} sm={12}>
+            <Col md={10} sm={12} className={"mid-container-right"}>
               <Row>
                 <Col md sm={12} className={"responsive-fold"}>
                   <div style={style.profile_bar}>
@@ -237,7 +237,6 @@ class Profile extends Component {
                       <h3 style={style.sub_count}>{abbreviate().number(this.state.subscribers)} subscribers</h3>
                     </div>
                   </div>
-
                   <h1 style={style.h1}>Showcase</h1>
                   <Card body style={style.profile_detail}>
                     <Row>
@@ -255,7 +254,6 @@ class Profile extends Component {
                       </Col>
                     </Row>
                   </Card>
-
                   <h1 style={style.h1}>Details</h1>
                   <Card body style={style.profile_detail}>
                     <Row>
@@ -304,9 +302,9 @@ class Profile extends Component {
                       <span className="material-icons">{this.state.editing ? "check" : "edit"}</span>
                     }
                   </Button>
-                  <Button variant={this.state.editing ? "info" : "danger"} block size={"sm"}
-                          onClick={this.pressDelete} style={{...style.button, marginBottom: 32}}>
-                    <span className="material-icons">{this.state.editing ? "clear" : "delete"}</span></Button>
+                  {this.state.editing && <Button variant={this.state.editing ? "info" : "danger"} block size={"sm"}
+                                                 onClick={this.pressDelete} style={{...style.button, marginBottom: 32}}>
+                    <span className="material-icons">{this.state.editing ? "clear" : "delete"}</span></Button>}
                 </Col>
               </Row>
             </Col>
@@ -322,7 +320,7 @@ let style = {
     fontFamily: "Comfortaa",
   },
   content_container: {
-    padding: "36px 0 0 0"
+    padding: 0,
   },
   name: {
     margin: 0,

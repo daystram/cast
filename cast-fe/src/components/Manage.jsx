@@ -233,7 +233,7 @@ class Manage extends Component {
             <Col md={2} sm={12} style={{marginBottom: 32}}>
               <SidebarProfile/>
             </Col>
-            <Col md={10} sm={12}>
+            <Col md={10} sm={12} className={"mid-container-right"}>
               <h1 style={style.h1}>Upload</h1>
               {this.state.error_upload && <Alert variant={"danger"}>{this.state.error_upload}</Alert>}
               {this.state.success &&
@@ -337,7 +337,7 @@ let style = {
     fontFamily: "Comfortaa",
   },
   content_container: {
-    padding: "36px 0 0 0",
+    padding: 0,
   },
   progress: {
     marginBottom: 16

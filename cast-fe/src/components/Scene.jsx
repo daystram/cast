@@ -21,7 +21,7 @@ import abbreviate from "../helper/abbreviate";
 import axios from "axios";
 import urls from "../helper/url";
 import format from "../helper/format";
-import {Redirect} from "react-router-dom";
+import {withRouter} from "react-router-dom";
 import auth from "../helper/auth";
 import TimeAgo from "react-timeago";
 import queryString from 'query-string';
@@ -67,6 +67,7 @@ class Scene extends Component {
 
   componentDidMount() {
     this.fetchDetail(this.props.match.params.hash);
+    window.scroll({top: 0, left: 0, behavior: 'smooth'})
     this.fetchVideos("live");
     this.fetchVideos("vod");
   }
@@ -235,7 +236,7 @@ class Scene extends Component {
                   {this.state.loading.live && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
                 </div>
               </Col>
-              <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 1}}>
+              <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 1}} className={"mid-container"}>
                 <HybridPlayer
                   url={this.state.video && (this.state.video.type === "live" ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}
                   thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}
@@ -358,9 +359,9 @@ class Scene extends Component {
           </Modal.Body>
           <Modal.Footer>
             <Button variant={"outline-primary"}
-                    onClick={() => this.setState({redirect: <Redirect to={"/login"}/>})}>Log In</Button>
+                    onClick={() => this.props.history.push("/login")}>Log In</Button>
             <Button variant={"primary"}
-                    onClick={() => this.setState({redirect: <Redirect to={"/signup"}/>})}>Sign Up</Button>
+                    onClick={() => this.props.history.push("/signup")}>Sign Up</Button>
           </Modal.Footer>
         </Modal>
         <Modal show={this.state.prompt_share} size={"md"} onHide={() => this.setState({prompt_share: false})} centered>
@@ -401,7 +402,6 @@ class Scene extends Component {
             </Form.Group>
           </Modal.Body>
         </Modal>
-        {this.state.redirect}
       </>
     );
   }
@@ -412,7 +412,7 @@ let style = {
     margin: 0
   },
   content_container: {
-    padding: "36px 0 0 0"
+    padding: 0,
   },
   spinner: {
     display: "block",
@@ -502,4 +502,4 @@ let style = {
   },
 };
 
-export default Scene
+export default withRouter(Scene)

@@ -3,17 +3,35 @@
 }
 
 body {
-    margin: 0 36px;
+    margin: 0 16px;
     /*overflow: overlay;*/
 }
 
-@media (max-width: 767.98px) {
+.mid-container {
+    padding: 0;
+}
+
+.mid-container-right {
+    padding-left: 0;
+}
+
+@media (max-width: 768px) {
     .responsive-fold {
-        margin-bottom: 16px;
+        margin-bottom: 8px;
+    }
+
+    .mid-container-right {
+        padding: 0 20px;
     }
 
     body {
-        margin: 0 12px;
+        margin: 0 8px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .mid-container {
+        padding: 0 20px;
     }
 }
 

@@ -233,7 +233,7 @@ let style = {
     fontFamily: "Comfortaa",
   },
   content_container: {
-    padding: "36px 0 0 0",
+    padding: 0,
     maxWidth: 480
   },
 };
