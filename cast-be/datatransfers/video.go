@@ -88,14 +88,6 @@ type Like struct {
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 }
 
-type Chat struct {
-	ID        primitive.ObjectID `json:"_id" bson:"_id"`
-	Hash      string             `json:"hash" bson:"hash"`
-	Chat      string             `json:"chat" bson:"chat"`
-	Author    UserItem           `json:"author" bson:"author"`
-	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
-}
-
 type ChatInsert struct {
 	ID        primitive.ObjectID `json:"_id" bson:"_id"`
 	Hash      string             `json:"hash" bson:"hash"`
