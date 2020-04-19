@@ -55,6 +55,7 @@ class Chat extends Component {
         let json = JSON.parse(message.data);
         if (json && json.type === "chat") {
           this.setState({chats: [...this.state.chats, json.data]});
+          this.chatEnd.scrollIntoView({behavior: "auto"})
         } else {
           console.log("Invalid JSON: ", message.data);
         }
@@ -80,11 +81,17 @@ class Chat extends Component {
 
   render() {
     return (
-      <Card style={this.props.embedded ? style.live_chat : style.standalone}>
+      <Card style={{
+        ...(this.props.embedded ? style.live_chat : style.standalone),
+        ...{height: this.props.height || "100vh"}
+      }}>
         <Card.Body style={style.live_chat_body}>
-          {this.state.chats.length !== 0 && this.state.chats.map(chat => (
-            <p style={style.live_chat_item}><b>{chat.author}</b>: {chat.chat}</p>
-          ))}
+          <div style={{overflow: "overlay"}}>
+            {this.state.chats.length !== 0 && this.state.chats.map(chat => (
+              <p style={style.live_chat_item}><b>{chat.author}</b>: {chat.chat}</p>
+            ))}
+            <div style={{float: "left"}} ref={(ref) => this.chatEnd = ref}/>
+          </div>
           {this.props.embedded &&
           <Form onSubmit={this.handleSubmit}>
             <InputGroup style={style.live_chat_input}>
@@ -116,7 +123,8 @@ let style = {
     overflow: "hidden",
   },
   live_chat_body: {
-    height: 480,
+    paddingTop: 0,
+    height: "100%",
     justifyContent: "flex-end",
     display: "flex",
     flexDirection: "column"
