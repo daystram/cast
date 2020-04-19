@@ -3,11 +3,9 @@ import {
   Alert,
   Badge,
   Button,
-  Card,
   Col,
   Container,
   Form,
-  FormControl,
   Image,
   InputGroup,
   Modal,
@@ -28,6 +26,7 @@ import auth from "../helper/auth";
 import TimeAgo from "react-timeago";
 import queryString from 'query-string';
 import logo from "./logo.svg";
+import Chat from "./Chat";
 
 class Scene extends Component {
   constructor(props) {
@@ -55,7 +54,6 @@ class Scene extends Component {
     this.handleComment = this.handleComment.bind(this);
     this.writeComment = this.writeComment.bind(this);
     this.handleSubscribe = this.handleSubscribe.bind(this);
-    this.handleTip = this.handleTip.bind(this);
     this.promptSignup = this.promptSignup.bind(this);
   }
 
@@ -216,15 +214,6 @@ class Scene extends Component {
     }
   }
 
-  handleTip() {
-    if (this.state.loading.current) return;
-    if (auth().is_authenticated()) {
-      // TODO: subscribe
-    } else {
-      this.promptSignup();
-    }
-  }
-
   promptSignup() {
     this.setState({prompt_auth: true})
   }
@@ -292,8 +281,6 @@ class Scene extends Component {
                     </div>
                   </div>
                   <div>
-                    <Button style={style.tip_button} onClick={this.handleTip}><i
-                      className="material-icons">attach_money</i></Button>
                     <Button style={style.sub_button} onClick={this.handleSubscribe}
                             disabled={this.state.video && this.state.video.author.isSubscribed}>SUBSCRIBE</Button>
                   </div>
@@ -343,21 +330,7 @@ class Scene extends Component {
                 </Row>
               </Col>
               <Col xl={{span: 2, order: 3}} sm={{span: 6, order: 3}} xs={{span: 12, order: 3}}>
-                <Card style={style.live_chat}>
-                  <Card.Body style={style.live_chat_body}>
-                    <p style={style.live_chat_item}><b>User1</b>: Hello! Hello! Hello! Hello! Hello! Hello! Hello!</p>
-                    <p style={style.live_chat_item}><b>User2</b>: Hello!</p>
-                    <p style={style.live_chat_item}><b>User1</b>: Hello!</p>
-                    <p style={style.live_chat_item}><b>User2</b>: Hello!</p>
-                    <p style={style.live_chat_item}><b>User1</b>: Hello!</p>
-                    <InputGroup style={style.live_chat_input}>
-                      <FormControl type="text" placeholder="Chat"/>
-                      <InputGroup.Append>
-                        <Button variant="outline-primary"><i className="material-icons">send</i></Button>
-                      </InputGroup.Append>
-                    </InputGroup>
-                  </Card.Body>
-                </Card>
+                {this.state.video && <Chat embedded={true} hash={this.state.video.hash} promptSignup={this.promptSignup}/>}
                 <div style={style.cast_list}>
                   {this.state.vod && Object.values(this.state.vod).map(video =>
                     <Row key={video.hash} noGutters style={{padding: "0 0 16px 0"}}>
@@ -383,7 +356,7 @@ class Scene extends Component {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <p>You need to be logged in to like, comment, subscribe or tip. By signing in, you can start sharing your
+            <p>You need to be logged in to like, comment, chat, and subscribe. By signing in, you can start sharing your
               own videos and livestream too!</p>
             <p>Log In or Sign Up today!</p>
           </Modal.Body>
@@ -448,21 +421,6 @@ let style = {
   cast_list: {
     marginTop: 16
   },
-  live_chat: {
-    borderRadius: "8px 48px 8px 8px",
-  },
-  live_chat_body: {
-    height: 480,
-    justifyContent: "flex-end",
-    display: "flex",
-    flexDirection: "column"
-  },
-  live_chat_item: {
-    marginBottom: 0
-  },
-  live_chat_input: {
-    marginTop: 8
-  },
   cast_tag_bar: {
     marginTop: 8,
   },
@@ -508,9 +466,6 @@ let style = {
   profile_image: {
     marginRight: 8,
     alignSelf: "center"
-  },
-  tip_button: {
-    marginRight: 8
   },
   sub_button: {
     fontWeight: 600
