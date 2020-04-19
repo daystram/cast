@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/astaxie/beego/context"
 	"net/http"
 	"sync"
 
@@ -9,6 +10,7 @@ import (
 	"gitlab.com/daystram/cast/cast-be/models"
 
 	googlePS "cloud.google.com/go/pubsub"
+	"github.com/daystram/websocket"
 	"github.com/mailgun/mailgun-go"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/rtmp"
@@ -17,8 +19,9 @@ import (
 )
 
 type module struct {
-	db     func() *Entity
-	mq     func() *MQ
+	db     *Entity
+	mq     *MQ
+	chat   *Chat
 	mailer *mailgun.MailgunImpl
 	live   Live
 }
@@ -27,6 +30,11 @@ type Live struct {
 	streams map[string]*Stream
 	uplink  *rtmp.Server
 	mutex   *sync.RWMutex
+}
+
+type Chat struct {
+	sockets  map[primitive.ObjectID][]*websocket.Conn
+	upgrader websocket.Upgrader
 }
 
 type Stream struct {
@@ -84,23 +92,26 @@ type Handler interface {
 
 	TranscodeListenerWorker()
 	StartTranscode(hash string)
+
+	ConnectWebSocket(ctx *context.Context, hash primitive.ObjectID, userID... primitive.ObjectID) (err error)
+	ChatReaderWorker(conn *websocket.Conn, hash primitive.ObjectID, user data.User)
 }
 
 func NewHandler(component Component) Handler {
 	return &module{
-		db: func() (e *Entity) {
-			return &Entity{
-				videoOrm:   models.NewVideoOrmer(component.DB),
-				userOrm:    models.NewUserOrmer(component.DB),
-				likeOrm:    models.NewLikeOrmer(component.DB),
-				commentOrm: models.NewCommentOrmer(component.DB),
-			}
+		db: &Entity{
+			videoOrm:   models.NewVideoOrmer(component.DB),
+			userOrm:    models.NewUserOrmer(component.DB),
+			likeOrm:    models.NewLikeOrmer(component.DB),
+			commentOrm: models.NewCommentOrmer(component.DB),
 		},
-		mq: func() (m *MQ) {
-			return &MQ{
-				transcodeTopic:       component.MQClient.Topic(config.AppConfig.TopicNameTranscode),
-				completeSubscription: component.MQClient.Subscription(config.AppConfig.SubscriptionNameComplete),
-			}
+		mq: &MQ{
+			transcodeTopic:       component.MQClient.Topic(config.AppConfig.TopicNameTranscode),
+			completeSubscription: component.MQClient.Subscription(config.AppConfig.SubscriptionNameComplete),
+		},
+		chat: &Chat{
+			sockets:  make(map[primitive.ObjectID][]*websocket.Conn),
+			upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
 		},
 		mailer: component.Mailer,
 	}

@@ -15,10 +15,10 @@ func (m *module) UserDetails(userID primitive.ObjectID) (detail data.UserDetail,
 	var user data.User
 	var videos []data.Video
 	views := 0
-	if user, err = m.db().userOrm.GetOneByID(userID); err != nil {
+	if user, err = m.db.userOrm.GetOneByID(userID); err != nil {
 		return data.UserDetail{}, errors.New(fmt.Sprintf("[UserDetails] user not found. %+v\n", err))
 	}
-	if videos, err = m.db().videoOrm.GetAllVODByAuthor(userID); err != nil {
+	if videos, err = m.db.videoOrm.GetAllVODByAuthor(userID); err != nil {
 		return data.UserDetail{}, errors.New(fmt.Sprintf("[UserDetails] cannot retrieve all user videos. %+v\n", err))
 	}
 	for _, video := range videos {
@@ -36,11 +36,11 @@ func (m *module) UserDetails(userID primitive.ObjectID) (detail data.UserDetail,
 }
 
 func (m *module) GetUserByEmail(email string) (user data.User, err error) {
-	return m.db().userOrm.GetOneByEmail(email)
+	return m.db.userOrm.GetOneByEmail(email)
 }
 
 func (m *module) UpdateUser(user data.UserEditForm, ID primitive.ObjectID) (err error) {
-	return m.db().userOrm.EditUser(data.User{
+	return m.db.userOrm.EditUser(data.User{
 		ID:    ID,
 		Name:  user.Name,
 		Email: user.Email,

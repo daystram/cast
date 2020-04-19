@@ -17,19 +17,19 @@ import (
 )
 
 func (m *module) CheckUniqueUserField(field, value string) (err error) {
-	return m.db().userOrm.CheckUnique(field, value)
+	return m.db.userOrm.CheckUnique(field, value)
 }
 
 func (m *module) Register(info datatransfers.UserRegister) (err error) {
-	if err = m.db().userOrm.CheckUnique("Name", info.Name); err != nil {
+	if err = m.db.userOrm.CheckUnique("Name", info.Name); err != nil {
 		fmt.Printf("[Register] Name %s already exists. %+v\n", info.Name, err)
 		return
 	}
-	if err = m.db().userOrm.CheckUnique("Username", info.Username); err != nil {
+	if err = m.db.userOrm.CheckUnique("Username", info.Username); err != nil {
 		fmt.Printf("[Register] Username %s already exists. %+v\n", info.Username, err)
 		return
 	}
-	if err = m.db().userOrm.CheckUnique("Email", info.Email); err != nil {
+	if err = m.db.userOrm.CheckUnique("Email", info.Email); err != nil {
 		fmt.Printf("[Register] Email %s already exists. %+v\n", info.Email, err)
 		return
 	}
@@ -42,12 +42,12 @@ func (m *module) Register(info datatransfers.UserRegister) (err error) {
 		Password:  string(hashed),
 		CreatedAt: time.Now(),
 	}
-	if userID, err = m.db().userOrm.InsertUser(user); err != nil {
+	if userID, err = m.db.userOrm.InsertUser(user); err != nil {
 		fmt.Printf("[Register] Failed adding %s user entry. %+v\n", info.Username, err)
 		return
 	}
 	user.ID = userID
-	if _, err = m.db().videoOrm.InsertVideo(datatransfers.VideoInsert{
+	if _, err = m.db.videoOrm.InsertVideo(datatransfers.VideoInsert{
 		ID:          primitive.NewObjectID(),
 		Hash:        info.Username,
 		Type:        constants.VideoTypeLive,
@@ -58,7 +58,7 @@ func (m *module) Register(info datatransfers.UserRegister) (err error) {
 		IsLive:      false,
 		CreatedAt:   time.Now(),
 	}); err != nil {
-		_ = m.db().userOrm.DeleteOneByID(userID)
+		_ = m.db.userOrm.DeleteOneByID(userID)
 		fmt.Printf("[Register] Failed adding %s live video entry. %+v\n", info.Username, err)
 		return
 	}
@@ -97,7 +97,7 @@ func (m *module) Verify(key string) (err error) {
 		return
 	}
 	userID, _ := primitive.ObjectIDFromHex(id)
-	if err = m.db().userOrm.SetVerified(userID); err != nil {
+	if err = m.db.userOrm.SetVerified(userID); err != nil {
 		fmt.Printf("[Verify] Failed verifying user. %+v\n", err)
 		return
 	}
@@ -116,8 +116,7 @@ func (m *module) Authenticate(info datatransfers.UserLogin) (token string, err e
 }
 
 func (m *module) validate(info datatransfers.UserLogin) (user datatransfers.User, err error) {
-	db := m.db()
-	if user, err = db.userOrm.GetOneByUsername(info.Username); err != nil {
+	if user, err = m.db.userOrm.GetOneByUsername(info.Username); err != nil {
 		if err == orm.ErrNoRows {
 			return datatransfers.User{}, errors2.ErrNotRegistered
 		}

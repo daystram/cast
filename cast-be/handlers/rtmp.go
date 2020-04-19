@@ -61,7 +61,7 @@ func (m *module) CreateRTMPUpLink() {
 }
 
 func (m *module) ControlUpLinkWindow(userID primitive.ObjectID, open bool) (err error) {
-	return m.db().videoOrm.SetLive(userID, open)
+	return m.db.videoOrm.SetLive(userID, open)
 }
 
 func (m *module) StreamLive(_ string, w http.ResponseWriter, r *http.Request) (err error) {
