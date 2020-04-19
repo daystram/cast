@@ -1,3 +1,4 @@
+import Chat from './Chat'
 import Dashboard from './Dashboard'
 import Home from './Home'
 import Scene from './Scene'
@@ -9,4 +10,4 @@ import Manage from './Manage'
 import Profile from './Profile'
 import Verify from './Verify'
 
-export {Dashboard, Home, Scene, Search, SignUp, LogIn, LogOut, Manage, Profile, Verify}
+export {Chat, Dashboard, Home, Scene, Search, SignUp, LogIn, LogOut, Manage, Profile, Verify}
