@@ -1,6 +1,6 @@
 import React from "react";
 import {Redirect, Route, Switch} from 'react-router-dom'
-import {Dashboard, Home, LogIn, LogOut, Profile, Scene, Search, SignUp, Verify} from "./components";
+import {Chat, Dashboard, Home, LogIn, LogOut, Profile, Scene, Search, SignUp, Verify} from "./components";
 import Manage from "./components/Manage";
 import auth from "./helper/auth";
 
@@ -9,6 +9,7 @@ const Routes = () => {
     <Switch>
       <Route path={"/"} exact component={Home}/>
       <Route path="/w/:hash" exact component={Scene}/>
+      <Route path="/c/:hash" exact component={Chat}/>
       <Route path="/s" exact component={Search}/>
       <Route path="/logout" component={LogOut}/>
       <PrivateRoute path="/profile" exact component={Profile}/>
