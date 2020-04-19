@@ -5,6 +5,7 @@ import format from "../helper/format";
 import axios from "axios";
 import {Prompt, Redirect} from "react-router-dom";
 import {WithContext as ReactTags} from "react-tag-input";
+import './tags.css'
 
 const resolutions = ["Processing", "240p", "360p", "480p", "720p", "1080p"];
 let timeout = null;
@@ -41,8 +42,15 @@ class CastEditable extends Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (!this.state.editing && !this.state.updated && (prevState.title !== this.props.video.title || prevState.description !== this.props.video.description)) {
-      this.setState({title: this.props.video.title, description: this.props.video.description})
+    if (!this.state.editing && !this.state.updated &&
+      (prevState.title !== this.props.video.title || prevState.description !== this.props.video.description || prevProps.video.tags !== this.props.video.tags)) {
+      this.setState({
+        title: this.props.video.title,
+        description: this.props.video.description,
+        tags: this.props.video.tags ? this.props.video.tags.map(tag => {
+          return {id: tag, text: tag}
+        }) : []
+      })
     }
   }
 
@@ -71,6 +79,10 @@ class CastEditable extends Component {
         tags: this.state.before.tags,
         description: this.state.before.description,
         before: {},
+        error_title: "",
+        error_tags: "",
+        error_description: "",
+        error_edit: "",
         editing: false
       })
     } else {
@@ -150,7 +162,7 @@ class CastEditable extends Component {
           title: value.trim()
         }
       }).then((response) => {
-        if (response.data.code !== 200) {
+        if (response.data.code !== 200 && this.state.editing) {
           this.setState({error_title: response.data.error});
         } else {
           this.setState({error_title: ""});
@@ -236,26 +248,30 @@ class CastEditable extends Component {
           <Col md sm={12} className={"responsive-fold"}>
             {this.state.error_edit && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
             {this.state.editing ?
-              <Form.Group>
-                <Form.Control name={"title"} value={this.state.title} onBlur={this.handleChange}
-                              onChange={this.handleChange} type={"text"} size={"lg"} style={style.title}
-                              isInvalid={this.state.error_title} placeholder={"Title"}/>
-                <Form.Control.Feedback type={"invalid"}>{this.state.error_title}</Form.Control.Feedback>
-              </Form.Group> :
+              <Form autocomplete={"off"}>
+                <Form.Group>
+                  <Form.Control name={"title"} value={this.state.title} onBlur={this.handleChange}
+                                onChange={this.handleChange} type={"text"} size={"lg"} style={style.title}
+                                isInvalid={this.state.error_title} placeholder={"Title"}/>
+                  <Form.Control.Feedback type={"invalid"}>{this.state.error_title}</Form.Control.Feedback>
+                </Form.Group>
+              </Form> :
               <h1 style={style.title}>{this.state.title}</h1>
             }
-            <p style={{marginTop: 4, marginBottom: 0}}>{format().full_date(this.props.video.created_at)}</p>
-            <div style={style.cast_tag_bar}>
-              <div>
-                <Badge pill style={style.cast_tag_resolution}>{resolutions[this.props.video.resolutions]}
-                  {" "} {this.props.video.resolutions === 5 ? "" :
-                    <Spinner animation="grow" style={style.spinner}/>}</Badge>
-                <Badge pill style={style.cast_tag}>
-                  {`${this.props.video.views} view${this.props.video.views === 1 ? "" : "s"}`}</Badge>
-                <Badge pill style={style.cast_tag}>
-                  {`${this.props.video.likes} like${this.props.video.likes === 1 ? "" : "s"}`}</Badge>
+            {this.props.video.type === "vod" && <>
+              <p style={{marginBottom: 0}}>{format().full_date(this.props.video.created_at)}</p>
+              <div style={style.cast_tag_bar}>
+                <div>
+                  <Badge pill style={style.cast_tag_resolution}>{resolutions[this.props.video.resolutions]}
+                    {" "} {this.props.video.resolutions === 5 ? "" :
+                      <Spinner animation="grow" style={style.spinner}/>}</Badge>
+                  <Badge pill style={style.cast_tag}>
+                    {`${this.props.video.views} view${this.props.video.views === 1 ? "" : "s"}`}</Badge>
+                  <Badge pill style={style.cast_tag}>
+                    {`${this.props.video.likes} like${this.props.video.likes === 1 ? "" : "s"}`}</Badge>
+                </div>
               </div>
-            </div>
+            </>}
             <div style={style.cast_tag_bar}>
               {this.state.editing ?
                 <Form.Group style={{width: "100%"}}>
@@ -281,12 +297,14 @@ class CastEditable extends Component {
               }
             </div>
             {this.state.editing ?
-              <Form.Group>
-                <Form.Control name={"description"} value={this.state.description} onBlur={this.handleChange}
-                              onChange={this.handleChange} as={"textarea"} size={"lg"} style={style.description}
-                              isInvalid={this.state.error_description} rows={5} placeholder={"Description"}/>
-                <Form.Control.Feedback type={"invalid"}>{this.state.error_description}</Form.Control.Feedback>
-              </Form.Group> :
+              <Form autocomplete={"off"}>
+                <Form.Group>
+                  <Form.Control name={"description"} value={this.state.description} onBlur={this.handleChange}
+                                onChange={this.handleChange} as={"textarea"} size={"lg"} style={style.description}
+                                isInvalid={this.state.error_description} rows={5} placeholder={"Description"}/>
+                  <Form.Control.Feedback type={"invalid"}>{this.state.error_description}</Form.Control.Feedback>
+                </Form.Group>
+              </Form> :
               <p style={style.description}>{this.state.description}</p>
             }
           </Col>
@@ -300,9 +318,11 @@ class CastEditable extends Component {
                 <span className="material-icons">{this.state.editing ? "check" : "edit"}</span>
               }
             </Button>
+            {(this.state.editing || this.props.deletable) &&
             <Button variant={this.state.editing ? "info" : "danger"} block size={"sm"}
                     onClick={this.pressDelete} style={style.button}>
               <span className="material-icons">{this.state.editing ? "clear" : "delete"}</span></Button>
+            }
           </Col>
         </Row>
         <Modal show={this.state.prompt} size={"md"} centered>
@@ -336,7 +356,8 @@ let style = {
   },
   title: {
     margin: 0,
-    fontSize: "2rem"
+    fontSize: "2rem",
+    marginBottom: 4
   },
   thumbnail: {
     borderRadius: "8px 48px 8px 8px",
@@ -390,6 +411,21 @@ let style = {
     width: 10,
     height: 10,
     verticalAlign: "initial"
+  },
+  invalidInput: {
+    borderColor: "#dc3545",
+    paddingRight: "calc(1.5em + .75rem)",
+    backgroundImage: "url(data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' hei…circle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e)",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right calc(.375em + .1875rem) center",
+    backgroundSize: "calc(.75em + .375rem) calc(.75em + .375rem)",
+  },
+  invalidText: {
+    display: "block",
+    width: "100%",
+    marginTop: ".25rem",
+    fontSize: "80%",
+    color: "#dc3545",
   }
 };
 
