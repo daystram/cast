@@ -33,7 +33,7 @@ type Live struct {
 }
 
 type Chat struct {
-	sockets  map[primitive.ObjectID][]*websocket.Conn
+	sockets  map[string][]*websocket.Conn
 	upgrader websocket.Upgrader
 }
 
@@ -93,8 +93,8 @@ type Handler interface {
 	TranscodeListenerWorker()
 	StartTranscode(hash string)
 
-	ConnectWebSocket(ctx *context.Context, hash primitive.ObjectID, userID... primitive.ObjectID) (err error)
-	ChatReaderWorker(conn *websocket.Conn, hash primitive.ObjectID, user data.User)
+	ConnectWebSocket(ctx *context.Context, hash string, userID ...primitive.ObjectID) (err error)
+	ChatReaderWorker(conn *websocket.Conn, hash string, user data.User)
 }
 
 func NewHandler(component Component) Handler {
@@ -110,7 +110,7 @@ func NewHandler(component Component) Handler {
 			completeSubscription: component.MQClient.Subscription(config.AppConfig.SubscriptionNameComplete),
 		},
 		chat: &Chat{
-			sockets:  make(map[primitive.ObjectID][]*websocket.Conn),
+			sockets:  make(map[string][]*websocket.Conn),
 			upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
 		},
 		mailer: component.Mailer,

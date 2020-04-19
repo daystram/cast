@@ -234,10 +234,10 @@ func init() {
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:WebSocketController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:WebSocketController"],
         beego.ControllerComments{
             Method: "Connect",
-            Router: `/:hashString`,
+            Router: `/:hash`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(
-				param.New("hashString", param.InPath),
+				param.New("hash", param.InPath),
 				param.New("_"),
 			),
             Filters: nil,
@@ -246,10 +246,10 @@ func init() {
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:WebSocketControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:WebSocketControllerAuth"],
         beego.ControllerComments{
             Method: "Connect",
-            Router: `/:hashString`,
+            Router: `/:hash`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(
-				param.New("hashString", param.InPath),
+				param.New("hash", param.InPath),
 				param.New("_"),
 			),
             Filters: nil,

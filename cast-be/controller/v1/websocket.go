@@ -20,15 +20,9 @@ type WebSocketController struct {
 
 // @Title Connect
 // @Success 200 success
-// @router /:hashString [get]
-func (c *WebSocketController) Connect(hashString string, _ string) {
+// @router /:hash [get]
+func (c *WebSocketController) Connect(hash string, _ string) {
 	var err error
-	hash := primitive.ObjectID{}
-	if hash, err = primitive.ObjectIDFromHex(hashString); err != nil {
-		http.Error(c.Ctx.ResponseWriter, "Invalid hash!", http.StatusBadRequest)
-		log.Printf("[WebSocketControllerAuth::Connect] invalid hash. %+v\n", err)
-		return
-	}
 	err = c.Handler.ConnectWebSocket(c.Ctx, hash)
 	if _, ok := err.(websocket.HandshakeError); ok {
 		http.Error(c.Ctx.ResponseWriter, "Not a websocket handshake!", http.StatusBadRequest)
@@ -39,7 +33,6 @@ func (c *WebSocketController) Connect(hashString string, _ string) {
 		return
 	}
 }
-
 
 // WebSocket Chat Controller
 type WebSocketControllerAuth struct {
@@ -55,15 +48,9 @@ func (c *WebSocketControllerAuth) Prepare() {
 // @Title Connect
 // @Success 200 success
 // @Param	access_token	query	string	false	"Bearer token"	""
-// @router /:hashString [get]
-func (c *WebSocketControllerAuth) Connect(hashString string, _ string) {
+// @router /:hash [get]
+func (c *WebSocketControllerAuth) Connect(hash string, _ string) {
 	var err error
-	hash := primitive.ObjectID{}
-	if hash, err = primitive.ObjectIDFromHex(hashString); err != nil {
-		http.Error(c.Ctx.ResponseWriter, "Invalid hash!", http.StatusBadRequest)
-		log.Printf("[WebSocketControllerAuth::Connect] invalid hash. %+v\n", err)
-		return
-	}
 	err = c.Handler.ConnectWebSocket(c.Ctx, hash, c.userID)
 	if _, ok := err.(websocket.HandshakeError); ok {
 		http.Error(c.Ctx.ResponseWriter, "Not a websocket handshake!", http.StatusBadRequest)

@@ -12,7 +12,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (m *module) ConnectWebSocket(ctx *context.Context, hash primitive.ObjectID, userID ...primitive.ObjectID) (err error) {
+func (m *module) ConnectWebSocket(ctx *context.Context, hash string, userID ...primitive.ObjectID) (err error) {
+	if _, err = m.db.videoOrm.GetOneByHash(hash); err != nil {
+		fmt.Printf("[ConnectWebSocket] unkown video with hash %s. %+v\n", hash, err)
+		return
+	}
 	var ws *websocket.Conn
 	ctx.Request.Header.Set("Sec-Websocket-Version", "13")
 	ctx.Request.Header.Del("Sec-Websocket-Extensions")
@@ -24,7 +28,7 @@ func (m *module) ConnectWebSocket(ctx *context.Context, hash primitive.ObjectID,
 	if len(userID) != 0 {
 		user, err = m.db.userOrm.GetOneByID(userID[0])
 		if err != nil {
-			fmt.Printf("[Connect] failed retrieving user info for %s. %+v\n", userID[0].Hex(), err)
+			fmt.Printf("[ConnectWebSocket] failed retrieving user info for %s. %+v\n", userID[0].Hex(), err)
 			return
 		}
 		go m.ChatReaderWorker(ws, hash, user)
@@ -32,11 +36,11 @@ func (m *module) ConnectWebSocket(ctx *context.Context, hash primitive.ObjectID,
 	return
 }
 
-func (m *module) ChatReaderWorker(conn *websocket.Conn, hash primitive.ObjectID, user datatransfers.User) {
+func (m *module) ChatReaderWorker(conn *websocket.Conn, hash string, user datatransfers.User) {
 	for {
 		message := datatransfers.WebSocketMessage{}
 		if err := conn.ReadJSON(&message); err != nil {
-			fmt.Printf("[ChatReaderWorker] failed reading message for %s. %+v\n", hash.Hex(), err)
+			fmt.Printf("[ChatReaderWorker] failed reading message for %s. %+v\n", hash, err)
 			_ = conn.WriteJSON(datatransfers.WebSocketMessage{
 				Type: constants.MessageTypeError,
 				Data: "Failed reading chat!",
@@ -49,7 +53,7 @@ func (m *module) ChatReaderWorker(conn *websocket.Conn, hash primitive.ObjectID,
 			// TODO: insert into DB
 			chat, ok := message.Data.(string)
 			if !ok {
-				fmt.Printf("[ChatReaderWorker] failed parsing chat for %s\n", hash.Hex())
+				fmt.Printf("[ChatReaderWorker] failed parsing chat for %s\n", hash)
 				_ = conn.WriteJSON(datatransfers.WebSocketMessage{
 					Type: constants.MessageTypeError,
 					Data: "Failed sending chat!",
