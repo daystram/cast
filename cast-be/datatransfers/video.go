@@ -16,7 +16,7 @@ type Video struct {
 	Tags        []string           `json:"tags" bson:"tags"`
 	Views       int                `json:"views" bson:"views"`
 	Duration    int64              `json:"duration,omitempty" bson:"duration"` // only for VODs
-	IsLive      bool               `json:"is_live,omitempty" bson:"is_live"`   // only for Live
+	IsLive      bool               `json:"is_live" bson:"is_live"`             // only for Live
 	Resolutions int                `json:"resolutions" bson:"resolutions"`     // 0:None, 1:180p, 2:360p, 3:480p, 4:720p, 5:1080p, only for VODs
 	Likes       int                `json:"likes" bson:"-"`
 	Liked       bool               `json:"liked" bson:"-"`
