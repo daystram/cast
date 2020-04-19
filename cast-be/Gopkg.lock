@@ -47,6 +47,14 @@
   version = "v1.12.1"
 
 [[projects]]
+  digest = "1:e82702d28eb8aab5fd0417bc0c60a17e160a6648786295b6ed30060ad1188a9b"
+  name = "github.com/daystram/websocket"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "8899dba631e2659bd893f532ae6b17b9f4f9b710"
+  version = "v1.4.3"
+
+[[projects]]
   digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
@@ -644,6 +652,7 @@
     "github.com/astaxie/beego/context/param",
     "github.com/astaxie/beego/orm",
     "github.com/astaxie/beego/plugins/cors",
+    "github.com/daystram/websocket",
     "github.com/dgrijalva/jwt-go",
     "github.com/disintegration/imaging",
     "github.com/mailgun/mailgun-go",
