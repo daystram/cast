@@ -8,6 +8,9 @@ export default function auth() {
     username: () => {
       return Cookies.get("user") ? Cookies.get("user").split("|")[0] : "";
     },
+    token: () => {
+      return Cookies.get("user") ? Cookies.get("user").split("|")[1] : "";
+    },
     deauthenticate: () => {
       return Cookies.remove("user")
     }

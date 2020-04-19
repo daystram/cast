@@ -11,6 +11,8 @@ export default function urls() {
     cast_details: () => `${api_base}/video/details`,
     like: () => `${api_base}/p/video/like`,
     comment: () => `${api_base}/p/video/comment`,
+    // chat: (hash, token) => `wss://${window.location.hostname}${api_base}${token && '/p'}/chat/${hash}${token && '?access_token=$' + token}`,
+    chat: (hash, token) => `ws://localhost:8080${api_base}${token && '/p'}/chat/${hash}${token && '?access_token=$' + token}`,
     title_check: () => `${api_base}/p/video/check`,
     upload: () => `${api_base}/p/video/upload`,
     edit_video: () => `${api_base}/p/video/edit`,
