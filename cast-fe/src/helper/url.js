@@ -26,5 +26,9 @@ export default function urls() {
     resend_verify: () => `${api_base}/auth/resend`,
     user_info: () => `${api_base}/p/user/info`,
     edit_user: () => `${api_base}/p/user/edit`,
+    current_hash: () => {
+      let split = window.location.href.split('/');
+      return split.pop() || split.pop()
+    }
   }
 }
