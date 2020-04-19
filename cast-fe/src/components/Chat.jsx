@@ -55,7 +55,8 @@ class Chat extends Component {
         let json = JSON.parse(message.data);
         if (json && json.type === "chat") {
           this.setState({chats: [...this.state.chats, json.data]});
-          this.chatEnd.scrollIntoView({behavior: "auto"})
+          if (this.chatWrapper.scrollHeight - this.chatWrapper.scrollTop - this.chatWrapper.clientHeight < 72)
+            this.chatWrapper.scrollTop = this.chatWrapper.scrollHeight;
         } else {
           console.log("Invalid JSON: ", message.data);
         }
@@ -72,7 +73,7 @@ class Chat extends Component {
       this.props.promptSignup();
       return
     }
-    this.state.connection.send(JSON.stringify({
+    if (this.state.connection) this.state.connection.send(JSON.stringify({
       type: "chat",
       data: this.state.chat.trim()
     }));
@@ -86,11 +87,10 @@ class Chat extends Component {
         ...{height: this.props.height || "100vh"}
       }}>
         <Card.Body style={style.live_chat_body}>
-          <div style={{overflow: "overlay"}}>
+          <div style={{overflow: "overlay"}} ref={(ref) => this.chatWrapper = ref}>
             {this.state.chats.length !== 0 && this.state.chats.map(chat => (
               <p style={style.live_chat_item}><b>{chat.author}</b>: {chat.chat}</p>
             ))}
-            <div style={{float: "left"}} ref={(ref) => this.chatEnd = ref}/>
           </div>
           {this.props.embedded &&
           <Form onSubmit={this.handleSubmit}>
