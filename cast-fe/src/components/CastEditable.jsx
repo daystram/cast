@@ -3,7 +3,7 @@ import {Alert, Badge, Button, Card, Col, Form, Image, Modal, Row, Spinner} from 
 import urls from "../helper/url";
 import format from "../helper/format";
 import axios from "axios";
-import {Prompt, Redirect} from "react-router-dom";
+import {Prompt, withRouter} from "react-router-dom";
 import {WithContext as ReactTags} from "react-tag-input";
 import './tags.css'
 
@@ -39,6 +39,7 @@ class CastEditable extends Component {
     this.handleTagDrag = this.handleTagDrag.bind(this);
     this.submitForm = this.submitForm.bind(this);
     this.deleteVideo = this.deleteVideo.bind(this);
+    this.openVideo = this.openVideo.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -236,14 +237,28 @@ class CastEditable extends Component {
     });
   }
 
+  openVideo() {
+    switch (this.props.video.type) {
+      case "live":
+        if (this.props.video.is_live && this.props.video.hash !== urls().current_hash())
+          this.props.history.push(`/w/${this.props.video.hash}`);
+        break;
+      case "vod":
+        if (this.props.video.resolutions && this.props.video.hash !== urls().current_hash())
+          this.props.history.push(`/w/${this.props.video.hash}`);
+        break;
+      default:
+        console.log("Cannot open cast!");
+    }
+  }
+
   render() {
     return (
       <Card body style={style.card}>
-        {this.state.openVideoURL ? <Redirect to={`/w/${this.state.openVideoURL}`}/> : ""}
         <Row>
           <Col xl={3} lg={4} md={5} sm={12} className={"responsive-fold"}>
             <Image src={urls().thumbnail(this.props.video.hash)} style={style.thumbnail}
-                   onClick={() => this.setState({openVideoURL: this.props.video.hash})}/>
+                   onClick={this.openVideo}/>
           </Col>
           <Col md sm={12} className={"responsive-fold"}>
             {this.state.error_edit && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
@@ -263,8 +278,8 @@ class CastEditable extends Component {
               <div style={style.cast_tag_bar}>
                 <div>
                   <Badge pill style={style.cast_tag_resolution}>{resolutions[this.props.video.resolutions]}
-                    {" "} {this.props.video.resolutions === 5 ? "" :
-                      <Spinner animation="grow" style={style.spinner}/>}</Badge>
+                    {" "} {this.props.video.resolutions === 5 ||
+                    <Spinner animation="grow" style={style.spinner}/>}</Badge>
                   <Badge pill style={style.cast_tag}>
                     {`${this.props.video.views} view${this.props.video.views === 1 ? "" : "s"}`}</Badge>
                   <Badge pill style={style.cast_tag}>
@@ -351,6 +366,7 @@ class CastEditable extends Component {
 
 let style = {
   card: {
+    borderRadius: "8px 48px 8px 8px",
     marginBottom: 16,
     width: "100%"
   },
@@ -429,4 +445,4 @@ let style = {
   }
 };
 
-export default CastEditable
+export default withRouter(CastEditable)

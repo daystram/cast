@@ -8,9 +8,9 @@ import TimeAgo from "react-timeago";
 function Cast(props) {
   const history = useHistory();
 
-  function playVideo(e) {
+  function playVideo() {
     if (props.onClick) props.onClick(props.video.type, props.video.hash);
-    history.push(`/w/${props.video.hash}`);
+    if (props.video.hash !== urls().current_hash()) history.push(`/w/${props.video.hash}`);
   }
 
   function viewAuthor(e) {
