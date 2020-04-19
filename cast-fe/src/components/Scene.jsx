@@ -219,11 +219,6 @@ class Scene extends Component {
   }
 
   render() {
-    const share_pop = (
-      <Popover id="popover-basic">
-        <Popover.Content>Link copied!</Popover.Content>
-      </Popover>
-    );
     return (
       <>
         {!this.state.not_found ?
@@ -330,7 +325,8 @@ class Scene extends Component {
                 </Row>
               </Col>
               <Col xl={{span: 2, order: 3}} sm={{span: 6, order: 3}} xs={{span: 12, order: 3}}>
-                {this.state.video && <Chat embedded={true} hash={this.state.video.hash} promptSignup={this.promptSignup}/>}
+                {this.state.video &&
+                <Chat height={480} embedded={true} hash={this.state.video.hash} promptSignup={this.promptSignup}/>}
                 <div style={style.cast_list}>
                   {this.state.vod && Object.values(this.state.vod).map(video =>
                     <Row key={video.hash} noGutters style={{padding: "0 0 16px 0"}}>
@@ -390,10 +386,14 @@ class Scene extends Component {
                 <Form.Control type="text" value={window.location.href.split('?')[0]}
                               ref={ref => this.shareField = ref}/>
                 <InputGroup.Append>
-                  <OverlayTrigger trigger="click" placement="right" overlay={share_pop}>
+                  <OverlayTrigger trigger="click" placement="top" overlay={(
+                    <Popover id="popover-basic">
+                      <Popover.Content>Copied!</Popover.Content>
+                    </Popover>)}>
                     <Button variant="outline-primary" onClick={() => {
                       this.shareField.select();
-                      document.execCommand("copy")
+                      document.execCommand("copy");
+                      this.shareField.blur();
                     }}>Copy</Button>
                   </OverlayTrigger>
                 </InputGroup.Append>

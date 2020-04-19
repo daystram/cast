@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Alert, Button, Card, Col, Container, Form, Image, Row, Spinner} from "react-bootstrap";
+import {Alert, Button, Card, Col, Container, Form, Image, InputGroup, Row, Spinner} from "react-bootstrap";
 import Dropzone from "react-dropzone";
 import SidebarProfile from "./SidebarProfile";
 import axios from "axios";
@@ -63,7 +63,8 @@ class Profile extends Component {
 
   pressEdit() {
     if (this.state.editing) {
-      this.submitForm()
+      this.setState({show_email: false});
+      this.submitForm();
     } else {
       this.setState({
         before: {
@@ -73,6 +74,7 @@ class Profile extends Component {
         new_profile: "",
         error_name: "",
         error_email: "",
+        show_email: false,
         editing: true
       })
     }
@@ -204,7 +206,7 @@ class Profile extends Component {
                               height={128} width={128} roundedCircle
                               style={{position: "absolute", zIndex: 0, objectFit: "cover"}}/>
                             <section
-                              style={{...style.profile_upload, ...(this.state.new_profile ? style.profile_upload_modified : {})}}>
+                              style={{...style.profile_upload, ...(this.state.new_profile && style.profile_upload_modified)}}>
                               <div {...getRootProps()}>
                                 <input {...getInputProps()} />
                                 <p style={{textAlign: "center", lineHeight: "128px"}}>
@@ -260,11 +262,27 @@ class Profile extends Component {
                       <Col md={6} sm={12}>
                         <Form.Group>
                           <Form.Label>Email</Form.Label>
-                          <Form.Control name={"email"} value={this.state.email} onBlur={this.handleChange}
-                                        onChange={this.handleChange} type={"text"} style={style.email}
-                                        isInvalid={this.state.editing ? this.state.error_email : false}
-                                        disabled={!this.state.editing}/>
-                          <Form.Control.Feedback type={"invalid"}>{this.state.error_email}</Form.Control.Feedback>
+                          {this.state.editing ?
+                            <>
+                              <Form.Control name={"email"} value={this.state.email} onBlur={this.handleChange}
+                                            onChange={this.handleChange} disabled={false}
+                                            type={"email"} style={style.email}
+                                            isInvalid={this.state.editing ? this.state.error_email : false}/>
+                              <Form.Control.Feedback type={"invalid"}>{this.state.error_email}</Form.Control.Feedback>
+                            </> :
+                            <>
+                              <InputGroup>
+                                <Form.Control name={"email"} value={this.state.email} disabled={true}
+                                              type={this.state.show_email ? "email" : "password"} style={style.email}/>
+                                <InputGroup.Append>
+                                  <Button variant={this.state.show_email ? "primary" : "outline-primary"}
+                                          onClick={() => {
+                                            this.setState({show_email: !this.state.show_email})
+                                          }}><span
+                                    className="material-icons">{this.state.show_email ? "visibility_off" : "visibility"}</span></Button>
+                                </InputGroup.Append>
+                              </InputGroup>
+                            </>}
                         </Form.Group>
                       </Col>
                       <Col md={6} sm={12}>

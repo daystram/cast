@@ -52,7 +52,7 @@ div.ReactTags__tags__error {
     background-size: calc(.75em + .375rem) calc(.75em + .375rem);
 }
 
-div.ReactTags__tags:focus-within {
+div.ReactTags__tags:focus-within, div.ReactTags__tags__error:focus-within {
     border-color: #E84409;
     box-shadow: 0 0 0 0.2rem rgba(232, 68, 9, 0.5) !important;
 }
