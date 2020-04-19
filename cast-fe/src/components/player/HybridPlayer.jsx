@@ -57,6 +57,7 @@ class HybridPlayer extends React.Component {
   }
 
   updatePlayer() {
+    console.log(this.props.url);
     if (!this.props.url) return;
     this.player.pause();
     this.player.src({
@@ -64,8 +65,7 @@ class HybridPlayer extends React.Component {
       type: this.props.live ? 'video/x-flv' : 'application/dash+xml',
     });
     this.player.autoplay(this.props.live);
-    // if (this.props.live) this.player.play();
-    // this.player.load();
+    if (this.props.live) this.player.play();
     // else this.player.pause();
     this.player.load();
     this.player.poster(this.props.thumbnail);
