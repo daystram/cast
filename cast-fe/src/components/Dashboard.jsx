@@ -51,9 +51,9 @@ class Dashboard extends Component {
     });
   }
 
-  controlStream() {
+  controlStream(e) {
     if (this.state.stream && this.state.stream.is_live) {
-      // TODO: stop stream
+      this.setState({prompt_stop: true})
     } else {
       if (this.state.waiting) {
         // TODO: close window
@@ -61,6 +61,7 @@ class Dashboard extends Component {
       } else {
         // TODO: open window
         this.setState({waiting: true})
+        e.target.blur()
       }
     }
   }
@@ -100,12 +101,12 @@ class Dashboard extends Component {
             <Col xl={{span: 2, order: 1}} sm={{span: 6, order: 2}} xs={{span: 12, order: 1}} style={{marginBottom: 32}}>
               <SidebarProfile/>
             </Col>
-            <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 2}}>
+            <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 2}} className={"mid-container"}>
               <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
                 <h1 style={style.h1}>Livestream {this.state.stream && this.state.stream.is_live &&
                 <Badge pill style={style.live_tag}>LIVE</Badge>}</h1>
                 {this.state.stream && <Button
-                  variant={this.state.stream && (this.state.stream.is_live ? "danger" : this.state.waiting ? "warning" : "success")}
+                  variant={this.state.stream && (this.state.stream.is_live ? "danger" : this.state.waiting ? "warning" : "primary")}
                   size={"md"} style={style.live_button} onClick={this.controlStream}>
                   {this.state.stream && (this.state.stream.is_live ? "End Stream" : this.state.waiting ?
                     <>Waiting for Up-link{"  "}<Spinner animation="grow" style={style.spinner}/></> : "Go Live")}
@@ -208,7 +209,7 @@ class Dashboard extends Component {
               </Card>
             </Col>
             <Col xl={{span: 2, order: 3}} sm={{span: 6, order: 3}} xs={{span: 12, order: 3}}>
-              <Chat height={"80vh"} embedded={true} hash={auth().username()}/>
+              <Chat height={"90vh"} embedded={true} hash={auth().username()}/>
             </Col>
           </Row>
         </Container>
@@ -235,7 +236,7 @@ let style = {
     display: "inline-block"
   },
   content_container: {
-    padding: "36px 0 0 0",
+    padding: 0,
   },
   live_tag: {
     background: "red",
