@@ -5,7 +5,7 @@ import Routes from './Routes'
 import Navigation from "./components/Navigation";
 import axios from 'axios';
 
-axios.defaults.baseURL = "http://localhost:8080";
+// axios.defaults.baseURL = "http://localhost:8080";
 // axios.defaults.baseURL = "https://dev.cast.daystram.com";
 axios.defaults.withCredentials = true;
 
