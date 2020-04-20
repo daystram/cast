@@ -143,7 +143,7 @@ func (c *VideoControllerAuth) DeleteVideo(hash string) datatransfers.Response {
 // @Success 200 {object} models.Object
 // @Param   stub		query	string	false	"stub"
 // @router /upload [post]
-func (c *VideoControllerAuth) UploadVideo(stub string) datatransfers.Response {
+func (c *VideoControllerAuth) UploadVideo(_ string) datatransfers.Response {
 	upload := datatransfers.VideoUploadForm{}
 	err := c.ParseForm(&upload)
 	if err != nil {

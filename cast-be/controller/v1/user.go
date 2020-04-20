@@ -26,7 +26,7 @@ func (c *UserControllerAuth) Prepare() {
 // @Success 200 {object} models.Object
 // @Param   stub		query	string	false	"stub"
 // @router /info [get]
-func (c *UserControllerAuth) ProfileDetails(stub string) datatransfers.Response {
+func (c *UserControllerAuth) ProfileDetails(_ string) datatransfers.Response {
 	user, err := c.Handler.UserDetails(c.userID)
 	if err != nil {
 		fmt.Printf("[UserControllerAuth::ProfileInfo] user cannot be found. %+v\n", err)
@@ -39,7 +39,7 @@ func (c *UserControllerAuth) ProfileDetails(stub string) datatransfers.Response 
 // @Success 200 {object} models.Object
 // @Param   stub		query	string	false	"stub"
 // @router /edit [put]
-func (c *UserControllerAuth) UpdateProfile(stub string) datatransfers.Response {
+func (c *UserControllerAuth) UpdateProfile(_ string) datatransfers.Response {
 	info := datatransfers.UserEditForm{}
 	err := c.ParseForm(&info)
 	if err != nil {
