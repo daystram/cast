@@ -28,9 +28,10 @@ type UserDetail struct {
 }
 
 type UserItem struct {
-	Name        string `json:"name" bson:"name"`
-	Username    string `json:"username" bson:"username"`
-	Subscribers int    `json:"subscribers" bson:"subscribers"`
+	ID          primitive.ObjectID `json:"-" bson:"_id"`
+	Name        string             `json:"name" bson:"name"`
+	Username    string             `json:"username" bson:"username"`
+	Subscribers int                `json:"subscribers" bson:"subscribers"`
 }
 
 type UserLogin struct {
