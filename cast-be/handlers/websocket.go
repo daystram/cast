@@ -13,7 +13,8 @@ import (
 )
 
 func (m *module) ConnectWebSocket(ctx *context.Context, hash string, userID ...primitive.ObjectID) (err error) {
-	if _, err = m.db.videoOrm.GetOneByHash(hash); err != nil {
+	var video datatransfers.Video
+	if video, err = m.db.videoOrm.GetOneByHash(hash); err != nil {
 		fmt.Printf("[ConnectWebSocket] unkown video with hash %s. %+v\n", hash, err)
 		return
 	}
@@ -31,26 +32,41 @@ func (m *module) ConnectWebSocket(ctx *context.Context, hash string, userID ...p
 			fmt.Printf("[ConnectWebSocket] failed retrieving user info for %s. %+v\n", userID[0].Hex(), err)
 			return
 		}
-		go m.ChatReaderWorker(ws, hash, user)
 	}
+	go m.ChatReaderWorker(ws, hash, user, video.Type == constants.VideoTypeLive && video.Author.ID != user.ID)
 	return
 }
 
-func (m *module) ChatReaderWorker(conn *websocket.Conn, hash string, user datatransfers.User) {
+func (m *module) ChatReaderWorker(conn *websocket.Conn, hash string, user datatransfers.User, live bool) {
+	if live {
+		if err := m.db.videoOrm.IncrementViews(hash); err != nil {
+			fmt.Printf("[ChatReaderWorker] failed incrementing views for %s. %+v\n", hash, err)
+		}
+	}
 	for {
 		message := datatransfers.WebSocketMessage{}
 		if err := conn.ReadJSON(&message); err != nil {
-			fmt.Printf("[ChatReaderWorker] failed reading message for %s. %+v\n", hash, err)
+			if !websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
+				fmt.Printf("[ChatReaderWorker] failed reading message for %s. %+v\n", hash, err)
+			}
 			_ = conn.WriteJSON(datatransfers.WebSocketMessage{
 				Type: constants.MessageTypeError,
 				Data: "Failed reading chat!",
 				Code: http.StatusInternalServerError,
 			})
+			if live {
+				if err = m.db.videoOrm.IncrementViews(hash, true); err != nil {
+					fmt.Printf("[ChatReaderWorker] failed decrementing views for %s. %+v\n", hash, err)
+				}
+			}
 			break
+		}
+		if user.Username == "" {
+			continue
 		}
 		switch message.Type {
 		case constants.MessageTypeChat:
-			// TODO: insert into DB
+			// TODO: insert into DB?
 			chat, ok := message.Data.(string)
 			if !ok {
 				fmt.Printf("[ChatReaderWorker] failed parsing chat for %s\n", hash)

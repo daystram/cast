@@ -94,7 +94,7 @@ type Handler interface {
 	StartTranscode(hash string)
 
 	ConnectWebSocket(ctx *context.Context, hash string, userID ...primitive.ObjectID) (err error)
-	ChatReaderWorker(conn *websocket.Conn, hash string, user data.User)
+	ChatReaderWorker(conn *websocket.Conn, hash string, user data.User, live bool)
 }
 
 func NewHandler(component Component) Handler {
