@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"gitlab.com/daystram/cast/cast-be/datatransfers"
 	"io"
 	"net/http"
 	"path"
@@ -34,34 +35,64 @@ func (m *module) CreateRTMPUpLink() {
 		uplink:  &rtmp.Server{},
 		mutex:   &sync.RWMutex{},
 	}
-
 	m.live.uplink.HandlePublish = func(conn *rtmp.Conn) {
-		// TODO: check if user set LIVE in dashboard
+		username := path.Base(conn.URL.Path)
+		var video datatransfers.Video
+		var err error
+		if video, err = m.db.videoOrm.GetOneByHash(username); err != nil {
+			fmt.Printf("[RTMPUpLink] Unknown username %s\n", username)
+			_ = conn.Close()
+			return
+		}
+		if !video.Pending {
+			fmt.Printf("[RTMPUpLink] Window for %s not PENDING\n", username)
+			_ = conn.Close()
+			return
+		}
 		m.live.mutex.Lock()
 		ch := m.live.streams[path.Base(conn.URL.Path)]
 		if ch == nil {
-			fmt.Printf("[RTMPUpLink] UpLink for %s connected\n", path.Base(conn.URL.Path))
 			stream, _ := conn.Streams()
 			ch = &Stream{}
 			ch.queue = pubsub.NewQueue()
 			_ = ch.queue.WriteHeader(stream)
 			m.live.streams[path.Base(conn.URL.Path)] = ch
+			if err = m.db.videoOrm.SetLive(video.Author.ID, false, true); err != nil {
+				fmt.Printf("[RTMPUpLink] Failed setting stream for %s to LIVE. %+v\n", username, err)
+				delete(m.live.streams, username)
+				return
+			}
+			fmt.Printf("[RTMPUpLink] UpLink for %s connected\n", username)
 			m.live.mutex.Unlock()
 		} else {
-			fmt.Printf("[RTMPUpLink] UpLink for %s already exists\n", path.Base(conn.URL.Path))
+			fmt.Printf("[RTMPUpLink] UpLink for %s already exists\n", username)
 			m.live.mutex.Unlock()
+			_ = ch.queue.Close()
 			return
 		}
 		_ = avutil.CopyPackets(ch.queue, conn)
 		_ = ch.queue.Close()
+		delete(m.live.streams, username)
+		fmt.Printf("[RTMPUpLink] UpLink for %s disconnected. Stopping stream...\n", username)
+		if err = m.db.videoOrm.SetLive(video.Author.ID, false, false); err != nil {
+			fmt.Printf("[RTMPUpLink] Failed setting stream for %s to STOP. %+v\n", username, err)
+		}
 	}
 	m.live.uplink.Addr = fmt.Sprintf(":%d", config.AppConfig.RTMPPort)
 	go m.live.uplink.ListenAndServe()
-	fmt.Printf("[CreateRTMPUpLink] RTMP UpLink created at port %d\n", config.AppConfig.RTMPPort)
+	fmt.Printf("[CreateRTMPUpLink] RTMP UpLink Window opened at port %d\n", config.AppConfig.RTMPPort)
 }
 
 func (m *module) ControlUpLinkWindow(userID primitive.ObjectID, open bool) (err error) {
-	return m.db.videoOrm.SetLive(userID, open)
+	var stream datatransfers.Video
+	if stream, err = m.db.videoOrm.GetLiveByAuthor(userID); err != nil {
+		return errors.New(fmt.Sprintf("[ControlUpLinkWindow] failed retrieving video by %s. %+v", userID.Hex(), err))
+	}
+	if (stream.IsLive && open) || (!stream.IsLive && !stream.Pending && !open) {
+		return errors.New(fmt.Sprintf("[ControlUpLinkWindow] stream window already set for %s", stream.Hash))
+	}
+	delete(m.live.streams, stream.Hash)
+	return m.db.videoOrm.SetLive(userID, open, false)
 }
 
 func (m *module) StreamLive(_ string, w http.ResponseWriter, r *http.Request) (err error) {
