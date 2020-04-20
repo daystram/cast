@@ -29,7 +29,8 @@
     "videojs-contrib-dash": "^2.11.0",
     "videojs-contrib-quality-levels": "^2.0.9",
     "videojs-flvjs-es6": "^1.0.1",
-    "videojs-http-source-selector": "^1.1.6"
+    "videojs-http-source-selector": "^1.1.6",
+    "zxcvbn": "^4.4.2"
   },
   "scripts": {
     "start": "react-scripts start",
