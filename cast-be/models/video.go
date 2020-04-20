@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 type VideoOrmer interface {
@@ -17,9 +18,10 @@ type VideoOrmer interface {
 	GetAllVODByAuthor(author primitive.ObjectID) (videos []datatransfers.Video, err error)
 	GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error)
 	Search(query string, count, offset int) (videos []datatransfers.Video, err error)
+	GetLiveByAuthor(userID primitive.ObjectID) (datatransfers.Video, error)
 	GetOneByHash(hash string) (datatransfers.Video, error)
-	IncrementViews(hash string) (err error)
-	SetLive(authorID primitive.ObjectID, live bool) (err error)
+	IncrementViews(hash string, decrement ...bool) (err error)
+	SetLive(authorID primitive.ObjectID, pending, live bool) (err error)
 	SetResolution(hash string, resolution int) (err error)
 	InsertVideo(video datatransfers.VideoInsert) (ID primitive.ObjectID, err error)
 	EditVideo(video datatransfers.VideoInsert) (err error)
@@ -143,6 +145,27 @@ func (o *videoOrm) Search(queryString string, count int, offset int) (result []d
 	return
 }
 
+func (o *videoOrm) GetLiveByAuthor(userID primitive.ObjectID) (video datatransfers.Video, err error) {
+	query := &mongo.Cursor{}
+	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+		{{"$match", bson.D{{"author", userID}}}},
+		{{"$limit", 1}},
+		{{"$lookup", bson.D{
+			{"from", constants.DBCollectionUser},
+			{"localField", "author"},
+			{"foreignField", "_id"},
+			{"as", "author"},
+		}}},
+		{{"$unwind", "$author"}}}); err != nil {
+		return
+	}
+	if exists := query.Next(context.TODO()); exists {
+		err = query.Decode(&video)
+		return
+	}
+	return datatransfers.Video{}, mongo.ErrNoDocuments
+}
+
 func (o *videoOrm) GetOneByHash(hash string) (video datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
@@ -164,15 +187,34 @@ func (o *videoOrm) GetOneByHash(hash string) (video datatransfers.Video, err err
 	return datatransfers.Video{}, mongo.ErrNoDocuments
 }
 
-func (o *videoOrm) IncrementViews(hash string) error {
-	return o.collection.FindOneAndUpdate(context.TODO(), bson.M{"hash": hash}, bson.M{"$inc": bson.M{"views": 1}}).Err()
+func (o *videoOrm) IncrementViews(hash string, decrement ...bool) error {
+	delta := 1
+	if len(decrement) > 0 && decrement[0] {
+		delta = -1
+	}
+	return o.collection.FindOneAndUpdate(context.TODO(), bson.M{"hash": hash}, bson.M{"$inc": bson.M{"views": delta}}).Err()
 }
 
-func (o *videoOrm) SetLive(authorID primitive.ObjectID, live bool) (err error) {
-	return o.collection.FindOneAndUpdate(context.TODO(),
+func (o *videoOrm) SetLive(authorID primitive.ObjectID, pending, live bool) (err error) {
+	var stream datatransfers.VideoInsert
+	if err = o.collection.FindOneAndUpdate(context.TODO(),
 		bson.M{"author": authorID, "type": constants.VideoTypeLive},
-		bson.D{{"$set", bson.D{{"is_live", live}}}},
-	).Err()
+		bson.D{{"$set", bson.D{
+			{"is_live", live},
+			{"pending", pending},
+		}}},
+	).Decode(&stream); err != nil {
+		return
+	}
+	if stream.IsLive != live {
+		err = o.collection.FindOneAndUpdate(context.TODO(),
+			bson.M{"author": authorID, "type": constants.VideoTypeLive},
+			bson.D{{"$set", bson.D{
+				{"created_at", time.Now()},
+			}}},
+		).Err()
+	}
+	return
 }
 
 func (o *videoOrm) SetResolution(hash string, resolution int) (err error) {
