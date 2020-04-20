@@ -84,9 +84,20 @@ func init() {
 
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:LiveControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:LiveControllerAuth"],
         beego.ControllerComments{
-            Method: "ControlWindow",
+            Method: "GetWindow",
             Router: `/window`,
             AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("_"),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:LiveControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:LiveControllerAuth"],
+        beego.ControllerComments{
+            Method: "ControlWindow",
+            Router: `/window`,
+            AllowHTTPMethods: []string{"put"},
             MethodParams: param.Make(
 				param.New("open", param.IsRequired),
 			),
@@ -108,7 +119,7 @@ func init() {
             Router: `/edit`,
             AllowHTTPMethods: []string{"put"},
             MethodParams: param.Make(
-				param.New("stub"),
+				param.New("_"),
 			),
             Filters: nil,
             Params: nil})
@@ -119,7 +130,7 @@ func init() {
             Router: `/info`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(
-				param.New("stub"),
+				param.New("_"),
 			),
             Filters: nil,
             Params: nil})
@@ -226,7 +237,7 @@ func init() {
             Router: `/upload`,
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(
-				param.New("stub"),
+				param.New("_"),
 			),
             Filters: nil,
             Params: nil})

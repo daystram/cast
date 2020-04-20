@@ -7,6 +7,5 @@ import (
 )
 
 func main() {
-	//_ = logs.SetLogger(logs.AdapterFile, `{"filename":"logs/test.log", "separate":["error"], "level": 3}`)
 	beego.Run()
 }
