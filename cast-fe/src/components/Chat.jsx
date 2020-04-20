@@ -25,7 +25,7 @@ class Chat extends Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
     if ((this.props.embedded && (this.props.hash !== prevProps.hash)) ||
       (!this.props.embedded && (this.props.match.params.hash !== prevProps.match.params.hash))) {
-      this.state.connection.close(1000);
+      if (this.state.connection) this.state.connection.close(1000);
       this.setState({chats: []});
       this.connectChat(this.props.embedded ? this.props.hash : this.props.match.params.hash)
     }
@@ -87,7 +87,8 @@ class Chat extends Component {
         ...{height: this.props.height || "100vh"}
       }}>
         <Card.Body style={style.live_chat_body}>
-          <div style={{overflow: "overlay"}} ref={(ref) => this.chatWrapper = ref}>
+          <div style={this.props.embedded ? {overflow: "overlay"} : {overflow: "hidden"}}
+               ref={(ref) => this.chatWrapper = ref}>
             {this.state.chats.length !== 0 && this.state.chats.map(chat => (
               <p style={style.live_chat_item}><b>{chat.author}</b>: {chat.chat}</p>
             ))}
