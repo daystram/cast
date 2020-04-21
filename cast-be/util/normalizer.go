@@ -16,6 +16,7 @@ func NormalizeImage(root, filename string, width, height int) (err error) {
 	if reader, err = os.Open(fmt.Sprintf("%s/%s/%s.ori", config.AppConfig.UploadsDirectory, root, filename)); err != nil {
 		return errors.New(fmt.Sprintf("[NormalizeProfile] failed to read original image. %+v", err))
 	}
+	defer reader.Close()
 	original, _, err := image.Decode(reader)
 	if err != nil {
 		return
@@ -24,7 +25,6 @@ func NormalizeImage(root, filename string, width, height int) (err error) {
 	if err = imaging.Save(normalized, fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, root, filename)); err != nil {
 		return errors.New(fmt.Sprintf("[NormalizeProfile] failed to normalize image. %+v", err))
 	}
-	reader.Close()
 	_ = os.Remove(fmt.Sprintf("%s/%s/%s.ori", config.AppConfig.UploadsDirectory, root, filename))
 	return
 }

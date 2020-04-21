@@ -48,30 +48,30 @@ func (c *UserControllerAuth) UpdateProfile(_ string) datatransfers.Response {
 	}
 	err = c.Handler.UpdateUser(info, c.userID)
 	if err != nil {
-		fmt.Printf("[UserControllerAuth::ProfileInfo] user cannot be found. %+v\n", err)
+		fmt.Printf("[UserControllerAuth::UpdateProfile] user cannot be found. %+v\n", err)
 		return datatransfers.Response{Error: "failed setting stream window", Code: http.StatusInternalServerError}
 	}
 	if _, _, err = c.GetFile("profile"); err != nil {
 		if err == http.ErrMissingFile {
 			return datatransfers.Response{Code: http.StatusOK}
 		} else {
-			fmt.Printf("[UserControllerAuth::ProfileInfo] failed retrieving profile image. %+v\n", err)
+			fmt.Printf("[UserControllerAuth::UpdateProfile] failed retrieving profile image. %+v\n", err)
 			return datatransfers.Response{Error: "Failed retrieving profile image", Code: http.StatusInternalServerError}
 		}
 	}
 	var user datatransfers.UserDetail
 	if user, err = c.Handler.UserDetails(c.userID); err != nil {
-		fmt.Printf("[UserControllerAuth::ProfileInfo] failed retrieving user info. %+v\n", err)
+		fmt.Printf("[UserControllerAuth::UpdateProfile] failed retrieving user info. %+v\n", err)
 		return datatransfers.Response{Error: "Failed retrieving user info", Code: http.StatusInternalServerError}
 	}
 	err = c.SaveToFile("profile", fmt.Sprintf("%s/profile/%s.ori", config.AppConfig.UploadsDirectory, user.Username))
 	if err != nil {
-		fmt.Printf("[UserControllerAuth::ProfileInfo] failed saving profile image. %+v\n", err)
+		fmt.Printf("[UserControllerAuth::UpdateProfile] failed saving profile image. %+v\n", err)
 		return datatransfers.Response{Error: "Failed saving profile image", Code: http.StatusInternalServerError}
 	}
 	err = c.Handler.NormalizeProfile(user.Username)
 	if err != nil {
-		fmt.Printf("[UserControllerAuth::ProfileInfo] failed normalizing profile image. %+v\n", err)
+		fmt.Printf("[UserControllerAuth::UpdateProfile] failed normalizing profile image. %+v\n", err)
 		return datatransfers.Response{Error: "Failed normalizing profile image", Code: http.StatusInternalServerError}
 	}
 	return datatransfers.Response{Code: http.StatusOK}

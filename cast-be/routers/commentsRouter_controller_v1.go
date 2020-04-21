@@ -214,7 +214,7 @@ func init() {
             Router: `/edit`,
             AllowHTTPMethods: []string{"put"},
             MethodParams: param.Make(
-				param.New("video", param.IsRequired, param.InBody),
+				param.New("_"),
 			),
             Filters: nil,
             Params: nil})

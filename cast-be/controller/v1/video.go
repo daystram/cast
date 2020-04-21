@@ -104,11 +104,16 @@ func (c *VideoControllerAuth) GetCheckUnique(title string) datatransfers.Respons
 
 // @Title Edit Video
 // @Success 200 {object} models.Object
-// @Param   video    body	{datatransfers.VideoEditForm}	true	"video"
+// @Param   stub		query	string	false	"stub"
 // @router /edit [put]
-func (c *VideoControllerAuth) EditVideo(video datatransfers.VideoEditForm) datatransfers.Response {
-	fmt.Println(video.Tags)
-	err := c.Handler.UpdateVideo(datatransfers.VideoEdit{
+func (c *VideoControllerAuth) EditVideo(_ string) datatransfers.Response {
+	video := datatransfers.VideoEditForm{}
+	err := c.ParseForm(&video)
+	if err != nil {
+		fmt.Printf("[VideoControllerAuth::EditVideo] failed parsing video details. %+v\n", err)
+		return datatransfers.Response{Error: "Failed parsing video detail", Code: http.StatusInternalServerError}
+	}
+	err = c.Handler.UpdateVideo(datatransfers.VideoEdit{
 		Hash:        video.Hash,
 		Title:       video.Title,
 		Description: video.Description,
@@ -117,6 +122,29 @@ func (c *VideoControllerAuth) EditVideo(video datatransfers.VideoEditForm) datat
 	if err != nil {
 		fmt.Printf("[VideoControllerAuth::EditVideo] failed editing video. %+v\n", err)
 		return datatransfers.Response{Error: "Failed editing video", Code: http.StatusInternalServerError}
+	}
+	if _, _, err = c.GetFile("thumbnail"); err != nil {
+		if err == http.ErrMissingFile {
+			return datatransfers.Response{Code: http.StatusOK}
+		} else {
+			fmt.Printf("[VideoControllerAuth::EditVideo] failed retrieving profile image. %+v\n", err)
+			return datatransfers.Response{Error: "Failed retrieving profile image", Code: http.StatusInternalServerError}
+		}
+	}
+	err = c.SaveToFile("thumbnail", fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, video.Hash))
+	if err != nil {
+		fmt.Printf("[VideoControllerAuth::EditVideo] failed saving thumbnail. %+v\n", err)
+		return datatransfers.Response{Error: "Failed saving thumbnail", Code: http.StatusInternalServerError}
+	}
+	var videoID primitive.ObjectID
+	if videoID, err = primitive.ObjectIDFromHex(video.Hash); err != nil {
+		fmt.Printf("[VideoControllerAuth::EditVideo] failed parsing video hash. %+v\n", err)
+		return datatransfers.Response{Error: "Failed parsing video hash", Code: http.StatusInternalServerError}
+	}
+	err = c.Handler.NormalizeThumbnail(videoID)
+	if err != nil {
+		fmt.Printf("[VideoControllerAuth::EditVideo] failed normalizing thumbnail. %+v\n", err)
+		return datatransfers.Response{Error: "Failed normalizing thumbnail", Code: http.StatusInternalServerError}
 	}
 	return datatransfers.Response{Code: http.StatusOK}
 }
