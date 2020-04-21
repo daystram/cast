@@ -3,9 +3,6 @@ import {Nav} from "react-bootstrap";
 import {NavLink} from "react-router-dom";
 
 class SidebarProfile extends Component {
-  constructor(props) {
-    super(props);
-  }
   render() {
     return (
       <Nav className="flex-column" onClick={this.props.onSelect}>
