@@ -1,10 +1,12 @@
 import React, {Component} from 'react';
-import {Col, Container, Row, Spinner} from "react-bootstrap";
+import {Card, Col, Container, Row, Spinner} from "react-bootstrap";
 import Cast from "./Cast"
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import urls from "../helper/url";
 import {Redirect} from "react-router-dom";
+import MediaQuery from "react-responsive";
+import {MOBILE_BP} from "../constants/breakpoint";
 
 class Search extends Component {
   constructor(props) {
@@ -54,9 +56,11 @@ class Search extends Component {
         {!this.state.query && <Redirect to={"/"}/>}
         <Container fluid style={style.content_container}>
           <Row>
-            <Col md={2} sm={12} style={{marginBottom: 32}}>
-              <Sidebar/>
-            </Col>
+            <MediaQuery minDeviceWidth={MOBILE_BP}>
+              <Col xl={2} xs={12} style={{marginBottom: 32}}>
+                <Card body style={{borderRadius: "8px 48px 8px 8px"}}><Sidebar/></Card>
+              </Col>
+            </MediaQuery>
             <Col md={10} sm={12} className={"mid-container-right"}>
               <h1 style={style.h1}>"{this.state.query}"</h1>
               <Row noGutters>
@@ -88,7 +92,6 @@ let style = {
     margin: "32px auto 64px auto",
   },
   content_container: {
-    padding: 0,
   },
 };
 

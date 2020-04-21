@@ -260,7 +260,7 @@ class CastEditable extends Component {
             <Image src={urls().thumbnail(this.props.video.hash)} style={style.thumbnail}
                    onClick={this.openVideo}/>
           </Col>
-          <Col md sm={12} className={"responsive-fold"}>
+          <Col md sm={12} className={"responsive-fold mid-container-right"}>
             {this.state.error_edit && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
             {this.state.editing ?
               <Form autocomplete={"off"}>
@@ -271,7 +271,7 @@ class CastEditable extends Component {
                   <Form.Control.Feedback type={"invalid"}>{this.state.error_title}</Form.Control.Feedback>
                 </Form.Group>
               </Form> :
-              <h1 style={style.title}>{this.state.title}</h1>
+              <p style={style.title}>{this.state.title}</p>
             }
             {this.props.video.type === "vod" && <>
               <p style={{marginBottom: 0}}>{format().full_date(this.props.video.created_at)}</p>
@@ -366,20 +366,22 @@ class CastEditable extends Component {
 
 let style = {
   card: {
-    borderRadius: "8px 48px 8px 8px",
+    borderRadius: "8px 8px 8px 8px",
     marginBottom: 16,
     width: "100%"
   },
   title: {
+    lineHeight: 1.2,
     margin: 0,
     fontSize: "2rem",
+    fontWeight: 600,
     marginBottom: 4
   },
   thumbnail: {
     borderRadius: "8px 48px 8px 8px",
-    borderWidth: 1,
-    borderColor: "lightgray",
-    borderStyle: "solid",
+    // borderWidth: 1,
+    // borderColor: "lightgray",
+    // borderStyle: "solid",
     objectFit: "cover",
     width: "100%",
     cursor: "pointer"
@@ -397,11 +399,12 @@ let style = {
     justifyContent: "space-between"
   },
   cast_tag: {
-    background: "white",
+    background: "#8B2803AA",
+    color: "#DDD",
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "lightgray",
-    borderStyle: "solid",
+    // borderWidth: 1,
+    // borderColor: "lightgray",
+    // borderStyle: "solid",
     fontSize: 14,
     fontWeight: 400,
     marginRight: 8,

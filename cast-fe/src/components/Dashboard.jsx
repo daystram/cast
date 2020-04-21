@@ -21,6 +21,8 @@ import axios from "axios";
 import urls from "../helper/url";
 import format from "../helper/format";
 import Clock from 'react-live-clock';
+import {MOBILE_BP} from "../constants/breakpoint";
+import MediaQuery from "react-responsive";
 
 let interval = null;
 
@@ -131,22 +133,29 @@ class Dashboard extends Component {
       <>
         <Container fluid style={style.content_container}>
           <Row>
-            <Col xl={{span: 2, order: 1}} sm={{span: 6, order: 2}} xs={{span: 12, order: 1}} style={{marginBottom: 32}}>
-              <SidebarProfile/>
-            </Col>
-            <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 2}}
+            <MediaQuery minDeviceWidth={MOBILE_BP}>
+              <Col xl={{span: 2, order: 1}} style={{marginBottom: 32}}>
+                <Card body style={{borderRadius: "8px 48px 8px 8px"}}><SidebarProfile/></Card>
+              </Col>
+            </MediaQuery>
+            <Col xl={{span: 8, order: 2}} md={{span: 6, order: 1}} xs={{span: 12, order: 2}}
                  className={"mid-container"}>
-              <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
-                <h1 style={style.h1}>Livestream {this.state.stream && this.state.live &&
-                <Badge pill style={style.live_tag}>LIVE</Badge>}</h1>
-                {this.state.stream && <Button disabled={this.state.loading_status}
-                                              variant={this.state.stream && (this.state.live ? "danger" : this.state.pending ? "warning" : "primary")}
-                                              size={"md"} style={style.live_button} onClick={this.controlStream}>
-                  {this.state.stream && !this.state.loading_status && (this.state.live ? "End Stream" : this.state.pending ?
-                    <>Waiting for Up-link{"  "}<Spinner animation="grow" style={style.spinner}/></> : "Go Live")}
-                  {this.state.loading_status && <Spinner animation="grow" style={style.spinner}/>}
-                </Button>}
-              </div>
+              <Row noGutters>
+                <Col>
+                  <h1 style={style.h1}>Livestream {this.state.stream && this.state.live &&
+                  <Badge pill style={style.live_tag}>LIVE</Badge>}</h1>
+                </Col>
+                <Col md={"auto"} sm={12}>
+                  {this.state.stream && <Button disabled={this.state.loading_status} className={"responsive-fold"}
+                                                variant={this.state.stream && (this.state.live ? "danger" : this.state.pending ? "warning" : "primary")}
+                                                size={"md"} block style={style.live_button}
+                                                onClick={this.controlStream}>
+                    {this.state.stream && !this.state.loading_status && (this.state.live ? "End Stream" : this.state.pending ?
+                      <>Waiting for Up-link{"  "}<Spinner animation="grow" style={style.spinner}/></> : "Go Live")}
+                    {this.state.loading_status && <Spinner animation="grow" style={style.spinner}/>}
+                  </Button>}
+                </Col>
+              </Row>
               <div style={style.card_detail}>
                 {this.state.stream ? <CastEditable video={this.state.stream}/> :
                   <div style={{display: "flex", justifyContent: "center"}}>
@@ -255,8 +264,10 @@ class Dashboard extends Component {
                   <Spinner style={style.spinner} animation="grow" variant="primary"/>
                 </div>}
             </Col>
-            <Col xl={{span: 2, order: 3}} sm={{span: 6, order: 3}} xs={{span: 12, order: 3}}>
-              <Chat height={"90vh"} embedded={true} hash={auth().username()}/>
+            <Col xl={{span: 2, order: 3}} md={{span: 6, order: 2}} xs={{span: 12, order: 2}}
+                 style={{paddingBottom: 16}}>
+              <h1 style={style.h1}>Chat</h1>
+              <Chat height={"85vh"} embedded={true} hash={auth().username()}/>
             </Col>
           </Row>
         </Container>
@@ -285,9 +296,7 @@ let style = {
     fontFamily: "Comfortaa",
     display: "inline-block"
   },
-  content_container: {
-    padding: 0,
-  },
+  content_container: {},
   live_tag: {
     background: "red",
     color: "white",

@@ -3,6 +3,7 @@ import {
   Alert,
   Badge,
   Button,
+  Card,
   Col,
   Container,
   Form,
@@ -27,6 +28,8 @@ import TimeAgo from "react-timeago";
 import queryString from 'query-string';
 import logo from "./logo.svg";
 import Chat from "./Chat";
+import MediaQuery from "react-responsive";
+import {MOBILE_BP} from "../constants/breakpoint";
 
 class Scene extends Component {
   constructor(props) {
@@ -226,7 +229,9 @@ class Scene extends Component {
           <Container fluid style={style.content_container}>
             <Row>
               <Col xl={{span: 2, order: 1}} sm={{span: 6, order: 2}} xs={{span: 12, order: 2}}>
-                <Sidebar/>
+                <MediaQuery minDeviceWidth={MOBILE_BP}>
+                  <Card body style={{borderRadius: "8px 48px 8px 8px"}}><Sidebar/></Card>
+                </MediaQuery>
                 <div style={style.cast_list}>
                   {this.state.live && Object.values(this.state.live).map(video =>
                     <Row key={video.hash} noGutters style={{padding: "0 0 16px 0"}}>
@@ -236,7 +241,8 @@ class Scene extends Component {
                   {this.state.loading.live && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
                 </div>
               </Col>
-              <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 1}} className={"mid-container"}>
+              <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 1}}
+                   className={"mid-container"}>
                 <HybridPlayer
                   url={this.state.video && (this.state.video.type === "live" ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}
                   thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}
@@ -322,8 +328,11 @@ class Scene extends Component {
                       }) : <h5 style={style.h5}>Post the first comment!</h5>}
                     </div>
                   </Col>
-                  <Col xl={1} sm={0}/>
+                  <Col xl={1} xs={0}/>
                 </Row>
+                <MediaQuery maxDeviceWidth={MOBILE_BP}>
+                  <hr/>
+                </MediaQuery>
               </Col>
               <Col xl={{span: 2, order: 3}} sm={{span: 6, order: 3}} xs={{span: 12, order: 3}}>
                 {this.state.video &&
@@ -409,11 +418,10 @@ class Scene extends Component {
 
 let style = {
   title: {
+    color: "#EEE",
     margin: 0
   },
-  content_container: {
-    padding: 0,
-  },
+  content_container: {},
   spinner: {
     display: "block",
     margin: "32px auto 64px auto",
@@ -425,17 +433,19 @@ let style = {
     marginTop: 8,
   },
   cast_tag: {
-    background: "white",
+    background: "#8B2803AA",
+    color: "#DDD",
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "lightgray",
-    borderStyle: "solid",
+    // borderWidth: 1,
+    // borderColor: "lightgray",
+    // borderStyle: "solid",
     fontSize: 16,
     fontWeight: 400,
     marginRight: 8,
     marginBottom: 8,
   },
   cast_attrib: {
+    color: "#DDD",
     marginLeft: 16,
     marginBottom: 8,
   },
@@ -472,6 +482,7 @@ let style = {
   },
   description: {
     // marginLeft: 48,
+    color: "#DDD",
     marginTop: 16,
     marginBottom: 16,
     // width: "80%"
@@ -481,7 +492,7 @@ let style = {
   },
   comment_list: {
     marginTop: 32,
-    marginBottom: 64
+    marginBottom: 16
   },
   comment_item: {
     marginTop: 16,

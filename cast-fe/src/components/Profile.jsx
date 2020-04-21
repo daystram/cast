@@ -6,6 +6,8 @@ import axios from "axios";
 import urls from "../helper/url";
 import abbreviate from "../helper/abbreviate";
 import auth from "../helper/auth";
+import MediaQuery from "react-responsive";
+import {MOBILE_BP} from "../constants/breakpoint";
 
 let timeout = {};
 
@@ -188,12 +190,14 @@ class Profile extends Component {
       <>
         <Container fluid style={style.content_container}>
           <Row>
-            <Col md={2} sm={12} style={{marginBottom: 32}}>
-              <SidebarProfile/>
-            </Col>
-            <Col md={10} sm={12} className={"mid-container-right"}>
+            <MediaQuery minDeviceWidth={MOBILE_BP}>
+              <Col xl={2} xs={12} style={{marginBottom: 32}}>
+                <Card body style={{borderRadius: "8px 48px 8px 8px"}}><SidebarProfile/></Card>
+              </Col>
+            </MediaQuery>
+            <Col xl={10} xs={12} className={"mid-container-right"}>
               <Row>
-                <Col md sm={12} className={"responsive-fold"}>
+                <Col xl xs={12} className={"responsive-fold"}>
                   <div style={style.profile_bar}>
                     {this.state.editing ?
                       <Dropzone accept={"image/*"} multiple={false}
@@ -293,7 +297,7 @@ class Profile extends Component {
                     </Row>
                   </Card>
                 </Col>
-                <Col md={"auto"} sm={12}>
+                <Col xl={"auto"} xs={12}>
                   <Button variant={"success"} block size={"sm"} style={style.button} onClick={this.pressEdit}
                           disabled={this.state.before && (this.state.name === this.state.before.name &&
                             this.state.email === this.state.before.email && !this.state.new_profile)}>
@@ -316,15 +320,15 @@ class Profile extends Component {
 }
 
 let style = {
-  h1: {
-    fontFamily: "Comfortaa",
-  },
-  content_container: {
-    padding: 0,
-  },
+  content_container: {},
   name: {
+    color: "#EBEBEB",
     margin: 0,
-    fontSize: "3.5rem"
+    fontSize: "3.5rem",
+    lineHeight: 1.5,
+    whiteSpace: "nowrap",
+    textOverflow: "ellipsis",
+    overflow: "hidden"
   },
   profile_upload: {
     width: 128,
@@ -344,10 +348,12 @@ let style = {
     marginBottom: 48,
   },
   profile_name: {
+    overflow: "hidden",
     marginLeft: 16,
     alignSelf: "center"
   },
   sub_count: {
+    color: "#DDD",
     fontSize: 22
   },
   profile_detail: {

@@ -1,9 +1,11 @@
 import React, {Component} from 'react';
-import {Col, Container, Row, Spinner} from "react-bootstrap";
+import {Card, Col, Container, Row, Spinner} from "react-bootstrap";
 import Cast from "./Cast"
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import urls from "../helper/url";
+import {MOBILE_BP} from "../constants/breakpoint";
+import MediaQuery from "react-responsive";
 
 class Home extends Component {
   constructor(props) {
@@ -47,14 +49,17 @@ class Home extends Component {
       <>
         <Container fluid style={style.content_container}>
           <Row>
-            <Col md={2} sm={12} style={{marginBottom: 32}}>
-              <Sidebar/>
-            </Col>
-            <Col md={10} sm={12} className={"mid-container-right"}>
+            <MediaQuery minDeviceWidth={MOBILE_BP}>
+              <Col xl={2} xs={12} style={{marginBottom: 32}}>
+                <Card body style={{borderRadius: "8px 48px 8px 8px"}}><Sidebar/></Card>
+              </Col>
+            </MediaQuery>
+            <Col xl={10} xs={12} className={"mid-container-right"}>
               <h1 style={style.h1}>Live Casts</h1>
               <Row noGutters>
                 {!this.state.loading.live && (this.state.live ? this.state.live.map(video =>
-                  <Col xl={3} lg={4} md={6} sm={12} key={video.hash} style={{padding: "0 8px 16px 8px"}}><Cast video={video}/></Col>
+                  <Col xl={3} lg={4} md={6} sm={12} key={video.hash} style={{padding: "0 8px 16px 8px"}}><Cast
+                    video={video}/></Col>
                 ) : <h5 style={style.h5}>No live casts today!</h5>)}
                 {this.state.loading.live && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
               </Row>
@@ -62,7 +67,8 @@ class Home extends Component {
               <h1 style={style.h1}>Fresh Casts</h1>
               <Row noGutters>
                 {!this.state.loading.vod && (this.state.vod ? this.state.vod.map(video =>
-                  <Col xl={3} lg={4} md={6} sm={12} key={video.hash} style={{padding: "0 8px 16px 8px"}}><Cast video={video}/></Col>
+                  <Col xl={3} lg={4} md={6} sm={12} key={video.hash} style={{padding: "0 8px 16px 8px"}}><Cast
+                    video={video}/></Col>
                 ) : <h5 style={style.h5}>No fresh casts today!</h5>)}
                 {this.state.loading.vod && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
               </Row>
@@ -87,9 +93,7 @@ let style = {
   spinner: {
     margin: "32px auto 64px auto",
   },
-  content_container: {
-    padding: 0,
-  },
+  content_container: {},
 };
 
 export default Home

@@ -7,9 +7,9 @@ div.ReactTags__tags {
     font-weight: 400;
     line-height: 1.5;
     color: #495057;
-    background-color: #fff;
+    background-color: #8B280344;
     background-clip: padding-box;
-    border: 1px solid #ced4da;
+    border: 1px solid #8B280344;
     border-radius: .25rem;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
     padding: .375rem .75rem;
@@ -22,13 +22,13 @@ div.ReactTags__tags__disabled {
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
-    color: #495057;
+    color: #999999DD;
     background-clip: padding-box;
-    border: 1px solid #ced4da;
+    border: 1px solid #8B280344;
     border-radius: .25rem;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
     padding: .375rem .75rem;
-    background-color: #e9ecef;
+    background-color: #8B2803AA;
     opacity: 1;
 }
 
@@ -39,8 +39,8 @@ div.ReactTags__tags__error {
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
-    color: #495057;
-    background-color: #fff;
+    color: #EBEBEB;
+    background-color: #8B280344;
     background-clip: padding-box;
     border-radius: .25rem;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
@@ -64,7 +64,7 @@ div.ReactTags__tagInput {
     display: inline-block;
     background: transparent;
     border: 0;
-    color: #777;
+    color: #EBEBEB;
     font-family: "Open Sans", sans-serif;
     font-size: 14px;
     font-weight: 400;
@@ -82,7 +82,7 @@ div.ReactTags__tagInput input.ReactTags__tagInputField:focus {
     display: inline-block;
     background: transparent;
     border: 0;
-    color: #777;
+    color: #EBEBEB;
     font-family: "Open Sans", sans-serif;
     font-size: 14px;
     font-weight: 400;
@@ -95,11 +95,12 @@ div.ReactTags__selected {
 
 /* Styles for selected tags */
 div.ReactTags__selected span.ReactTags__tag {
-    background: white;
+    background: #8B2803AA;
+    color: #DDD;
     border-radius: 8px;
-    border-width: 1px;
-    border-color: lightgray;
-    border-style: solid;
+    /*border-width: 1px;*/
+    /*border-color: lightgray;*/
+    /*border-style: solid;*/
     font-size: 14px;
     font-weight: 400;
     margin-right: 8px;

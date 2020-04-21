@@ -1,10 +1,21 @@
+html {
+    background: #1E0800;
+}
+
+#root {
+    background: #1E0800;
+}
+
 * {
     font-family: 'Open Sans', sans-serif;
 }
 
 body {
-    margin: 0 16px;
-    /*overflow: overlay;*/
+    overflow: overlay;
+}
+
+hr {
+    border-color: #E8440944;
 }
 
 .mid-container {
@@ -20,28 +31,84 @@ body {
         margin-bottom: 8px;
     }
 
-    .mid-container-right {
-        padding: 0 20px;
-    }
-
-    body {
-        margin: 0 8px;
-    }
 }
 
 @media (max-width: 1200px) {
     .mid-container {
         padding: 0 20px;
     }
+
+    .mid-container-right {
+        padding: 0 20px;
+    }
+}
+
+h1, h2, h3 {
+    color: #E84409;
+    font-weight: 700;
+}
+
+p, h5, .form-label {
+    color: #EBEBEB;
+}
+
+.form-control {
+    border-color: #8B280344;
+}
+
+.form-control, .form-control:focus {
+    color: #EBEBEB;
+    background-color: #8B280344;
+}
+
+.form-control:disabled {
+    color: #999999DD;
+    background-color: #8B2803AA;
+}
+
+.form-control::placeholder, .form-control:focus::placeholder {
+    color: #BBBBBBCC;
+}
+
+.card {
+    background: #8B280344;
+    outline: none;
+}
+
+.modal-content {
+    background: #1E0800;
+}
+
+.modal-header {
+    color: #E84409;
+    border-bottom-color: #E8440944;
+}
+
+.modal-footer {
+    border-top-color: #E8440944;
+}
+
+.modal-header .modal-title {
+    font-weight: 700;
+}
+
+.modal-header .close span {
+    color: #E84409;
+    text-shadow: none;
 }
 
 .material-icons {
     font-size: 22px;
     vertical-align: sub;
+    line-height: 0;
 }
 
 .text-primary {
     color: #E84409 !important;
+}
+
+.progress {
+    background-color: #8B280344;
 }
 
 .progress-bar {
@@ -90,12 +157,13 @@ body {
 }
 
 ::-webkit-scrollbar {
+    /*background: #8B280344;*/
     width: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #888;
-    border-radius: 8px;
+    background-color: #571803;
+    border-radius: 4px;
     padding-right: 8px;
 }
 

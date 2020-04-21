@@ -2,14 +2,13 @@ video {
     border-radius: 8px;
 }
 
-.vjs-control-bar {
+.video-js .vjs-control-bar {
     border-radius: 8px;
 }
 
-.vjs-control-bar,
-.vjs-big-play-button,
-.vjs-menu-button .vjs-menu-content {
-    background-color: #34343488;
+.video-js .vjs-control-bar,
+.video-js .vjs-menu-button .vjs-menu-content {
+    background: #8B280388;
 }
 
 .video-js .vjs-control-bar {
@@ -17,23 +16,28 @@ video {
     width: auto;
 }
 
-.vjs-poster {
+.video-js .vjs-poster {
     border-radius: 8px;
 }
 
-.vjs-play-control {
+.video-js .vjs-play-control {
     border-radius: 0 0 8px 8px;
 }
 
-.vjs-big-play-button {
-    border-color: #00f;
+.video-js .vjs-big-play-button {
+    background: #E8440988;
+    border-radius: 8px 48px 8px 8px;
+    border-color: #E84409;
+    top: calc(50% - 1.63332em/2);
+    left: calc(50% - 3em/2);
+
 }
 
-.vjs-slider-bar {
+.video-js .vjs-slider-bar {
     color: #E84409;
 }
 
-.vjs-progress-holder .vjs-play-progress {
+.video-js .vjs-progress-holder .vjs-play-progress {
     background: #E84409;
 }
 
@@ -47,4 +51,45 @@ video {
     border-radius: 8px;
     padding: 4px 9.6px;
     line-height: 1;
+}
+
+.vjs-loading-spinner {
+    background-color: #E84409;
+    width: 32px;
+    height: 32px;
+    border-radius: 32px;
+    border: none;
+    visibility: visible;
+    opacity: 0;
+    animation: spinner-grow .75s linear infinite !important;
+}
+
+.vjs-loading-spinner::before {
+    display: none;
+}
+
+.vjs-loading-spinner::after {
+    display: none;
+}
+
+.video-js .vjs-modal-dialog {
+    border-radius: 8px;
+    background: linear-gradient(0, rgba(0, 0, 0, 0.9), rgba(255, 255, 255, 0));
+}
+
+.vjs-error .vjs-error-display .vjs-modal-dialog-content {
+    display: none;
+}
+
+.vjs-error .vjs-error-display:before {
+    background: no-repeat center url("/static/media/logo.c0b9bf44.svg");
+    background-size: contain;
+    content: "Currently Unavailable";
+    font-family: "Comfortaa", sans-serif;
+    text-align: center;
+    line-height: 15vw;
+    font-size: 3vw;
+    height: 5vw;
+    top: calc(50% - 5vw);
+    text-shadow: none;
 }

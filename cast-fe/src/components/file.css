@@ -1,0 +1,23 @@
+.custom-file .custom-file-label {
+    border-color: #8B280300;
+    color: #EBEBEB;
+    background-color: #8B280344;
+}
+
+.custom-file .custom-file-label::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    display: block;
+    height: calc(1.5em + .75rem);
+    padding: .375rem .75rem;
+    line-height: 1.5;
+    color: #EBEBEB;
+    content: "Browse";
+    background: #E84409;
+    border-left: inherit;
+    border-radius: 0 .25rem .25rem 0;
+}
+

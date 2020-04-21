@@ -171,7 +171,6 @@ let style = {
     fontFamily: "Comfortaa",
   },
   content_container: {
-    padding: 0,
     maxWidth: 480
   },
   spinner: {

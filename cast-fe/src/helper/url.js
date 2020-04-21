@@ -1,4 +1,4 @@
-const cdn_base = '/cdn';
+const cdn_base = 'https://cast.daystram.com/cdn';
 const api_base = '/api/v1';
 
 export default function urls() {

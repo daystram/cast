@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Alert, Button, Col, Container, Form, ProgressBar, Row, Spinner} from "react-bootstrap";
+import {Alert, Button, Card, Col, Container, Form, ProgressBar, Row, Spinner} from "react-bootstrap";
 import axios from "axios";
 import bsCustomFileInput from 'bs-custom-file-input'
 import {WithContext as ReactTags} from 'react-tag-input';
@@ -9,7 +9,10 @@ import CastEditable from "./CastEditable";
 import {Prompt} from "react-router-dom";
 
 import './tags.css'
+import './file.css'
 import auth from "../helper/auth";
+import MediaQuery from "react-responsive";
+import {MOBILE_BP} from "../constants/breakpoint";
 
 let timeout = null;
 
@@ -230,10 +233,12 @@ class Manage extends Component {
       <>
         <Container fluid style={style.content_container}>
           <Row>
-            <Col md={2} sm={12} style={{marginBottom: 32}}>
-              <SidebarProfile/>
-            </Col>
-            <Col md={10} sm={12} className={"mid-container-right"}>
+            <MediaQuery minDeviceWidth={MOBILE_BP}>
+              <Col xl={2} xs={12} style={{marginBottom: 32}}>
+                <Card body style={{borderRadius: "8px 48px 8px 8px"}}><SidebarProfile/></Card>
+              </Col>
+            </MediaQuery>
+            <Col xl={10} sm={12} className={"mid-container-right"}>
               <h1 style={style.h1}>Upload</h1>
               {this.state.error_upload && <Alert variant={"danger"}>{this.state.error_upload}</Alert>}
               {this.state.success &&
@@ -336,9 +341,7 @@ let style = {
   h1: {
     fontFamily: "Comfortaa",
   },
-  content_container: {
-    padding: 0,
-  },
+  content_container: {},
   progress: {
     marginBottom: 16
   },
