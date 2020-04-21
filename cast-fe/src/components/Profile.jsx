@@ -151,8 +151,14 @@ class Profile extends Component {
 
   submitForm() {
     let ok = true;
-    ok &= !this.state.error_name;
-    ok &= !this.state.error_email;
+    if (!this.state.attempted) {
+      this.setState({error_edit: "", attempted: true});
+      ok &= this.validate("name", this.state.name);
+      ok &= this.validate("email", this.state.email);
+    } else {
+      ok &= !this.state.error_name;
+      ok &= !this.state.error_email;
+    }
     if (!ok) return;
     this.setState({error_edit: "", loading_edit: true});
     const form = new FormData();
@@ -176,7 +182,6 @@ class Profile extends Component {
           error_email: "",
           new_profile: "",
         });
-        console.log(response.data);
         this.setState({error_edit: response.data.error, loading_edit: false});
       }
     }).catch((error) => {

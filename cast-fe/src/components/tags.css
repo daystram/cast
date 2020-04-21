@@ -2,7 +2,7 @@
 div.ReactTags__tags {
     display: block;
     width: 100%;
-    height: calc(1.5em + .75rem + 2px);
+    min-height: calc(1.5em + .75rem + 2px);
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
@@ -91,6 +91,7 @@ div.ReactTags__tagInput input.ReactTags__tagInputField:focus {
 
 div.ReactTags__selected {
     display: flex;
+    flex-wrap: wrap;
 }
 
 /* Styles for selected tags */
@@ -104,6 +105,8 @@ div.ReactTags__selected span.ReactTags__tag {
     font-size: 14px;
     font-weight: 400;
     margin-right: 8px;
+    margin-top: 4px;
+    margin-bottom: 4px;
     display: inline-block;
     line-height: 1;
     text-align: center;
@@ -116,4 +119,9 @@ div.ReactTags__selected a.ReactTags__remove {
     color: #aaa;
     margin-left: 5px;
     cursor: pointer;
+}
+
+div.ReactTags__tags.react-tags-wrapper {
+    padding-bottom: 2px;
+    padding-top: 2px;
 }

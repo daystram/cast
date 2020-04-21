@@ -1,11 +1,12 @@
 import React, {Component} from 'react';
 import {Alert, Badge, Button, Card, Col, Form, Image, Modal, Row, Spinner} from "react-bootstrap";
+import Dropzone from "react-dropzone";
 import urls from "../helper/url";
 import format from "../helper/format";
 import axios from "axios";
 import {Prompt, withRouter} from "react-router-dom";
 import {WithContext as ReactTags} from "react-tag-input";
-import './tags.css'
+import './tags.css';
 
 const resolutions = ["Processing", "240p", "360p", "480p", "720p", "1080p"];
 let timeout = null;
@@ -19,6 +20,7 @@ class CastEditable extends Component {
         return {id: tag, text: tag}
       }) : [],
       description: this.props.video.description,
+      thumbnail: urls().thumbnail(this.props.video.hash),
       error_title: "",
       error_tags: "",
       error_description: "",
@@ -64,7 +66,9 @@ class CastEditable extends Component {
           title: this.state.title,
           tags: this.state.tags,
           description: this.state.description,
+          thumbnail: this.state.thumbnail,
         },
+        new_thumbnail: "",
         error_title: "",
         error_tags: "",
         error_description: "",
@@ -79,6 +83,8 @@ class CastEditable extends Component {
         title: this.state.before.title,
         tags: this.state.before.tags,
         description: this.state.before.description,
+        thumbnail: this.state.before.thumbnail,
+        new_thumbnail: "",
         before: {},
         error_title: "",
         error_tags: "",
@@ -188,15 +194,24 @@ class CastEditable extends Component {
       ok &= !this.state.error_tags;
     }
     if (!ok) return;
-    this.setState({loading_edit: true});
-    axios.put(urls().edit_video(), {
-        hash: this.props.video.hash,
-        title: this.state.title,
-        description: this.state.description,
-        tags: this.state.tags.map(tag => tag.text).join(","),
+    this.setState({error_edit: "", loading_edit: true});
+    const form = new FormData();
+    form.append("hash", this.props.video.hash);
+    form.append("title", this.state.title);
+    form.append("description", this.state.description);
+    form.append("tags", this.state.tags.map(tag => tag.text).join(","));
+    if (this.state.new_thumbnail) form.append("thumbnail", this.state.new_thumbnail);
+    axios.put(urls().edit_video(), form, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "multipart/form-data"
+        },
       }
     ).then((response) => {
       if (response.data.code === 200) {
+        if (this.state.new_thumbnail) this.setState({
+          thumbnail: URL.createObjectURL(this.state.new_thumbnail)
+        });
         this.setState({
           editing: false,
           loading_edit: false,
@@ -204,8 +219,10 @@ class CastEditable extends Component {
           error_title: "",
           error_tags: "",
           error_description: "",
+          new_thumbnail: "",
           updated: true
         });
+        console.log(response.data);
       } else {
         console.log(response.data);
         this.setState({error_edit: response.data.error, loading_edit: false});
@@ -256,15 +273,39 @@ class CastEditable extends Component {
     return (
       <Card body style={style.card}>
         <Row>
-          <Col xl={3} lg={4} md={5} sm={12} className={"responsive-fold"}>
-            <Image src={urls().thumbnail(this.props.video.hash)} style={style.thumbnail}
-                   onClick={this.openVideo}/>
+          <Col xl={3} lg={4} md={5} sm={12}>
+            {this.state.editing ?
+              <Dropzone accept={"image/*"} multiple={false} noDragEventsBubbling={true}
+                        onDrop={files => this.setState({new_thumbnail: files[0]})}
+                        disabled={false}>
+                {({getRootProps, getInputProps}) => (
+                  <section
+                    style={{...style.thumbnail_upload, ...(this.state.new_thumbnail && style.thumbnail_upload_modified)}}>
+                    <div {...getRootProps()} style={style.thumbnail_container}>
+                      <input {...getInputProps()} />
+                      <Image
+                        src={this.state.new_thumbnail ? URL.createObjectURL(this.state.new_thumbnail) : this.state.thumbnail}
+                        style={style.thumbnail}/>
+                      <p
+                        style={{...style.dropzone_icon, ...(this.state.new_thumbnail && style.dropzone_icon_modified)}}>
+                        {!this.state.new_thumbnail &&
+                        <span className="material-icons"
+                              style={{fontSize: 32, color: "dimgray"}}>publish</span>
+                        }
+                      </p>
+                    </div>
+                  </section>
+                )}
+              </Dropzone> :
+              <div style={style.thumbnail_container}>
+                <Image src={this.state.thumbnail} style={style.thumbnail}/>
+              </div>}
           </Col>
-          <Col md sm={12} className={"responsive-fold mid-container-right"}>
+          <Col md sm={12} style={{marginTop: 4}}>
             {this.state.error_edit && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
             {this.state.editing ?
               <Form autocomplete={"off"}>
-                <Form.Group>
+                <Form.Group style={{marginBottom: 4}}>
                   <Form.Control name={"title"} value={this.state.title} onBlur={this.handleChange}
                                 onChange={this.handleChange} type={"text"} size={"lg"} style={style.title}
                                 isInvalid={this.state.error_title} placeholder={"Title"}/>
@@ -289,14 +330,14 @@ class CastEditable extends Component {
             </>}
             <div style={style.cast_tag_bar}>
               {this.state.editing ?
-                <Form.Group style={{width: "100%"}}>
+                <Form.Group style={{width: "100%", marginBottom: 4}}>
                   <ReactTags
                     classNames={{
                       tags: this.state.error_tags ? "ReactTags__tags__error" : (this.state.uploading ? "ReactTags__tags__disabled" : "ReactTags__tags"),
                       tagInput: this.state.tags.length === 5 ? "ReactTags__tagInput__disabled" : "ReactTags__tagInput"
                     }}
                     tags={this.state.tags} autofocus={false} delimiters={[13, 32, 188]} maxLength={12}
-                    placeholder={this.state.tags.length ? "" : "Tags"} readOnly={this.state.uploading}
+                    placeholder={this.state.tags.length ? "" : "Tags"} readOnly={this.state.loading_edit}
                     handleAddition={this.handleTagAdd} handleDelete={this.handleTagDelete}
                     handleDrag={this.handleTagDrag} handleInputChange={() => this.setState({error_tags: ""})}
                     handleInputBlur={() => this.validate("tags", this.state.tags)}
@@ -313,7 +354,7 @@ class CastEditable extends Component {
             </div>
             {this.state.editing ?
               <Form autocomplete={"off"}>
-                <Form.Group>
+                <Form.Group style={{marginBottom: 4}}>
                   <Form.Control name={"description"} value={this.state.description} onBlur={this.handleChange}
                                 onChange={this.handleChange} as={"textarea"} size={"lg"} style={style.description}
                                 isInvalid={this.state.error_description} rows={5} placeholder={"Description"}/>
@@ -327,7 +368,7 @@ class CastEditable extends Component {
             <Button variant={"success"} block size={"sm"} style={style.button} onClick={this.pressEdit}
                     disabled={this.state.before && (this.state.title === this.state.before.title &&
                       this.state.tags === this.state.before.tags &&
-                      this.state.description === this.state.before.description)}>
+                      this.state.description === this.state.before.description && !this.state.new_thumbnail)}>
               {this.state.loading_edit ?
                 <Spinner animation="grow" style={style.spinner}/> :
                 <span className="material-icons">{this.state.editing ? "check" : "edit"}</span>
@@ -377,13 +418,44 @@ let style = {
     fontWeight: 600,
     marginBottom: 4
   },
+  thumbnail_upload: {
+    background: "#f0f0f088",
+    border: "3px dashed #ddddddaa",
+    flexShrink: 0,
+    borderRadius: "8px 48px 8px 8px",
+    zIndex: 100
+  },
+  thumbnail_upload_modified: {
+    background: "#f0f0f022",
+    border: ""
+  },
+  dropzone_icon: {
+    borderRadius: "8px 48px 8px 8px",
+    background: "#f0f0f088",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+    top: 0,
+    margin: 0
+  },
+  dropzone_icon_modified: {
+    background: "#f0f0f022",
+    border: ""
+  },
+  thumbnail_container: {
+    height: 0,
+    paddingBottom: "56.25%",
+    position: "relative"
+  },
   thumbnail: {
     borderRadius: "8px 48px 8px 8px",
-    // borderWidth: 1,
-    // borderColor: "lightgray",
-    // borderStyle: "solid",
     objectFit: "cover",
     width: "100%",
+    height: "100%",
+    position: "absolute",
     cursor: "pointer"
   },
   created_at: {

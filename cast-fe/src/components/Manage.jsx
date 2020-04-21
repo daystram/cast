@@ -13,6 +13,7 @@ import './file.css'
 import auth from "../helper/auth";
 import MediaQuery from "react-responsive";
 import {MOBILE_BP} from "../constants/breakpoint";
+import Dropzone from "react-dropzone";
 
 let timeout = null;
 

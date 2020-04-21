@@ -19,7 +19,6 @@ function Navigation() {
       <Image src={urls().profile(auth().username())}
              height={38} width={38}
              style={style.profile_image} onClick={() => {
-        setExpanded(false);
         history.push("/profile")
       }} roundedCircle/> :
       <>
@@ -47,8 +46,9 @@ function Navigation() {
                      onChange={e => setQuery(e.target.value)}
                      ref={inputRef}/>
         <InputGroup.Append>
-          <Button variant="outline-primary" type="submit" style={{background: "#8B280344", border: "none", marginLeft: 4}}>
-            <i className="material-icons" >search</i></Button>
+          <Button variant="outline-primary" type="submit"
+                  style={{background: "#8B280344", border: "none", marginLeft: 4}}>
+            <i className="material-icons">search</i></Button>
         </InputGroup.Append>
       </InputGroup>
     </Form>
