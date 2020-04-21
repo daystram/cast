@@ -37,8 +37,8 @@ function Navigation() {
   let searchBar = (
     <Form noValidate onSubmit={(e) => {
       e.preventDefault();
+      if (inputRef) inputRef.current.blur();
       setExpanded(false);
-      inputRef.current.blur();
       if (query.trim()) history.push(`/s?query=${query}`);
     }}>
       <InputGroup style={{flexWrap: "nowrap"}}>

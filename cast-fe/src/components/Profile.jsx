@@ -235,12 +235,14 @@ class Profile extends Component {
                       {this.state.loading_info && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
                       {this.state.error_edit && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
                       {this.state.editing ?
-                        <Form.Group>
-                          <Form.Control name={"name"} value={this.state.name} onBlur={this.handleChange}
-                                        onChange={this.handleChange} type={"text"} size={"lg"} style={style.name}
-                                        isInvalid={this.state.error_name} placeholder={"Name"}/>
-                          <Form.Control.Feedback type={"invalid"}>{this.state.error_name}</Form.Control.Feedback>
-                        </Form.Group> :
+                        <Form autocomplete={"off"}>
+                          <Form.Group>
+                            <Form.Control name={"name"} value={this.state.name} onBlur={this.handleChange}
+                                          onChange={this.handleChange} type={"text"} size={"lg"} style={style.name}
+                                          isInvalid={this.state.error_name} placeholder={"Name"}/>
+                            <Form.Control.Feedback type={"invalid"}>{this.state.error_name}</Form.Control.Feedback>
+                          </Form.Group>
+                        </Form> :
                         <h1 style={style.name}>{this.state.name}</h1>
                       }
                       <h3 style={style.sub_count}>{abbreviate().number(this.state.subscribers)} subscribers</h3>
@@ -325,6 +327,9 @@ class Profile extends Component {
 }
 
 let style = {
+  h1: {
+    fontFamily: "Comfortaa",
+  },
   content_container: {},
   name: {
     color: "#EBEBEB",
@@ -350,12 +355,13 @@ let style = {
   },
   profile_bar: {
     display: "flex",
-    marginBottom: 48,
+    marginBottom: 38,
   },
   profile_name: {
     overflow: "hidden",
     marginLeft: 16,
-    alignSelf: "center"
+    alignSelf: "center",
+    width: "100%"
   },
   sub_count: {
     color: "#DDD",
