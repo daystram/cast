@@ -85,7 +85,7 @@ type Handler interface {
 	DeleteVideo(ID, userID primitive.ObjectID) (err error)
 	UpdateVideo(video data.VideoEdit, userID primitive.ObjectID) (err error)
 	CheckUniqueVideoTitle(title string) (err error)
-	NormalizeThumbnail(ID primitive.ObjectID) (err error)
+	NormalizeThumbnail(hash string) (err error)
 	LikeVideo(userID primitive.ObjectID, hash string, like bool) (err error)
 	CheckUserLikes(hash, username string) (liked bool, err error)
 	CommentVideo(userID primitive.ObjectID, hash, content string) (comment data.Comment, err error)

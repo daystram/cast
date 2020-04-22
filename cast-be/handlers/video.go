@@ -118,8 +118,8 @@ func (m *module) CheckUniqueVideoTitle(title string) (err error) {
 	return m.db.videoOrm.CheckUnique(title)
 }
 
-func (m *module) NormalizeThumbnail(ID primitive.ObjectID) (err error) {
-	return util.NormalizeImage(constants.ThumbnailRootDir, ID.Hex(), constants.ThumbnailWidth, constants.ThumbnailHeight)
+func (m *module) NormalizeThumbnail(hash string) (err error) {
+	return util.NormalizeImage(constants.ThumbnailRootDir, hash, constants.ThumbnailWidth, constants.ThumbnailHeight)
 }
 
 func (m *module) LikeVideo(userID primitive.ObjectID, hash string, like bool) (err error) {

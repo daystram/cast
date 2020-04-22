@@ -136,12 +136,7 @@ func (c *VideoControllerAuth) EditVideo(_ string) datatransfers.Response {
 		fmt.Printf("[VideoControllerAuth::EditVideo] failed saving thumbnail. %+v\n", err)
 		return datatransfers.Response{Error: "Failed saving thumbnail", Code: http.StatusInternalServerError}
 	}
-	var videoID primitive.ObjectID
-	if videoID, err = primitive.ObjectIDFromHex(video.Hash); err != nil {
-		fmt.Printf("[VideoControllerAuth::EditVideo] failed parsing video hash. %+v\n", err)
-		return datatransfers.Response{Error: "Failed parsing video hash", Code: http.StatusInternalServerError}
-	}
-	err = c.Handler.NormalizeThumbnail(videoID)
+	err = c.Handler.NormalizeThumbnail(video.Hash)
 	if err != nil {
 		fmt.Printf("[VideoControllerAuth::EditVideo] failed normalizing thumbnail. %+v\n", err)
 		return datatransfers.Response{Error: "Failed normalizing thumbnail", Code: http.StatusInternalServerError}
@@ -201,7 +196,7 @@ func (c *VideoControllerAuth) UploadVideo(_ string) datatransfers.Response {
 		fmt.Printf("[VideoControllerAuth::UploadVideo] failed saving thumbnail file. %+v\n", err)
 		return datatransfers.Response{Error: "Failed saving thumbnail image", Code: http.StatusInternalServerError}
 	}
-	err = c.Handler.NormalizeThumbnail(videoID)
+	err = c.Handler.NormalizeThumbnail(videoID.Hex())
 	if err != nil {
 		_ = c.Handler.DeleteVideo(videoID, c.userID)
 		fmt.Printf("[VideoControllerAuth::UploadVideo] failed normalizing thumbnail image. %+v\n", err)
