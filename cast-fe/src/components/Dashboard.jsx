@@ -272,7 +272,7 @@ class Dashboard extends Component {
           </Row>
         </Container>
         <Modal show={this.state.live && this.state.prompt_stop} size={"md"} centered>
-          <Modal.Header closeButton>
+          <Modal.Header>
             <Modal.Title id="contained-modal-title-vcenter">Ending Stream</Modal.Title>
           </Modal.Header>
           <Modal.Body>
