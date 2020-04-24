@@ -11,6 +11,7 @@ A project for INFS3202 course by Danny August Ramaputra
 
 # Services
 The application comes in three parts:
+
 |Name|Code Name|Stack|
 |----|---------|-----|
 |Back-end|`cast-be`|[Go](https://golang.org/), [BeeGo](https://beego.me/), [MongoDB](https://www.mongodb.com/)|
