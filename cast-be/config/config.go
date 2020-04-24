@@ -7,6 +7,7 @@ import (
 var AppConfig Config
 
 type Config struct {
+	Domain    string
 	JWTSecret string
 	Debug     bool
 
@@ -31,9 +32,9 @@ func InitializeAppConfig() {
 	_ = beego.LoadAppConfig("ini", "config/app.conf")
 	var err error
 
-	// JWT secret
-	if AppConfig.JWTSecret = beego.AppConfig.String("secret"); AppConfig.JWTSecret == "" {
-		panic("secret in app.conf is missing or is in wrong format")
+	// Domain
+	if AppConfig.Domain = beego.AppConfig.String("domain"); AppConfig.Domain == "" {
+		panic("domain in app.conf is missing or is in wrong format")
 	}
 
 	// Debug
