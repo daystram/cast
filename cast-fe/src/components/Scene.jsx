@@ -143,16 +143,21 @@ class Scene extends Component {
   }
 
   handleDownload() {
-    console.log("download video");
-    let link = document.createElement('a');
-    link.href = urls().download(this.state.video.hash);
-    link.download = `${this.state.video.title} by ${this.state.video.author.name} - cast`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (this.state.loading.current) return;
+    if (auth().is_authenticated()) {
+      let link = document.createElement('a');
+      link.href = urls().download(this.state.video.hash);
+      link.download = `${this.state.video.title} by ${this.state.video.author.name} - cast`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      this.promptSignup();
+    }
   }
 
   handleShare() {
+    if (this.state.loading.current) return;
     this.setState({prompt_share: true})
   }
 
@@ -362,7 +367,7 @@ class Scene extends Component {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <p>You need to be logged in to like, comment, chat, and subscribe. By signing in, you can start sharing your
+            <p>You need to be logged in to like, comment, chat, download, and subscribe. By signing in, you can start sharing your
               own videos and livestream too!</p>
             <p>Log In or Sign Up today!</p>
           </Modal.Body>
