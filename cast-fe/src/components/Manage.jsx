@@ -35,7 +35,6 @@ class Manage extends Component {
       list: [],
       uploading: false,
       loading: true,
-      success: false,
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleTagAdd = this.handleTagAdd.bind(this);

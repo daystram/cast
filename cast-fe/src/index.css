@@ -48,7 +48,7 @@ h1, h2, h3 {
     font-weight: 700;
 }
 
-p, h5, .form-label {
+p, h5, .form-label, .form-check-label {
     color: #EBEBEB;
 }
 
@@ -61,7 +61,7 @@ p, h5, .form-label {
     background-color: #8B280344;
 }
 
-.form-control:disabled {
+.form-control:disabled, .custom-file-input:disabled~.custom-file-label, .custom-file-input[disabled]~.custom-file-label {
     color: #999999DD;
     background-color: #8B2803AA;
 }
@@ -225,4 +225,22 @@ p, h5, .form-label {
 
 .password-strength .progress-bar {
     transition: background .6s ease, width .6s ease;
+}
+
+.alert-warning {
+    color: hsla(45, 94%, 50%, 1);
+    background-color: #a9800044;
+    border-color: #ffc000;
+}
+
+.alert-danger {
+    color: hsl(354, 100%, 90%);
+    background-color: #8e000d44;
+    border-color: #ff162f;
+}
+
+.alert-success {
+    color: hsla(134, 61%, 50%, 1);
+    background-color: #009e2644;
+    border-color: #00ff3a;
 }
