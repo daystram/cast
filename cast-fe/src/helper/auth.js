@@ -14,7 +14,7 @@ export default function auth() {
       return Cookies.get(COOKIE_KEY) ? Cookies.get(COOKIE_KEY).split("|")[1] : "";
     },
     deauthenticate: () => {
-      return Cookies.remove(COOKIE_KEY)
+      return Cookies.remove(COOKIE_KEY, {path: "/", domain: ".cast.daystram.com"})
     }
   }
 }
