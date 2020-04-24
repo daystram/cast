@@ -8,12 +8,19 @@ import auth from "../helper/auth";
 import {MOBILE_BP} from "../constants/breakpoint";
 import Sidebar from "./Sidebar";
 import SidebarProfile from "./SidebarProfile";
+import axios from "axios";
 
 function Navigation() {
   const [query, setQuery] = useState(new URLSearchParams(useLocation().search).get("query") || "");
   const [expanded, setExpanded] = useState(false);
   const inputRef = useRef();
   const history = useHistory();
+  axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response.status === 403) auth().deauthenticate();
+      history.push("/login");
+    });
   let profileButton = (
     auth().username() ?
       <Image src={urls().profile(auth().username())}
