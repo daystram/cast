@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/constants"
 	"log"
 	"net/http"
@@ -88,7 +89,11 @@ func (c *AuthController) PostAuthenticate(info datatransfers.UserLogin) datatran
 	token, err := c.Handler.Authenticate(info)
 	switch err {
 	case nil:
-		c.Ctx.SetCookie(constants.AuthenticationCookieKey, fmt.Sprintf("%s|Bearer %s", info.Username, token), int(constants.AuthenticationTimeout.Seconds()))
+		timeout := int(constants.AuthenticationTimeout.Seconds())
+		if info.Remember {
+			timeout = int(constants.AuthenticationTimeoutExtended.Seconds())
+		}
+		c.Ctx.SetCookie(constants.AuthenticationCookieKey, fmt.Sprintf("%s|Bearer %s", info.Username, token), timeout, "/", config.AppConfig.Domain, true)
 		return datatransfers.Response{Data: fmt.Sprintf("Bearer %s", token), Code: http.StatusOK}
 	case errors.ErrNotRegistered:
 		log.Printf("[AuthController::PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)

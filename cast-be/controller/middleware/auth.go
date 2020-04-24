@@ -3,6 +3,7 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
+	"gitlab.com/daystram/cast/cast-be/datatransfers"
 	"log"
 	"net/http"
 	"strings"
@@ -18,20 +19,15 @@ import (
 type JwtAuthorization struct {
 	jwtTokenStr string
 	secret      []byte
-	JwtClaims   JwtClaims
+	JWTClaims   datatransfers.JWTClaims
 }
 
-type JwtClaims struct {
-	ID     string
-	Expiry int64
-}
-
-func NewJwtAuthorization(secret string, bearerTokenStr string) JwtAuthorization {
+func NewJWTAuthorization(secret string, bearerTokenStr string) JwtAuthorization {
 	jwtTokenStr := parseBearerToken(bearerTokenStr)
-	return JwtAuthorization{jwtTokenStr, []byte(secret), JwtClaims{}}
+	return JwtAuthorization{jwtTokenStr, []byte(secret), datatransfers.JWTClaims{}}
 }
 
-func (j *JwtAuthorization) ExtractClaimsFromToken() (id string, expiry int64, err error) {
+func (j *JwtAuthorization) ExtractClaimsFromToken() (id string, expiry int64, remember bool, err error) {
 	claims := jwt.MapClaims{}
 	var token *jwt.Token
 	if token, err = jwt.ParseWithClaims(j.jwtTokenStr, claims, func(token *jwt.Token) (interface{}, error) {
@@ -39,12 +35,11 @@ func (j *JwtAuthorization) ExtractClaimsFromToken() (id string, expiry int64, er
 	}); err != nil || !token.Valid {
 		return
 	}
-	err = j.parseJwtClaims(claims)
+	err = j.parseJWTClaims(claims)
 	if err != nil {
 		return
 	}
-
-	return j.JwtClaims.ID, j.JwtClaims.Expiry, nil
+	return j.JWTClaims.ID, j.JWTClaims.Expiry, j.JWTClaims.Remember, nil
 }
 
 func parseBearerToken(bearerTokenStr string) string {
@@ -55,12 +50,12 @@ func parseBearerToken(bearerTokenStr string) string {
 	return splitToken[1]
 }
 
-func (j *JwtAuthorization) parseJwtClaims(claims jwt.MapClaims) (err error) {
+func (j *JwtAuthorization) parseJWTClaims(claims jwt.MapClaims) (err error) {
 	id, ok := claims["id"]
 	if !ok {
 		return fmt.Errorf("key 'id' is not contained within JWT's claims")
 	}
-	j.JwtClaims.ID, ok = id.(string)
+	j.JWTClaims.ID, ok = id.(string)
 	if !ok {
 		return fmt.Errorf("key 'id' is in wrong format")
 	}
@@ -70,15 +65,24 @@ func (j *JwtAuthorization) parseJwtClaims(claims jwt.MapClaims) (err error) {
 		return fmt.Errorf("key 'expiry' is not contained within JWT's claims")
 	}
 	expiry, ok := expiryClaim.(float64)
-	j.JwtClaims.Expiry = int64(expiry)
+	j.JWTClaims.Expiry = int64(expiry)
 	if !ok {
 		return fmt.Errorf("key 'expiry' is in wrong format")
+	}
+
+	rememberClaim, ok := claims["remember"]
+	if !ok {
+		return fmt.Errorf("key 'remember' is not contained within JWT's claims")
+	}
+	j.JWTClaims.Remember, ok = rememberClaim.(bool)
+	if !ok {
+		return fmt.Errorf("key 'remember' is in wrong format")
 	}
 	return
 }
 
 func AuthenticateJWT(ctx *context.Context) {
-	bearerTokenStr := ctx.Input.Query("access_token") // TODO: WS authing
+	bearerTokenStr := ctx.Input.Query("access_token")
 	cookie := ctx.GetCookie(constants.AuthenticationCookieKey)
 	if bearerTokenStr == "" {
 		if cookie == "" {
@@ -89,26 +93,31 @@ func AuthenticateJWT(ctx *context.Context) {
 		}
 		bearerTokenStr = strings.Split(cookie, "|")[1]
 	}
-	jwtAuthorization := NewJwtAuthorization(config.AppConfig.JWTSecret, bearerTokenStr)
-	id, expiry, err := jwtAuthorization.ExtractClaimsFromToken()
+	jwtAuthorization := NewJWTAuthorization(config.AppConfig.JWTSecret, bearerTokenStr)
+	id, expiry, remember, err := jwtAuthorization.ExtractClaimsFromToken()
 	if expiry < time.Now().Unix() {
 		err = fmt.Errorf("JWT invalid")
 	}
 	if err != nil {
-		log.Printf("[AuthFilter] failed to get jwt token. %+v\n", err)
+		log.Printf("[AuthFilter] failed to get JWT token. %+v\n", err)
 		errMessage, _ := json.Marshal(map[string]interface{}{"message": "JWT is invalid"})
 		ctx.ResponseWriter.WriteHeader(http.StatusForbidden)
 		_, _ = ctx.ResponseWriter.Write(errMessage)
 		return
 	}
+	timeout := constants.AuthenticationTimeout
+	if remember {
+		timeout = constants.AuthenticationTimeoutExtended
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":     id,
-		"expiry": time.Now().Add(constants.AuthenticationTimeout).Unix(),
+		"id":       id,
+		"expiry":   time.Now().Add(timeout).Unix(),
+		"remember": remember,
 	})
 	tokenString, err := token.SignedString([]byte(config.AppConfig.JWTSecret))
 	if err != nil {
 		return
 	}
-	ctx.SetCookie(constants.AuthenticationCookieKey, fmt.Sprintf("%s|Bearer %s", strings.Split(cookie, "|")[0], tokenString), int(constants.AuthenticationTimeout.Seconds()))
+	ctx.SetCookie(constants.AuthenticationCookieKey, fmt.Sprintf("%s|Bearer %s", strings.Split(cookie, "|")[0], tokenString), int(timeout.Seconds()), "/", config.AppConfig.Domain, true)
 	ctx.Input.SetParam(constants.ContextParamUserID, id)
 }

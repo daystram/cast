@@ -74,7 +74,7 @@ func (m *module) Register(info datatransfers.UserRegister) (err error) {
 
 func (m *module) SendVerification(user datatransfers.User) (err error) {
 	var token string
-	if token, err = m.generateToken(datatransfers.User{ID: user.ID}); err != nil {
+	if token, err = m.generateToken(datatransfers.User{ID: user.ID}, false); err != nil {
 		fmt.Printf("[SendVerification] Failed generating token. %+v\n", err)
 	}
 	m.SendSingleEmail("Email Verification", fmt.Sprintf(constants.EmailTemplateVerification, user.Name, config.AppConfig.Hostname, token), user)
@@ -109,7 +109,7 @@ func (m *module) Authenticate(info datatransfers.UserLogin) (token string, err e
 	if user, err = m.validate(info); err != nil {
 		return
 	}
-	if token, err = m.generateToken(user); err != nil {
+	if token, err = m.generateToken(user, info.Remember); err != nil {
 		return
 	}
 	return
@@ -131,10 +131,15 @@ func (m *module) validate(info datatransfers.UserLogin) (user datatransfers.User
 	return
 }
 
-func (m *module) generateToken(user datatransfers.User) (tokenString string, err error) {
+func (m *module) generateToken(user datatransfers.User, extended bool) (tokenString string, err error) {
+	timeout := time.Now().Add(constants.AuthenticationTimeout)
+	if extended {
+		timeout = time.Now().Add(constants.AuthenticationTimeoutExtended)
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":     user.ID,
-		"expiry": time.Now().Add(24 * time.Hour).Unix(),
+		"id":       user.ID,
+		"expiry":   timeout.Unix(),
+		"remember": extended,
 	})
 	tokenString, _ = token.SignedString([]byte(config.AppConfig.JWTSecret))
 	return
