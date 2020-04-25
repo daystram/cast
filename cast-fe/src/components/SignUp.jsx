@@ -231,7 +231,8 @@ class SignUp extends Component {
             </Button>
           </Form>
           <br/>
-          <p style={{textAlign: "center"}}>Already have an account? <Link to={'/login'}>Log in</Link> now!</p>
+          <p style={{textAlign: "center"}}>Already have an account? <Link className={"inline"} to={'/login'}>
+            Log in</Link> now!</p>
         </Container>
       </>
     )

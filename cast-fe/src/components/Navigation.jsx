@@ -105,7 +105,7 @@ function Navigation() {
                 </Col>
               </Row>
             </Nav>
-            <Route path={['/', '/w/:hash', '/s', '/verify', '/login', '/signup']} exact
+            <Route path={['/', '/w/:hash', '/s', '/verify', '/login', '/signup', '/forget']} exact
                    render={props => <Sidebar {...props} onSelect={() => setExpanded(false)}/>}/>
             <Route path={['/profile', '/dashboard', '/manage']} exact
                    render={props => <SidebarProfile {...props} onSelect={() => setExpanded(false)}/>}/>

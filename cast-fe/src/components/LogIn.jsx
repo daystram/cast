@@ -130,8 +130,8 @@ class LogIn extends Component {
         </Form>
         <br/>
         <p style={{display: "flex", justifyContent: "space-evenly"}}>
-          <Link className={"inline"} to={'/forgot?field=username'}>Forgot username?</Link>
-          <Link className={"inline"} to={'/forgot?field=password'}>Forgot password?</Link>
+          <Link className={"inline"} to={'/forget?field=username'}>Forgot username?</Link>
+          <Link className={"inline"} to={'/forget?field=password'}>Forgot password?</Link>
         </p>
         <p style={{textAlign: "center"}}>Don't have an account? <Link className={"inline"} to={'/signup'}>
           Sign up</Link> now!</p>
