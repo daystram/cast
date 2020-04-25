@@ -93,7 +93,7 @@ func (c *AuthController) PostAuthenticate(info datatransfers.UserLogin) datatran
 		if info.Remember {
 			timeout = int(constants.AuthenticationTimeoutExtended.Seconds())
 		}
-		c.Ctx.SetCookie(constants.AuthenticationCookieKey, fmt.Sprintf("%s|Bearer %s", info.Username, token), timeout, "/", config.AppConfig.Domain, true)
+		c.Ctx.SetCookie(constants.AuthenticationCookieKey, fmt.Sprintf("%s|Bearer %s", info.Username, token), timeout, "/", config.AppConfig.Domain, !config.AppConfig.Debug)
 		return datatransfers.Response{Data: fmt.Sprintf("Bearer %s", token), Code: http.StatusOK}
 	case errors.ErrNotRegistered:
 		log.Printf("[AuthController::PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
@@ -114,6 +114,5 @@ func (c *AuthController) PostAuthenticate(info datatransfers.UserLogin) datatran
 // @Success 200 success
 // @router /logout [post]
 func (c *AuthController) PostDeAuthenticate() {
-	// TODO: stop stream
 	c.Ctx.SetCookie(constants.AuthenticationCookieKey, "", -1)
 }

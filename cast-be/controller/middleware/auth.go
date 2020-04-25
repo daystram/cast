@@ -120,6 +120,6 @@ func AuthenticateJWT(ctx *context.Context) {
 	if err != nil {
 		return
 	}
-	ctx.SetCookie(constants.AuthenticationCookieKey, fmt.Sprintf("%s|Bearer %s", strings.Split(cookie, "|")[0], tokenString), int(timeout.Seconds()), "/", config.AppConfig.Domain, true)
+	ctx.SetCookie(constants.AuthenticationCookieKey, fmt.Sprintf("%s|Bearer %s", strings.Split(cookie, "|")[0], tokenString), int(timeout.Seconds()), "/", config.AppConfig.Domain, !config.AppConfig.Debug)
 	ctx.Input.SetParam(constants.ContextParamUserID, id)
 }
