@@ -91,7 +91,9 @@ func AuthenticateJWT(ctx *context.Context) {
 			ctx.ResponseWriter.WriteHeader(http.StatusForbidden)
 			return
 		}
-		bearerTokenStr = strings.Split(cookie, "|")[1]
+		if split := strings.Split(cookie, "|"); len(split) == 2 {
+			bearerTokenStr = split[1]
+		}
 	}
 	jwtAuthorization := NewJWTAuthorization(config.AppConfig.JWTSecret, bearerTokenStr)
 	id, expiry, remember, err := jwtAuthorization.ExtractClaimsFromToken()
