@@ -207,10 +207,20 @@ func (o *videoOrm) SetLive(authorID primitive.ObjectID, pending, live bool) (err
 		return
 	}
 	if stream.IsLive != live {
-		err = o.collection.FindOneAndUpdate(context.TODO(),
+		if err = o.collection.FindOneAndUpdate(context.TODO(),
 			bson.M{"author": authorID, "type": constants.VideoTypeLive},
 			bson.D{{"$set", bson.D{
 				{"created_at", time.Now()},
+			}}},
+		).Err(); err != nil {
+			return
+		}
+	}
+	if !pending && live {
+		err = o.collection.FindOneAndUpdate(context.TODO(),
+			bson.M{"author": authorID, "type": constants.VideoTypeLive},
+			bson.D{{"$set", bson.D{
+				{"views", 0},
 			}}},
 		).Err()
 	}
