@@ -8,6 +8,7 @@ import abbreviate from "../helper/abbreviate";
 import auth from "../helper/auth";
 import MediaQuery from "react-responsive";
 import {MOBILE_BP} from "../constants/breakpoint";
+import {PROFILE_MAX_SIZE} from "../constants/file";
 
 let timeout = {};
 
@@ -24,6 +25,7 @@ class Profile extends Component {
       before: {},
       error_name: "",
       error_email: "",
+      error_profile: "",
       loading_edit: false,
       loading_info: true,
       editing: false
@@ -76,6 +78,7 @@ class Profile extends Component {
         new_profile: "",
         error_name: "",
         error_email: "",
+        error_profile: "",
         show_email: false,
         editing: true
       })
@@ -124,6 +127,16 @@ class Profile extends Component {
         }
         this.setState({error_email: ""});
         if (value.trim() !== this.state.before.email.trim()) this.checkAvailability(field, value.trim());
+        return true;
+      case "profile":
+        if (value && value.size > PROFILE_MAX_SIZE) {
+          this.setState({
+            new_profile: null,
+            error_profile: "Maximum profile image size is 15 MB",
+          });
+          return false;
+        }
+        this.setState({error_profile: ""});
         return true;
       default:
         return false;
@@ -180,6 +193,7 @@ class Profile extends Component {
           before: {},
           error_name: "",
           error_email: "",
+          error_profile: "",
           new_profile: "",
         });
         this.setState({error_edit: response.data.error, loading_edit: false});
@@ -206,7 +220,10 @@ class Profile extends Component {
                   <div style={style.profile_bar}>
                     {this.state.editing ?
                       <Dropzone accept={"image/*"} multiple={false}
-                                onDrop={files => this.setState({new_profile: files[0]})}
+                                onDrop={files => {
+                                  this.setState({new_profile: files[0]});
+                                  this.validate("profile", files[0]);
+                                }}
                                 disabled={this.state.loading_edit}>
                         {({getRootProps, getInputProps}) => (
                           <>
@@ -235,14 +252,19 @@ class Profile extends Component {
                       {this.state.loading_info && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
                       {this.state.error_edit && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
                       {this.state.editing ?
-                        <Form autocomplete={"off"}>
-                          <Form.Group>
-                            <Form.Control name={"name"} value={this.state.name} onBlur={this.handleChange}
-                                          onChange={this.handleChange} type={"text"} size={"lg"} style={style.name}
-                                          isInvalid={this.state.error_name} placeholder={"Name"}/>
-                            <Form.Control.Feedback type={"invalid"}>{this.state.error_name}</Form.Control.Feedback>
-                          </Form.Group>
-                        </Form> :
+                        <>
+                          <Form autocomplete={"off"}>
+                            <Form.Group>
+                              <Form.Control name={"name"} value={this.state.name} onBlur={this.handleChange}
+                                            onChange={this.handleChange} type={"text"} size={"lg"} style={style.name}
+                                            isInvalid={this.state.error_name} placeholder={"Name"}/>
+                              <Form.Control.Feedback type={"invalid"}>{this.state.error_name}</Form.Control.Feedback>
+                              <div className={"invalid-feedback"} style={{display: "block"}}>
+                                {this.state.error_profile}
+                              </div>
+                            </Form.Group>
+                          </Form>
+                        </> :
                         <h1 style={style.name}>{this.state.name}</h1>
                       }
                       <h3 style={style.sub_count}>{abbreviate().number(this.state.subscribers)} subscribers</h3>
