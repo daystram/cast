@@ -53,10 +53,10 @@ func (m *module) Register(info datatransfers.UserRegister) (err error) {
 		Type:        constants.VideoTypeLive,
 		Author:      userID,
 		Title:       fmt.Sprintf("%s's Livestream", info.Name),
-		Description: "",
+		Tags:        []string{"live", "first"},
+		Description: "Welcome to my stream!",
 		Resolutions: -1,
 		IsLive:      false,
-		CreatedAt:   time.Now(),
 	}); err != nil {
 		_ = m.db.userOrm.DeleteOneByID(userID)
 		fmt.Printf("[Register] Failed adding %s live video entry. %+v\n", info.Username, err)
@@ -68,6 +68,10 @@ func (m *module) Register(info datatransfers.UserRegister) (err error) {
 	_ = util.Copy(
 		fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ProfileRootDir, constants.ProfileDefault),
 		fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ProfileRootDir, user.Username),
+	)
+	_ = util.Copy(
+		fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ThumbnailRootDir, constants.ThumbnailDefault),
+		fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ThumbnailRootDir, user.Username),
 	)
 	return
 }
