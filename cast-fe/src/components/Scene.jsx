@@ -26,10 +26,11 @@ import {withRouter} from "react-router-dom";
 import auth from "../helper/auth";
 import TimeAgo from "react-timeago";
 import queryString from 'query-string';
-import logo from "./logo.svg";
 import Chat from "./Chat";
 import MediaQuery from "react-responsive";
 import {MOBILE_BP} from "../constants/breakpoint";
+import {VIDEO_TYPE_LIVE, VIDEO_TYPE_VOD} from "../constants/video";
+import logo from "./logo.svg";
 
 class Scene extends Component {
   constructor(props) {
@@ -70,13 +71,13 @@ class Scene extends Component {
 
   componentDidMount() {
     this.fetchDetail(this.props.match.params.hash);
-    window.scroll({top: 0, left: 0, behavior: 'smooth'})
-    this.fetchVideos("live");
-    this.fetchVideos("vod");
+    window.scroll({top: 0, left: 0, behavior: 'smooth'});
+    this.fetchVideos(VIDEO_TYPE_LIVE);
+    this.fetchVideos(VIDEO_TYPE_VOD);
   }
 
   incrementView(variant, hash) {
-    if (this.props.match.params.hash !== hash && variant === "vod") {
+    if (this.props.match.params.hash !== hash && variant === VIDEO_TYPE_VOD) {
       let updated = this.state[variant][hash];
       updated.views++;
       this.setState({[variant]: {...this.state[variant], [hash]: updated}})
@@ -117,6 +118,7 @@ class Scene extends Component {
       if (response.data.code === 200) {
         let data = response.data.data;
         this.setState({
+          offline: data.type === VIDEO_TYPE_LIVE && !data.is_live,
           not_found: false,
           video: data, likes: data.likes, liked: data.liked, comments: data.comments,
           [data.type]: {...this.state[data.type], [data.hash]: data}
@@ -230,136 +232,141 @@ class Scene extends Component {
   render() {
     return (
       <>
-        {!this.state.not_found ?
-          <Container fluid style={style.content_container}>
-            <Row>
-              <Col xl={{span: 2, order: 1}} sm={{span: 6, order: 2}} xs={{span: 12, order: 2}}>
-                <MediaQuery minDeviceWidth={MOBILE_BP}>
-                  <Card body style={{borderRadius: "8px 48px 8px 8px"}}><Sidebar/></Card>
-                </MediaQuery>
-                <div style={style.cast_list}>
-                  {this.state.live && Object.values(this.state.live).map(video =>
-                    <Row key={video.hash} noGutters style={{padding: "0 0 16px 0"}}>
-                      <Cast video={video} onClick={(a, b) => this.incrementView(a, b)}/>
-                    </Row>
+        {!this.state.not_found && !this.state.offline &&
+        <Container fluid style={style.content_container}>
+          <Row>
+            <Col xl={{span: 2, order: 1}} sm={{span: 6, order: 2}} xs={{span: 12, order: 2}}>
+              <MediaQuery minDeviceWidth={MOBILE_BP}>
+                <Card body style={{borderRadius: "8px 48px 8px 8px"}}><Sidebar/></Card>
+              </MediaQuery>
+              <div style={style.cast_list}>
+                {this.state.live && Object.values(this.state.live).map(video =>
+                  <Row key={video.hash} noGutters style={{padding: "0 0 16px 0"}}>
+                    <Cast video={video} onClick={(a, b) => this.incrementView(a, b)}/>
+                  </Row>
+                )}
+                {this.state.loading.live && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
+              </div>
+            </Col>
+            <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 1}}
+                 className={"mid-container"}>
+              <HybridPlayer
+                url={this.state.video && (this.state.video.type === VIDEO_TYPE_LIVE ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}
+                thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}
+                live={this.state.video && this.state.video.type === VIDEO_TYPE_LIVE}/>
+              <Row noGutters style={style.cast_tag_bar}>
+                <Col md={true}>
+                  {this.state.video && this.state.video.tags && Object.values(this.state.video.tags).map(tag =>
+                    <Badge pill key={tag} style={style.cast_tag}>{tag}</Badge>
                   )}
-                  {this.state.loading.live && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
-                </div>
-              </Col>
-              <Col xl={{span: 8, order: 2}} sm={{span: 12, order: 1}} xs={{span: 12, order: 1}}
-                   className={"mid-container"}>
-                <HybridPlayer
-                  url={this.state.video && (this.state.video.type === "live" ? urls().live(this.state.video.hash) : urls().vod(this.state.video.hash))}
-                  thumbnail={this.state.video && urls().thumbnail(this.state.video.hash)}
-                  live={this.state.video && this.state.video.type === "live"}/>
-                <Row noGutters style={style.cast_tag_bar}>
-                  <Col md={true}>
-                    {this.state.video && this.state.video.tags && Object.values(this.state.video.tags).map(tag =>
-                      <Badge pill key={tag} style={style.cast_tag}>{tag}</Badge>
-                    )}
-                  </Col>
-                  <Col md={true} style={{display: "flex", justifyContent: "flex-end"}}>
-                    {this.state.video && this.state.video.type === "vod" &&
-                    <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleDownload}>
+                </Col>
+                <Col md={true} style={{display: "flex", justifyContent: "flex-end"}}>
+                  {this.state.video && this.state.video.type === VIDEO_TYPE_VOD &&
+                  <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleDownload}>
                     <i className="material-icons">get_app</i>{" "}download</span>}
-                    <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleShare}>
+                  <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleShare}>
                     <i className="material-icons">share</i>{" "}share</span>
-                    <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleLike}>
+                  <span style={{...style.cast_attrib, ...style.clickable}} onClick={this.handleLike}>
                     <i style={this.state.liked ? style.liked : {}} className="material-icons">thumb_up</i>
-                      {" "}{(this.state.video && abbreviate().number(this.state.likes)) || 0} likes
+                    {" "}{(this.state.video && abbreviate().number(this.state.likes)) || 0} likes
                   </span>
-                    <span style={style.cast_attrib}>
+                  <span style={style.cast_attrib}>
                     <i className="material-icons">remove_red_eye</i>
-                      {" "}{(this.state.video && abbreviate().number(this.state.video.views)) || 0} {this.state.video && (this.state.video.type === "live" ? 'viewers' : 'views')}
+                    {" "}{(this.state.video && abbreviate().number(this.state.video.views)) || 0} {this.state.video && (this.state.video.type === VIDEO_TYPE_LIVE ? 'viewers' : 'views')}
                   </span>
-                  </Col>
-                </Row>
-                <h1 style={style.title}>{this.state.video && this.state.video.title}</h1>
-                <p style={{marginTop: 4}}>{this.state.video && format().date(this.state.video.created_at)}</p>
-                <div style={style.author_bar}>
-                  <div style={style.author_profile}>
-                    <Image src={this.state.video && urls().profile(this.state.video.author.username)}
-                           width={42} height={42} style={style.profile_image} roundedCircle/>
-                    <div style={style.cast_author_details}>
-                      <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
-                      <p style={style.cast_author_sub}>
-                        {(this.state.video && abbreviate().number(this.state.video.author.subscribers)) || 0} subscriber{this.state.video && this.state.video.author.subscribers !== 1 && "s"}
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <Button style={style.sub_button} onClick={this.handleSubscribe}
-                            disabled={this.state.video && this.state.video.author.isSubscribed}>SUBSCRIBE</Button>
+                </Col>
+              </Row>
+              <h1 style={style.title}>{this.state.video && this.state.video.title}</h1>
+              <p style={{marginTop: 4}}>{this.state.video && format().date(this.state.video.created_at)}</p>
+              <div style={style.author_bar}>
+                <div style={style.author_profile}>
+                  <Image src={this.state.video && urls().profile(this.state.video.author.username)}
+                         width={42} height={42} style={style.profile_image} roundedCircle/>
+                  <div style={style.cast_author_details}>
+                    <p style={style.cast_author_name}>{this.state.video && this.state.video.author.name}</p>
+                    <p style={style.cast_author_sub}>
+                      {(this.state.video && abbreviate().number(this.state.video.author.subscribers)) || 0} subscriber{this.state.video && this.state.video.author.subscribers !== 1 && "s"}
+                    </p>
                   </div>
                 </div>
-                <Row noGutters>
-                  <Col xl={1} sm={0}/>
-                  <Col>
-                    <div style={style.description}>{this.state.video && this.state.video.description}</div>
-                  </Col>
-                  <Col xl={1} sm={0}/>
-                </Row>
-                <hr/>
-                <h3>Comments</h3>
-                <Row noGutters style={{marginTop: 28}}>
-                  <Col xl={1} sm={0}/>
-                  <Col>
-                    <Form noValidate onSubmit={this.handleComment}>
-                      {this.state.error_submit && <Alert variant={"danger"}>{this.state.error_submit}</Alert>}
-                      <Form.Group>
-                        <InputGroup style={style.comment_input}>
-                          <Form.Control type="text" placeholder="Comment" value={this.state.comment}
-                                        onChange={this.writeComment} isInvalid={!!this.state.error_comment}/>
-                          <InputGroup.Append>
-                            <Button variant="outline-primary" type="submit">
-                              <i className="material-icons">send</i></Button>
-                          </InputGroup.Append>
-                        </InputGroup>
-                      </Form.Group>
-                    </Form>
-                    <div style={style.comment_list}>
-                      {this.state.comments ? Object.values(this.state.comments).map(comment => {
-                        return (
-                          <div key={comment.created_at} style={{...style.author_profile, ...style.comment_item}}>
-                            <Image src={urls().profile(comment.author.username)} height={42} width={42}
-                                   style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
-                            <div style={{...style.cast_author_details, minWidth: 0}}>
-                              <p style={style.cast_author_name}>{comment.author.name}</p>
-                              <p style={{marginBottom: 0, color: "grey"}}><TimeAgo date={comment.created_at}/></p>
-                              <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>{comment.content}</p>
-                            </div>
+                <div>
+                  <Button style={style.sub_button} onClick={this.handleSubscribe}
+                          disabled={this.state.video && this.state.video.author.isSubscribed}>SUBSCRIBE</Button>
+                </div>
+              </div>
+              <Row noGutters>
+                <Col xl={1} sm={0}/>
+                <Col>
+                  <div style={style.description}>{this.state.video && this.state.video.description}</div>
+                </Col>
+                <Col xl={1} sm={0}/>
+              </Row>
+              <hr/>
+              <h3>Comments</h3>
+              <Row noGutters style={{marginTop: 28}}>
+                <Col xl={1} sm={0}/>
+                <Col>
+                  <Form noValidate onSubmit={this.handleComment}>
+                    {this.state.error_submit && <Alert variant={"danger"}>{this.state.error_submit}</Alert>}
+                    <Form.Group>
+                      <InputGroup style={style.comment_input}>
+                        <Form.Control type="text" placeholder="Comment" value={this.state.comment}
+                                      onChange={this.writeComment} isInvalid={!!this.state.error_comment}/>
+                        <InputGroup.Append>
+                          <Button variant="outline-primary" type="submit">
+                            <i className="material-icons">send</i></Button>
+                        </InputGroup.Append>
+                      </InputGroup>
+                    </Form.Group>
+                  </Form>
+                  <div style={style.comment_list}>
+                    {this.state.comments ? Object.values(this.state.comments).map(comment => {
+                      return (
+                        <div key={comment.created_at} style={{...style.author_profile, ...style.comment_item}}>
+                          <Image src={urls().profile(comment.author.username)} height={42} width={42}
+                                 style={{...style.profile_image, alignSelf: "end"}} roundedCircle/>
+                          <div style={{...style.cast_author_details, minWidth: 0}}>
+                            <p style={style.cast_author_name}>{comment.author.name}</p>
+                            <p style={{marginBottom: 0, color: "grey"}}><TimeAgo date={comment.created_at}/></p>
+                            <p style={{...style.cast_author_sub, whiteSpace: "normal"}}>{comment.content}</p>
                           </div>
-                        )
-                      }) : <h5 style={style.h5}>Post the first comment!</h5>}
-                    </div>
-                  </Col>
-                  <Col xl={1} xs={0}/>
-                </Row>
-                <MediaQuery maxDeviceWidth={MOBILE_BP}>
-                  <hr/>
-                </MediaQuery>
-              </Col>
-              <Col xl={{span: 2, order: 3}} sm={{span: 6, order: 3}} xs={{span: 12, order: 3}}>
-                {this.state.video &&
-                <Chat height={480} embedded={true} hash={this.state.video.hash} promptSignup={this.promptSignup}/>}
-                <div style={style.cast_list}>
-                  {this.state.vod && Object.values(this.state.vod).map(video =>
-                    <Row key={video.hash} noGutters style={{padding: "0 0 16px 0"}}>
-                      <Cast video={video} onClick={(a, b) => this.incrementView(a, b)}/>
-                    </Row>
-                  )}
-                  {this.state.loading.vod && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
-                </div>
-              </Col>
-            </Row>
-          </Container> :
-          <>
-            <img src={logo} height={"120"} alt={"Video Unavailable"}
-                 style={{display: "block", margin: "auto", opacity: 0.25, marginTop: "25vh"}}/>
-            <h1 style={{fontFamily: "Comfortaa", textAlign: "center", marginTop: 18, opacity: 0.85}}>Video
-              Unavailable</h1>
-          </>
-        }
+                        </div>
+                      )
+                    }) : <h5 style={style.h5}>Post the first comment!</h5>}
+                  </div>
+                </Col>
+                <Col xl={1} xs={0}/>
+              </Row>
+              <MediaQuery maxDeviceWidth={MOBILE_BP}>
+                <hr/>
+              </MediaQuery>
+            </Col>
+            <Col xl={{span: 2, order: 3}} sm={{span: 6, order: 3}} xs={{span: 12, order: 3}}>
+              {this.state.video &&
+              <Chat height={480} embedded={true} hash={this.state.video.hash} promptSignup={this.promptSignup}/>}
+              <div style={style.cast_list}>
+                {this.state.vod && Object.values(this.state.vod).map(video =>
+                  <Row key={video.hash} noGutters style={{padding: "0 0 16px 0"}}>
+                    <Cast video={video} onClick={(a, b) => this.incrementView(a, b)}/>
+                  </Row>
+                )}
+                {this.state.loading.vod && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
+              </div>
+            </Col>
+          </Row>
+        </Container>}
+        {this.state.not_found && <>
+          <img src={logo} height={"120"} alt={"Video Unavailable"}
+               style={{display: "block", margin: "auto", opacity: 0.25, marginTop: "25vh"}}/>
+          <h1 style={{fontFamily: "Comfortaa", textAlign: "center", marginTop: 18, opacity: 0.85}}>
+            Video Unavailable</h1>
+        </>}
+        {this.state.offline && <>
+          <img src={logo} height={"120"} alt={"Stream Offline"}
+               style={{display: "block", margin: "auto", opacity: 0.25, marginTop: "25vh"}}/>
+          <h1 style={{fontFamily: "Comfortaa", textAlign: "center", marginTop: 18, opacity: 0.85}}>
+            Stream Offline</h1>
+        </>}
         <Modal show={this.state.prompt_auth} size={"md"} onHide={() => this.setState({prompt_auth: false})} centered>
           <Modal.Header closeButton>
             <Modal.Title id="contained-modal-title-vcenter">
@@ -367,7 +374,8 @@ class Scene extends Component {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <p>You need to be logged in to like, comment, chat, download, and subscribe. By signing in, you can start sharing your
+            <p>You need to be logged in to like, comment, chat, download, and subscribe. By signing in, you can start
+              sharing your
               own videos and livestream too!</p>
             <p>Log In or Sign Up today!</p>
           </Modal.Body>
