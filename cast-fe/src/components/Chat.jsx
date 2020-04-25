@@ -3,6 +3,7 @@ import {Button, Card, Form, FormControl, InputGroup} from "react-bootstrap";
 import urls from "../helper/url";
 import auth from "../helper/auth";
 import {withRouter} from "react-router-dom";
+import {CHAT_CHAR_LIMIT} from "../constants/chat";
 
 class Chat extends Component {
   constructor(props) {
@@ -97,7 +98,11 @@ class Chat extends Component {
           <Form onSubmit={this.handleSubmit}>
             <InputGroup style={style.live_chat_input}>
               <FormControl type="text" value={this.state.chat} placeholder="Chat"
-                           onChange={e => this.setState({chat: e.target.value})}/>
+                           onChange={e => {
+                             if (e.target.value.length <= CHAT_CHAR_LIMIT) {
+                               this.setState({chat: e.target.value});
+                             }
+                           }}/>
               <InputGroup.Append>
                 <Button variant="outline-primary" type={"submit"}><i className="material-icons">send</i></Button>
               </InputGroup.Append>
