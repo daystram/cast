@@ -245,7 +245,7 @@ p, h5, .form-label, .form-check-label {
     border-color: #00ff3a;
 }
 
-:not(.nav, .ReactTags__tag) > a {
+a.inline {
     background: linear-gradient(
             to bottom, #E84409 0%,
             #E84409 100%
@@ -256,7 +256,7 @@ p, h5, .form-label, .form-check-label {
     transition: background-size .2s ease-out;
 }
 
-:not(.nav, .ReactTags__tag) > a:hover {
+a.inline:hover {
     color: white;
     text-decoration: none;
     background-size: 1px 6px;

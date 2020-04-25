@@ -146,9 +146,8 @@ class Verify extends Component {
               </div>
             </Alert>}
             <Form.Group>
-              <Form.Label>Email</Form.Label>
               <Form.Control name={"email"} value={this.state.email} onBlur={this.handleChange}
-                            onChange={this.handleChange} type={"email"}
+                            onChange={this.handleChange} type={"email"} placeholder={"Email"}
                             isInvalid={!!this.state.error_email}/>
               <Form.Control.Feedback type={"invalid"}>{this.state.error_email}</Form.Control.Feedback>
             </Form.Group>
