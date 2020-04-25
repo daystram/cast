@@ -3,6 +3,7 @@ import {Alert, Button, Col, Container, Form, ProgressBar, Spinner} from "react-b
 import axios from 'axios';
 import zxcvbn from 'zxcvbn';
 import urls from "../helper/url";
+import {Link} from "react-router-dom";
 
 let timeout = {};
 
@@ -229,6 +230,8 @@ class SignUp extends Component {
                        size="sm" role="status" aria-hidden="true"/>}
             </Button>
           </Form>
+          <br/>
+          <p style={{textAlign: "center"}}>Already have an account? <Link to={'/login'}>Log in</Link> now!</p>
         </Container>
       </>
     )

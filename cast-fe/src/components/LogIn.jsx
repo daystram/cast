@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {Alert, Button, Container, Form, Spinner} from "react-bootstrap";
 import axios from "axios";
 import urls from "../helper/url";
-import {withRouter} from "react-router-dom";
+import {Link, withRouter} from "react-router-dom";
 
 class LogIn extends Component {
   constructor(props) {
@@ -118,7 +118,8 @@ class LogIn extends Component {
             <Form.Control.Feedback type={"invalid"}>{this.state.error_password}</Form.Control.Feedback>
           </Form.Group>
           <Form.Group>
-            <Form.Check label="Remember me" checked={this.state.remember} onChange={(e) => this.setState({remember: e.target.checked})}/>
+            <Form.Check label="Remember me" checked={this.state.remember}
+                        onChange={(e) => this.setState({remember: e.target.checked})}/>
           </Form.Group>
           <Button variant="primary" type="submit" block disabled={this.state.loading}>
             Log In{" "}
@@ -127,6 +128,9 @@ class LogIn extends Component {
                      size="sm" role="status" aria-hidden="true"/>}
           </Button>
         </Form>
+        <br/>
+        <p style={{textAlign: "center"}}><Link to={'/forgot'}>Forgot password?</Link></p>
+        <p style={{textAlign: "center"}}>Don't have an account? <Link to={'/signup'}>Sign up</Link> now!</p>
       </Container>
     )
   }

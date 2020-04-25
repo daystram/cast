@@ -61,7 +61,7 @@ p, h5, .form-label, .form-check-label {
     background-color: #8B280344;
 }
 
-.form-control:disabled, .custom-file-input:disabled~.custom-file-label, .custom-file-input[disabled]~.custom-file-label {
+.form-control:disabled, .custom-file-input:disabled ~ .custom-file-label, .custom-file-input[disabled] ~ .custom-file-label {
     color: #999999DD;
     background-color: #8B2803AA;
 }
@@ -243,4 +243,25 @@ p, h5, .form-label, .form-check-label {
     color: hsla(134, 61%, 50%, 1);
     background-color: #009e2644;
     border-color: #00ff3a;
+}
+
+:not(.nav, .ReactTags__tag) > a {
+    background: linear-gradient(
+            to bottom, #E84409 0%,
+            #E84409 100%
+    ) repeat-x 0 100%;
+    background-size: 2px 2px;
+    color: white;
+    text-decoration: none;
+    transition: background-size .2s ease-out;
+}
+
+:not(.nav, .ReactTags__tag) > a:hover {
+    color: white;
+    text-decoration: none;
+    background-size: 1px 6px;
+}
+
+.invalid-feedback {
+    color: #fd3a4c;
 }
