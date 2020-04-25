@@ -87,12 +87,13 @@ class Dashboard extends Component {
       axios.get(urls().window())
         .then((response) => {
           if (response.data.code === 200) {
-            if (response.data.data && this.state.pending) this.setState({delta: 1});
+            if (response.data.data && this.state.pending) {
+              this.setState({delta: 1, created_at: new Date().toISOString()});
+            }
             if (!response.data.data && !this.state.pending) clearInterval(interval);
             this.setState({
               live: response.data.data,
-              pending: this.state.pending && !response.data.data,
-              created_at: new Date().toISOString(),
+              pending: this.state.pending && !response.data.data
             });
           }
         })
@@ -110,9 +111,9 @@ class Dashboard extends Component {
             this.setState({
               live: false,
               pending: false,
-              prompt_stop: false,
-              created_at: new Date().toISOString()
-            })
+              prompt_stop: false
+            });
+            if (this.state.live) this.setState({created_at: new Date().toISOString()});
           } else {
             this.loadLive();
             this.setState({pending: true})
@@ -169,7 +170,7 @@ class Dashboard extends Component {
                       <p style={style.show_count}>{this.state.live && this.state.created_at && this.state.delta ?
                         <Clock date={this.state.delta} timezone={"UTC"} format={'HH:mm:ss'}
                                ticking={true}/> :
-                        format().full_date(this.state.created_at)}
+                        this.state.created_at === "0001-01-01T00:00:00Z" ? "Never" : format().full_date(this.state.created_at)}
                       </p>
                       <p style={style.show_caption}>{this.state.live ? "stream duration" : "last stream"}</p>
                     </Col>
