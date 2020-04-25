@@ -13,6 +13,8 @@ import './file.css'
 import auth from "../helper/auth";
 import MediaQuery from "react-responsive";
 import {MOBILE_BP} from "../constants/breakpoint";
+import {THUMBNAIL_MAX_SIZE, VIDEO_MAX_SIZE} from "../constants/file";
+import {VIDEO_DESC_CHAR_LIMIT, VIDEO_TAG_CHAR_LIMIT, VIDEO_TAG_COUNT, VIDEO_TITLE_CHAR_LIMIT} from "../constants/video";
 
 let timeout = null;
 
@@ -74,6 +76,12 @@ class Manage extends Component {
     this.validate(e.target.name, e.target.value);
   }
 
+  handleChangeFile(e) {
+    this.setState({error_upload: ""});
+    this.setState({[e.target.name]: e.target.files[0]});
+    this.validate(e.target.name, e.target.files[0]);
+  }
+
   handleTagAdd(tag) {
     if (this.validate("tag", tag.text)) {
       this.setState(state => ({tags: [...state.tags, tag]}));
@@ -95,17 +103,15 @@ class Manage extends Component {
     this.setState({tags: newTags});
   }
 
-  handleChangeFile(e) {
-    this.setState({error_upload: ""});
-    this.setState({[e.target.name]: e.target.files[0]});
-    this.validate(e.target.name, e.target.value);
-  }
-
   validate(field, value) {
     switch (field) {
       case "title":
         if (!value.trim()) {
           this.setState({error_title: "Please enter video title"});
+          return false;
+        }
+        if (value.trim().length > VIDEO_TITLE_CHAR_LIMIT) {
+          this.setState({error_title: "Title too long"});
           return false;
         }
         this.setState({error_title: ""});
@@ -114,6 +120,10 @@ class Manage extends Component {
       case "description":
         if (!value.trim()) {
           this.setState({error_description: "Please enter video description"});
+          return false;
+        }
+        if (value.trim().length > VIDEO_DESC_CHAR_LIMIT) {
+          this.setState({error_description: "Description too long"});
           return false;
         }
         this.setState({error_description: ""});
@@ -138,11 +148,25 @@ class Manage extends Component {
           this.setState({error_thumbnail: "Please select thumbnail image"});
           return false;
         }
+        if (value.size > THUMBNAIL_MAX_SIZE) {
+          this.setState({
+            thumbnail: null,
+            error_thumbnail: "Maximum thumbnail size is 50 MB",
+          });
+          return false;
+        }
         this.setState({error_thumbnail: ""});
         return true;
       case "video":
         if (!value) {
           this.setState({error_video: "Please select video file"});
+          return false;
+        }
+        if (value.size > VIDEO_MAX_SIZE) {
+          this.setState({
+            video: null,
+            error_video: "Maximum video size is 1.25 GB",
+          });
           return false;
         }
         this.setState({error_video: ""});
@@ -272,9 +296,9 @@ class Manage extends Component {
                       <ReactTags
                         classNames={{
                           tags: this.state.error_tags ? "ReactTags__tags__error" : (this.state.uploading ? "ReactTags__tags__disabled" : "ReactTags__tags"),
-                          tagInput: this.state.tags.length === 5 ? "ReactTags__tagInput__disabled" : "ReactTags__tagInput"
+                          tagInput: this.state.tags.length === VIDEO_TAG_COUNT ? "ReactTags__tagInput__disabled" : "ReactTags__tagInput"
                         }}
-                        tags={this.state.tags} autofocus={false} delimiters={[13, 32, 188]} maxLength={12}
+                        tags={this.state.tags} autofocus={false} delimiters={[13, 32, 188]} maxLength={VIDEO_TAG_CHAR_LIMIT}
                         placeholder={""} readOnly={this.state.uploading} handleAddition={this.handleTagAdd}
                         handleDelete={this.handleTagDelete} handleDrag={this.handleTagDrag}
                         handleInputChange={() => this.setState({error_tags: ""})}

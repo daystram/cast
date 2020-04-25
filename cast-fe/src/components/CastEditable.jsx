@@ -7,6 +7,8 @@ import axios from "axios";
 import {Prompt, withRouter} from "react-router-dom";
 import {WithContext as ReactTags} from "react-tag-input";
 import './tags.css';
+import {THUMBNAIL_MAX_SIZE} from "../constants/file";
+import {VIDEO_DESC_CHAR_LIMIT, VIDEO_TAG_CHAR_LIMIT, VIDEO_TAG_COUNT, VIDEO_TITLE_CHAR_LIMIT} from "../constants/video";
 
 const resolutions = ["Processing", "240p", "360p", "480p", "720p", "1080p"];
 let timeout = null;
@@ -24,6 +26,7 @@ class CastEditable extends Component {
       error_title: "",
       error_tags: "",
       error_description: "",
+      error_thumbnail: "",
       error_edit: "",
       error_delete: "",
       before: {},
@@ -72,6 +75,7 @@ class CastEditable extends Component {
         error_title: "",
         error_tags: "",
         error_description: "",
+        error_thumbnail: "",
         editing: true
       })
     }
@@ -89,6 +93,7 @@ class CastEditable extends Component {
         error_title: "",
         error_tags: "",
         error_description: "",
+        error_thumbnail: "",
         error_edit: "",
         editing: false
       })
@@ -131,6 +136,11 @@ class CastEditable extends Component {
           this.setState({error_title: "Please enter video title"});
           return false;
         }
+        console.log(value.trim().length)
+        if (value.trim().length > VIDEO_TITLE_CHAR_LIMIT) {
+          this.setState({error_title: "Title too long"});
+          return false;
+        }
         this.setState({error_title: ""});
         if (value.toLowerCase().trim() !== this.state.before.title.toLowerCase().trim()) this.checkAvailability(value);
         return true;
@@ -154,7 +164,21 @@ class CastEditable extends Component {
           this.setState({error_description: "Please enter video description"});
           return false;
         }
+        if (value.trim().length > VIDEO_DESC_CHAR_LIMIT) {
+          this.setState({error_description: "Description too long"});
+          return false;
+        }
         this.setState({error_description: ""});
+        return true;
+      case "thumbnail":
+        if (value && value.size > THUMBNAIL_MAX_SIZE) {
+          this.setState({
+            new_thumbnail: null,
+            error_thumbnail: "Maximum thumbnail size is 50 MB",
+          });
+          return false;
+        }
+        this.setState({error_thumbnail: ""});
         return true;
       default:
         return false;
@@ -219,6 +243,7 @@ class CastEditable extends Component {
           error_title: "",
           error_tags: "",
           error_description: "",
+          error_thumbnail: "",
           new_thumbnail: "",
           updated: true
         });
@@ -274,29 +299,34 @@ class CastEditable extends Component {
       <Card body style={style.card}>
         <Row>
           <Col xl={3} lg={4} md={5} sm={12}>
-            {this.state.editing ?
-              <Dropzone accept={"image/*"} multiple={false} noDragEventsBubbling={true}
-                        onDrop={files => this.setState({new_thumbnail: files[0]})}
-                        disabled={false}>
-                {({getRootProps, getInputProps}) => (
-                  <section
-                    style={{...style.thumbnail_upload, ...(this.state.new_thumbnail && style.thumbnail_upload_modified)}}>
-                    <div {...getRootProps()} style={style.thumbnail_container}>
-                      <input {...getInputProps()} />
-                      <Image
-                        src={this.state.new_thumbnail ? URL.createObjectURL(this.state.new_thumbnail) : this.state.thumbnail}
-                        style={style.thumbnail}/>
-                      <p
-                        style={{...style.dropzone_icon, ...(this.state.new_thumbnail && style.dropzone_icon_modified)}}>
-                        {!this.state.new_thumbnail &&
-                        <span className="material-icons"
-                              style={{fontSize: 32, color: "dimgray"}}>publish</span>
-                        }
-                      </p>
-                    </div>
-                  </section>
-                )}
-              </Dropzone> :
+            {this.state.editing ? <>
+                <Dropzone accept={"image/*"} multiple={false} noDragEventsBubbling={true}
+                          onDrop={files => {
+                            this.setState({new_thumbnail: files[0]});
+                            this.validate("thumbnail", files[0]);
+                          }}
+                          disabled={false}>
+                  {({getRootProps, getInputProps}) => (
+                    <section
+                      style={{...style.thumbnail_upload, ...(this.state.new_thumbnail && style.thumbnail_upload_modified)}}>
+                      <div {...getRootProps()} style={style.thumbnail_container}>
+                        <input {...getInputProps()} />
+                        <Image
+                          src={this.state.new_thumbnail ? URL.createObjectURL(this.state.new_thumbnail) : this.state.thumbnail}
+                          style={style.thumbnail}/>
+                        <p
+                          style={{...style.dropzone_icon, ...(this.state.new_thumbnail && style.dropzone_icon_modified)}}>
+                          {!this.state.new_thumbnail &&
+                          <span className="material-icons"
+                                style={{fontSize: 32, color: "dimgray"}}>publish</span>
+                          }
+                        </p>
+                      </div>
+                    </section>
+                  )}
+                </Dropzone>
+                <div className={"invalid-feedback"} style={{display: "block"}}>{this.state.error_thumbnail}</div>
+              </> :
               <div style={style.thumbnail_container}>
                 <Image src={this.state.thumbnail} style={style.thumbnail}/>
               </div>}
@@ -304,7 +334,7 @@ class CastEditable extends Component {
           <Col md sm={12} style={{marginTop: 4}}>
             {this.state.error_edit && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
             {this.state.editing ?
-              <Form autocomplete={"off"}>
+              <Form autocomplete={"off"} onSubmit={e => e.preventDefault()}>
                 <Form.Group style={{marginBottom: 4}}>
                   <Form.Control name={"title"} value={this.state.title} onBlur={this.handleChange}
                                 onChange={this.handleChange} type={"text"} size={"lg"} style={style.title}
@@ -334,9 +364,9 @@ class CastEditable extends Component {
                   <ReactTags
                     classNames={{
                       tags: this.state.error_tags ? "ReactTags__tags__error" : (this.state.uploading ? "ReactTags__tags__disabled" : "ReactTags__tags"),
-                      tagInput: this.state.tags.length === 5 ? "ReactTags__tagInput__disabled" : "ReactTags__tagInput"
+                      tagInput: this.state.tags.length === VIDEO_TAG_COUNT ? "ReactTags__tagInput__disabled" : "ReactTags__tagInput"
                     }}
-                    tags={this.state.tags} autofocus={false} delimiters={[13, 32, 188]} maxLength={12}
+                    tags={this.state.tags} autofocus={false} delimiters={[13, 32, 188]} maxLength={VIDEO_TAG_CHAR_LIMIT}
                     placeholder={this.state.tags.length ? "" : "Tags"} readOnly={this.state.loading_edit}
                     handleAddition={this.handleTagAdd} handleDelete={this.handleTagDelete}
                     handleDrag={this.handleTagDrag} handleInputChange={() => this.setState({error_tags: ""})}
@@ -353,7 +383,7 @@ class CastEditable extends Component {
               }
             </div>
             {this.state.editing ?
-              <Form autocomplete={"off"}>
+              <Form autocomplete={"off"} onSubmit={e => e.preventDefault()}>
                 <Form.Group style={{marginBottom: 4}}>
                   <Form.Control name={"description"} value={this.state.description} onBlur={this.handleChange}
                                 onChange={this.handleChange} as={"textarea"} size={"lg"} style={style.description}
