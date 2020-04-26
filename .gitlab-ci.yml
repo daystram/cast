@@ -75,7 +75,7 @@ deploy_dev:backend:
     - . scripts/init_deploy.sh
     - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
   script:
-    - echo $CONFIG_BACKEND | base64 -d > ./config/app.conf
+    - echo $CONFIG_BACKEND | base64 -d > ./cast-be/config/app.conf
     - docker pull $CI_REGISTRY_IMAGE:dev-cast-be || true
     - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-be --tag $CI_REGISTRY_IMAGE:dev-cast-be cast-be/
     - docker push $CI_REGISTRY_IMAGE:dev-cast-be
@@ -107,9 +107,9 @@ deploy_dev:ingest:
     - . scripts/init_deploy.sh
     - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
   script:
-    - echo $CONFIG_INGEST | base64 -d > ./config/app.conf
+    - echo $CONFIG_INGEST | base64 -d > ./cast-is/app.conf
     - docker pull $CI_REGISTRY_IMAGE:dev-cast-is || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-is --tag $CI_REGISTRY_IMAGE/ingest:dev-cast-is cast-is/
+    - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-is --tag $CI_REGISTRY_IMAGE:dev-cast-is cast-is/
     - docker push $CI_REGISTRY_IMAGE:dev-cast-is
     - ssh $HOST "make update SERVICE=$SERVICE_NAME"
   except:
@@ -170,7 +170,7 @@ deploy_prod:backend:
     - . scripts/init_deploy.sh
     - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
   script:
-    - echo $CONFIG_BACKEND | base64 -d > ./config/app.conf
+    - echo $CONFIG_BACKEND | base64 -d > ./cast-be/config/app.conf
     - docker pull $CI_REGISTRY_IMAGE:cast-be || true
     - docker build --cache-from $CI_REGISTRY_IMAGE:cast-be --tag $CI_REGISTRY_IMAGE:cast-be cast-be/
     - docker push $CI_REGISTRY_IMAGE:cast-be
@@ -201,7 +201,7 @@ deploy_prod:ingest:
     - . scripts/init_deploy.sh
     - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
   script:
-    - echo $CONFIG_INGEST | base64 -d > ./config/app.conf
+    - echo $CONFIG_INGEST | base64 -d > ./cast-is/app.conf
     - docker pull $CI_REGISTRY_IMAGE:cast-is || true
     - docker build --cache-from $CI_REGISTRY_IMAGE:cast-is --tag $CI_REGISTRY_IMAGE:cast-is cast-is/
     - docker push $CI_REGISTRY_IMAGE:cast-is

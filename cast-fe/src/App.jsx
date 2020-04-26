@@ -1,12 +1,21 @@
 import React from 'react';
 import './App.css';
-import {HybridPlayer} from "./components/player";
+import {BrowserRouter, Route} from 'react-router-dom'
+import Routes from './Routes'
+import Navigation from "./components/Navigation";
+import axios from 'axios';
+
+// axios.defaults.baseURL = "http://localhost:8080";
+// axios.defaults.baseURL = "https://dev.cast.daystram.com";
+axios.defaults.withCredentials = true;
 
 function App() {
   return (
-    <HybridPlayer
-      url={"http://cast.daystram.com/api/test_stream"}
-      live={true}/>
+    <BrowserRouter>
+      <Route path={['/', '/w/:hash', '/s', '/profile', '/dashboard',
+        '/manage', '/verify', '/login', '/signup']} exact component={Navigation}/>
+      <Routes/>
+    </BrowserRouter>
   );
 }
 
