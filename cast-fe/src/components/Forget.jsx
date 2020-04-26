@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {Alert, Button, Container, Form, Spinner} from "react-bootstrap";
 import axios from "axios";
 import urls from "../helper/url";
-import {Redirect} from "react-router-dom";
+import {withRouter} from "react-router-dom";
 
 // TODO: WIP!
 class Forget extends Component {
@@ -21,7 +21,7 @@ class Forget extends Component {
 
   componentDidMount() {
     if (this.state.key) {
-      // TODO: reset trigger
+      // TODO: trigger reset
       axios.post(urls().verify(), {
         key: this.state.key
       }).then((response) => {
@@ -107,7 +107,7 @@ class Forget extends Component {
               <p>Your verification link is invalid! Please request for a new verification link sent to your email.</p>
               <hr/>
               <div className="d-flex justify-content-end">
-                <Button onClick={() => this.setState({redirectVerify: true, key: "", error_verify: ""})}
+                <Button onClick={() => this.props.location.push("/login")}
                         variant="outline-danger">
                   Re-send Link
                 </Button>
@@ -121,7 +121,7 @@ class Forget extends Component {
               </p>
               <hr/>
               <div className="d-flex justify-content-end">
-                <Button onClick={() => this.setState({redirectLogin: true})} variant="outline-success">
+                <Button onClick={() => this.props.location.push("/login")} variant="outline-success">
                   Log In
                 </Button>
               </div>
@@ -140,7 +140,7 @@ class Forget extends Component {
               </p>
               <hr/>
               <div className="d-flex justify-content-end">
-                <Button onClick={() => this.setState({redirectLogin: true})} variant="outline-success">
+                <Button onClick={() => this.props.location.push("/login")} variant="outline-success">
                   Log In
                 </Button>
               </div>
@@ -178,4 +178,4 @@ let style = {
   },
 };
 
-export default Forget
+export default withRouter(Forget)
