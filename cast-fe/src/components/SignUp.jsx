@@ -155,7 +155,7 @@ class SignUp extends Component {
     }).then((response) => {
       Object.keys(timeout).map(field => clearTimeout(timeout[field]));
       this.setState({loading: false, name: "", username: "", email: "", password: "", password2: ""});
-      if (response.data.code !== 200) {
+      if (response.data.code === 200) {
         this.setState({
           success: true,
           error_name: "",
