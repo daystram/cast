@@ -81,11 +81,11 @@ class SignUp extends Component {
         this.checkAvailability(field, value.trim());
         return true;
       case "password":
+        this.setState({strength: zxcvbn(this.state.password).score});
         if (!value) {
           this.setState({error_password: "Please enter your password"});
           return false;
         }
-        this.setState({strength: zxcvbn(this.state.password).score});
         if (value.length < 8) {
           this.setState({error_password: "Password must be at least 8 characters"});
           return false;
@@ -137,7 +137,7 @@ class SignUp extends Component {
       ok &= this.validate("username", this.state.username);
       ok &= this.validate("email", this.state.email);
       ok &= this.validate("password", this.state.password);
-      ok &= this.validate("password", this.state.password2);
+      ok &= this.validate("password2", this.state.password2);
     } else {
       ok &= !this.state.error_name;
       ok &= !this.state.error_username;
@@ -153,10 +153,18 @@ class SignUp extends Component {
       email: this.state.email.trim(),
       password: this.state.password.trim(),
     }).then((response) => {
+      Object.keys(timeout).map(field => clearTimeout(timeout[field]));
       this.setState({loading: false, name: "", username: "", email: "", password: "", password2: ""});
-      if (response.data.code === 200) {
-        Object.keys(timeout).map(field => clearTimeout(timeout[field]));
-        this.setState({success: true});
+      if (response.data.code !== 200) {
+        this.setState({
+          success: true,
+          error_name: "",
+          error_username: "",
+          error_email: "",
+          error_password: "",
+          error_password2: "",
+          error_signup: ""
+        });
       } else {
         this.setState({error_signup: "An error has occurred!"});
       }
