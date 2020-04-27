@@ -185,6 +185,7 @@ class Profile extends Component {
         },
       }
     ).then((response) => {
+      Object.keys(timeout).map(field => clearTimeout(timeout[field]));
       if (response.data.code === 200) {
         if (this.state.new_profile) window.location.reload();
         this.setState({

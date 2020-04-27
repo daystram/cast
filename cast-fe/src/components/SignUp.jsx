@@ -81,7 +81,6 @@ class SignUp extends Component {
         this.checkAvailability(field, value.trim());
         return true;
       case "password":
-        this.setState({strength: zxcvbn(this.state.password).score});
         if (!value) {
           this.setState({error_password: "Please enter your password"});
           return false;
@@ -131,6 +130,7 @@ class SignUp extends Component {
   submitForm(e) {
     e.preventDefault();
     let ok = true;
+    this.setState({success: false});
     if (!this.state.attempted) {
       this.setState({attempted: true});
       ok &= this.validate("name", this.state.name);
@@ -163,7 +163,8 @@ class SignUp extends Component {
           error_email: "",
           error_password: "",
           error_password2: "",
-          error_signup: ""
+          error_signup: "",
+          attempted: false
         });
       } else {
         this.setState({error_signup: "An error has occurred!"});
@@ -176,6 +177,7 @@ class SignUp extends Component {
   }
 
   render() {
+    let strength = zxcvbn(this.state.password).score;
     return (
       <>
         <Container fluid style={style.content_container}>
@@ -227,9 +229,9 @@ class SignUp extends Component {
                   <Form.Control.Feedback type={"invalid"}>{this.state.error_password2}</Form.Control.Feedback>
                 </Form.Group>
               </Form.Row>
-              <ProgressBar variant={["danger", "warning", "info", "success"][this.state.strength - 1]}
-                           label={["very weak", "weak", "medium", "strong"][this.state.strength - 1]}
-                           now={25 * this.state.strength} className={"password-strength"}/>
+              <ProgressBar variant={["danger", "warning", "info", "success"][strength - 1]}
+                           label={["very weak", "weak", "medium", "strong"][strength - 1]}
+                           now={25 * strength} className={"password-strength"}/>
             </Form.Group>
             <Button variant="primary" type="submit" block disabled={this.state.loading}>
               Sign Up{" "}
