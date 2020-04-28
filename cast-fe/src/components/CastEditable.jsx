@@ -136,7 +136,6 @@ class CastEditable extends Component {
           this.setState({error_title: "Please enter video title"});
           return false;
         }
-        console.log(value.trim().length)
         if (value.trim().length > VIDEO_TITLE_CHAR_LIMIT) {
           this.setState({error_title: "Title too long"});
           return false;
@@ -232,6 +231,7 @@ class CastEditable extends Component {
         },
       }
     ).then((response) => {
+      Object.keys(timeout).map(field => clearTimeout(timeout[field]));
       if (response.data.code === 200) {
         if (this.state.new_thumbnail) this.setState({
           thumbnail: URL.createObjectURL(this.state.new_thumbnail)
@@ -247,9 +247,7 @@ class CastEditable extends Component {
           new_thumbnail: "",
           updated: true
         });
-        console.log(response.data);
       } else {
-        console.log(response.data);
         this.setState({error_edit: response.data.error, loading_edit: false});
       }
     }).catch((error) => {
@@ -270,7 +268,6 @@ class CastEditable extends Component {
         this.setState({loading_delete: false, prompt: false});
         this.props.onDelete();
       } else {
-        console.log(response.data);
         this.setState({error_delete: response.data.error, loading_delete: false});
       }
     }).catch((error) => {
