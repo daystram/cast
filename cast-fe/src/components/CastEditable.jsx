@@ -11,7 +11,7 @@ import {THUMBNAIL_MAX_SIZE} from "../constants/file";
 import {VIDEO_DESC_CHAR_LIMIT, VIDEO_TAG_CHAR_LIMIT, VIDEO_TAG_COUNT, VIDEO_TITLE_CHAR_LIMIT} from "../constants/video";
 
 const resolutions = ["Processing", "240p", "360p", "480p", "720p", "1080p"];
-let timeout = null;
+let timeout = {};
 
 class CastEditable extends Component {
   constructor(props) {
@@ -231,7 +231,7 @@ class CastEditable extends Component {
         },
       }
     ).then((response) => {
-      Object.keys(timeout).map(field => clearTimeout(timeout[field]));
+      clearTimeout(timeout);
       if (response.data.code === 200) {
         if (this.state.new_thumbnail) this.setState({
           thumbnail: URL.createObjectURL(this.state.new_thumbnail)
@@ -325,7 +325,7 @@ class CastEditable extends Component {
                 <div className={"invalid-feedback"} style={{display: "block"}}>{this.state.error_thumbnail}</div>
               </> :
               <div style={style.thumbnail_container}>
-                <Image src={this.state.thumbnail} style={style.thumbnail}/>
+                <Image src={this.state.thumbnail} style={style.thumbnail} onClick={this.openVideo}/>
               </div>}
           </Col>
           <Col md sm={12} style={{marginTop: 4}}>

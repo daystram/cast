@@ -93,11 +93,12 @@ class Dashboard extends Component {
             if (!response.data.data && !this.state.pending) clearInterval(interval);
             this.setState({
               live: response.data.data,
+              stream: {...this.state.stream, is_live: response.data.data},
               pending: this.state.pending && !response.data.data
             });
           }
         })
-    }, 2000)
+    }, 3000)
   }
 
   setStreamWindow(open) {
