@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"github.com/astaxie/beego/context"
 	"net/http"
 	"sync"
 
@@ -10,6 +9,7 @@ import (
 	"gitlab.com/daystram/cast/cast-be/models"
 
 	googlePS "cloud.google.com/go/pubsub"
+	"github.com/astaxie/beego/context"
 	"github.com/daystram/websocket"
 	"github.com/mailgun/mailgun-go"
 	"github.com/nareix/joy4/av/pubsub"
@@ -70,7 +70,7 @@ type Handler interface {
 	Verify(key string) (err error)
 	Authenticate(info data.UserLogin) (token string, err error)
 
-	SendSingleEmail(subject, content string, user data.User)
+	SendSingleEmail(subject, recipient, template string, variable map[string]string)
 
 	UserDetails(userID primitive.ObjectID) (detail data.UserDetail, err error)
 	GetUserByEmail(email string) (user data.User, err error)
