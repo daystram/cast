@@ -11,6 +11,7 @@ build:backend:
   stage: build
   script:
     - . scripts/init_backend.sh
+    - go get github.com/mailgun/mailgun-go
     - dep ensure
     - go build
   artifacts:
