@@ -65,7 +65,7 @@ class LogIn extends Component {
         case 200:
           const {from} = this.props.location.state || {from: false};
           if (from) this.props.history.push(from.pathname);
-          else this.props.history.goBack();
+          else this.props.history.push("/");
           return;
         case 404:
           this.setState({error_username: "Username not registered"});
