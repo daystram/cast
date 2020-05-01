@@ -1,0 +1,9 @@
+google_project_id = PROJECT_ID
+google_api_key = /PATH_TO_JSON_KEY
+pubsub_topic_complete = TOPIC_COMPLETE
+pubsub_subscription_transcode = SUBSCRIPTION_TRANSCODE
+
+uploads_dir = /PATH_TO_UPLOADS_DIR
+
+ffmpeg_executable = /PATH_TO_EXECUTABLE
+mp4box_executable = /PATH_TO_EXECUTABLE
