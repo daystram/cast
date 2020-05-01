@@ -16,7 +16,7 @@ import {MOBILE_BP} from "../constants/breakpoint";
 import {THUMBNAIL_MAX_SIZE, VIDEO_MAX_SIZE} from "../constants/file";
 import {VIDEO_DESC_CHAR_LIMIT, VIDEO_TAG_CHAR_LIMIT, VIDEO_TAG_COUNT, VIDEO_TITLE_CHAR_LIMIT} from "../constants/video";
 
-let timeout = null;
+let timeout = {};
 
 class Manage extends Component {
   constructor(props) {
@@ -298,7 +298,8 @@ class Manage extends Component {
                           tags: this.state.error_tags ? "ReactTags__tags__error" : (this.state.uploading ? "ReactTags__tags__disabled" : "ReactTags__tags"),
                           tagInput: this.state.tags.length === VIDEO_TAG_COUNT ? "ReactTags__tagInput__disabled" : "ReactTags__tagInput"
                         }}
-                        tags={this.state.tags} autofocus={false} delimiters={[13, 32, 188]} maxLength={VIDEO_TAG_CHAR_LIMIT}
+                        tags={this.state.tags} autofocus={false} delimiters={[13, 32, 188]}
+                        maxLength={VIDEO_TAG_CHAR_LIMIT}
                         placeholder={""} readOnly={this.state.uploading} handleAddition={this.handleTagAdd}
                         handleDelete={this.handleTagDelete} handleDrag={this.handleTagDrag}
                         handleInputChange={() => this.setState({error_tags: ""})}

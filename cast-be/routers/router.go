@@ -3,16 +3,17 @@ package routers
 import (
 	"context"
 	"fmt"
-	"github.com/mailgun/mailgun-go"
+	"log"
+
 	conf "gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/controller/middleware"
 	v1 "gitlab.com/daystram/cast/cast-be/controller/v1"
 	"gitlab.com/daystram/cast/cast-be/handlers"
-	"log"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/plugins/cors"
+	"github.com/mailgun/mailgun-go"
 	"github.com/nareix/joy4/format"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

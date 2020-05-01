@@ -81,7 +81,10 @@ func (m *module) SendVerification(user datatransfers.User) (err error) {
 	if token, err = m.generateToken(datatransfers.User{ID: user.ID}, false); err != nil {
 		fmt.Printf("[SendVerification] Failed generating token. %+v\n", err)
 	}
-	m.SendSingleEmail("Email Verification", fmt.Sprintf(constants.EmailTemplateVerification, user.Name, config.AppConfig.Hostname, token), user)
+	m.SendSingleEmail("Email Verification", user.Email, constants.EmailTemplateVerification, map[string]string{
+		"name": user.Name,
+		"link": fmt.Sprintf(constants.EmailLinkVerification, config.AppConfig.Hostname, token),
+	})
 	return
 }
 

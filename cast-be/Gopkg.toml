@@ -24,6 +24,7 @@
 #   go-tests = true
 #   unused-packages = true
 
+ignored = ["github.com/mailgun/mailgun-go"]
 
 [prune]
   go-tests = true

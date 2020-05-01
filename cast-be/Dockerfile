@@ -1,6 +1,7 @@
 FROM daystram/go-builder:1.13 AS builder
 WORKDIR $GOPATH/src/gitlab.com/daystram/cast/cast-be
 COPY Gopkg.toml Gopkg.lock ./
+RUN go get github.com/mailgun/mailgun-go
 RUN dep ensure --vendor-only
 COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o /cast-be .

@@ -2,6 +2,7 @@ package errors
 
 import "errors"
 
+// Error returns
 var (
 	ErrNotRegistered     = errors.New("username not registered")
 	ErrIncorrectPassword = errors.New("password incorrect")
