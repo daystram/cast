@@ -59,6 +59,7 @@ func (c *UserControllerAuth) UpdateProfile(_ string) datatransfers.Response {
 			return datatransfers.Response{Error: "Failed retrieving profile image", Code: http.StatusInternalServerError}
 		}
 	}
+	// New profile image uploaded
 	var user datatransfers.UserDetail
 	if user, err = c.Handler.UserDetails(c.userID); err != nil {
 		fmt.Printf("[UserControllerAuth::UpdateProfile] failed retrieving user info. %+v\n", err)

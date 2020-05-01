@@ -131,6 +131,7 @@ func (c *VideoControllerAuth) EditVideo(_ string) datatransfers.Response {
 			return datatransfers.Response{Error: "Failed retrieving profile image", Code: http.StatusInternalServerError}
 		}
 	}
+	// New thumbnail uploaded
 	err = c.SaveToFile("thumbnail", fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, video.Hash))
 	if err != nil {
 		fmt.Printf("[VideoControllerAuth::EditVideo] failed saving thumbnail. %+v\n", err)
@@ -183,6 +184,7 @@ func (c *VideoControllerAuth) UploadVideo(_ string) datatransfers.Response {
 		fmt.Printf("[VideoControllerAuth::UploadVideo] failed creating video. %+v\n", err)
 		return datatransfers.Response{Error: "Failed creating video", Code: http.StatusInternalServerError}
 	}
+	// Retrieve video and thumbnail
 	_ = os.Mkdir(fmt.Sprintf("%s/%s", config.AppConfig.UploadsDirectory, videoID.Hex()), 755)
 	err = c.SaveToFile("video", fmt.Sprintf("%s/%s/video.mp4", config.AppConfig.UploadsDirectory, videoID.Hex()))
 	if err != nil {
@@ -202,6 +204,7 @@ func (c *VideoControllerAuth) UploadVideo(_ string) datatransfers.Response {
 		fmt.Printf("[VideoControllerAuth::UploadVideo] failed normalizing thumbnail image. %+v\n", err)
 		return datatransfers.Response{Error: "Failed normalizing thumbnail image", Code: http.StatusInternalServerError}
 	}
+	// Trigger transcode sequence by cast-is
 	c.Handler.StartTranscode(videoID.Hex())
 	return datatransfers.Response{Code: http.StatusOK}
 }

@@ -22,6 +22,7 @@ type JwtAuthorization struct {
 	JWTClaims   datatransfers.JWTClaims
 }
 
+// Initialize authentication middleware
 func NewJWTAuthorization(secret string, bearerTokenStr string) JwtAuthorization {
 	jwtTokenStr := parseBearerToken(bearerTokenStr)
 	return JwtAuthorization{jwtTokenStr, []byte(secret), datatransfers.JWTClaims{}}

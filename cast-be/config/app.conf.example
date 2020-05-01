@@ -1,0 +1,26 @@
+appname = cast-be
+httpport = 8080
+runmode = dev
+autorender = false
+copyrequestbody = true
+maxmemory = 1<<101
+
+domain = localhost
+secret = secret
+debug = true
+
+rtmp_port = 1935
+
+mongodb_uri = mongodb://localhost:27017
+mongodb_name = cast-be
+
+google_project_id = PROJECT_ID
+google_api_key = /PATH_TO_JSON_KEY
+pubsub_topic_transcode = TOPIC_TRANSCODE
+pubsub_subscription_complete = SUBSCRIPTION_COMPLETE
+
+uploads_dir = /PATH_TO_UPLOADS_DIR
+
+mailgun_domain = MAILGUN_MAIL_DOMAIN
+mailgun_api_key = MAILGUN_API_KEY
+hostname = APP_HOSTNAME

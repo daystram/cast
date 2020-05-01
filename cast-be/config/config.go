@@ -28,6 +28,7 @@ type Config struct {
 	Hostname      string
 }
 
+// Load configuration
 func InitializeAppConfig() {
 	_ = beego.LoadAppConfig("ini", "config/app.conf")
 	var err error
