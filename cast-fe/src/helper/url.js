@@ -26,6 +26,9 @@ export default function urls() {
     signup: () => `${api_base}/auth/signup`,
     verify: () => `${api_base}/auth/verify`,
     resend_verify: () => `${api_base}/auth/resend`,
+    check_reset: () => `${api_base}/auth/validate_reset`,
+    reset_password: () => `${api_base}/auth/forget`,
+    update_password: () => `${api_base}/auth/update`,
     user_info: () => `${api_base}/p/user/info`,
     edit_user: () => `${api_base}/p/user/edit`,
     current_hash: () => {
