@@ -52,6 +52,7 @@ type Entity struct {
 	userOrm    models.UserOrmer
 	likeOrm    models.LikeOrmer
 	commentOrm models.CommentOrmer
+	tokenOrm   models.TokenOrmer
 }
 
 type MQ struct {
@@ -67,8 +68,11 @@ type Handler interface {
 	CheckUniqueUserField(field, value string) (err error)
 	Register(info data.UserRegister) (err error)
 	SendVerification(user data.User) (err error)
+	SendResetToken(user data.User) (err error)
+	CheckResetToken(key string) (err error)
+	UpdatePassword(info data.UserUpdatePassword) (err error)
 	Verify(key string) (err error)
-	Authenticate(info data.UserLogin) (token string, err error)
+	Authenticate(info data.UserLogin) (user data.User, token string, err error)
 
 	SendSingleEmail(subject, recipient, template string, variable map[string]string)
 
@@ -104,6 +108,7 @@ func NewHandler(component Component) Handler {
 			userOrm:    models.NewUserOrmer(component.DB),
 			likeOrm:    models.NewLikeOrmer(component.DB),
 			commentOrm: models.NewCommentOrmer(component.DB),
+			tokenOrm:   models.NewTokenOrmer(component.DB),
 		},
 		mq: &MQ{
 			transcodeTopic:       component.MQClient.Topic(config.AppConfig.TopicNameTranscode),

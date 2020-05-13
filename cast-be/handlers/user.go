@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gitlab.com/daystram/cast/cast-be/constants"
+	"golang.org/x/crypto/bcrypt"
 
 	data "gitlab.com/daystram/cast/cast-be/datatransfers"
 	"gitlab.com/daystram/cast/cast-be/util"
@@ -39,12 +40,18 @@ func (m *module) GetUserByEmail(email string) (user data.User, err error) {
 	return m.db.userOrm.GetOneByEmail(email)
 }
 
-func (m *module) UpdateUser(user data.UserEditForm, ID primitive.ObjectID) (err error) {
-	return m.db.userOrm.EditUser(data.User{
-		ID:    ID,
-		Name:  user.Name,
-		Email: user.Email,
-	})
+func (m *module) UpdateUser(info data.UserEditForm, ID primitive.ObjectID) (err error) {
+	var user data.User
+	if user, err = m.db.userOrm.GetOneByID(ID); err != nil {
+		return
+	}
+	user.Name = info.Name
+	user.Email = info.Email
+	if info.Password != "" {
+		hashed, _ := bcrypt.GenerateFromPassword([]byte(info.Password), bcrypt.DefaultCost)
+		user.Password = string(hashed)
+	}
+	return m.db.userOrm.EditUser(user)
 }
 
 func (m *module) NormalizeProfile(username string) (err error) {

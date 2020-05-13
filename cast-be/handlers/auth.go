@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
+	"math/rand"
 	"time"
 
 	"gitlab.com/daystram/cast/cast-be/config"
@@ -10,7 +12,6 @@ import (
 	errors2 "gitlab.com/daystram/cast/cast-be/errors"
 	"gitlab.com/daystram/cast/cast-be/util"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -77,46 +78,97 @@ func (m *module) Register(info datatransfers.UserRegister) (err error) {
 }
 
 func (m *module) SendVerification(user datatransfers.User) (err error) {
-	var token string
-	if token, err = m.generateToken(datatransfers.User{ID: user.ID}, false); err != nil {
-		fmt.Printf("[SendVerification] Failed generating token. %+v\n", err)
+	token := datatransfers.Token{
+		Invoker:   user.ID,
+		Purpose:   constants.TokenPurposeVerification,
+		Hash:      m.generateHash(constants.TokenHashDefaultLength),
+		CreatedAt: time.Now(),
+	}
+	_ = m.db.tokenOrm.DeleteOneByInvokerPurpose(token.Invoker, token.Purpose)
+	if _, err = m.db.tokenOrm.InsertToken(token); err != nil {
+		fmt.Printf("[SendVerification] Failed inserting token. %+v\n", err)
+		return
 	}
 	m.SendSingleEmail("Email Verification", user.Email, constants.EmailTemplateVerification, map[string]string{
 		"name": user.Name,
-		"link": fmt.Sprintf(constants.EmailLinkVerification, config.AppConfig.Hostname, token),
+		"link": fmt.Sprintf(constants.EmailLinkVerification, config.AppConfig.Hostname, token.Hash),
 	})
 	return
 }
 
 func (m *module) Verify(key string) (err error) {
-	claims := jwt.MapClaims{}
-	var token *jwt.Token
-	fmt.Println(key)
-	if token, err = jwt.ParseWithClaims(key, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(config.AppConfig.JWTSecret), nil
-	}); err != nil || !token.Valid {
-		fmt.Printf("[Verify] Failed parsing activation token. %+v\n", err)
+	var token datatransfers.Token
+	if token, err = m.db.tokenOrm.GetOneByHash(key); err != nil {
+		fmt.Printf("[Verify] Failed retrieving token details. %+v\n", err)
 		return
 	}
-	id, ok := claims["id"].(string)
-	if !ok {
-		fmt.Printf("[Verify] Failed retrieving id from token. %+v\n", err)
-		return
-	}
-	userID, _ := primitive.ObjectIDFromHex(id)
-	if err = m.db.userOrm.SetVerified(userID); err != nil {
+	if err = m.db.userOrm.SetVerified(token.Invoker); err != nil {
 		fmt.Printf("[Verify] Failed verifying user. %+v\n", err)
+		return
+	}
+	if err = m.db.tokenOrm.DeleteOneByHash(key); err != nil {
+		fmt.Printf("[Verify] Failed removing token. %+v\n", err)
 		return
 	}
 	return
 }
 
-func (m *module) Authenticate(info datatransfers.UserLogin) (token string, err error) {
+func (m *module) SendResetToken(user datatransfers.User) (err error) {
+	token := datatransfers.Token{
+		Invoker:   user.ID,
+		Purpose:   constants.TokenPurposeVerification,
+		Hash:      m.generateHash(constants.TokenHashDefaultLength),
+		CreatedAt: time.Now(),
+	}
+	_ = m.db.tokenOrm.DeleteOneByInvokerPurpose(token.Invoker, token.Purpose)
+	if _, err = m.db.tokenOrm.InsertToken(token); err != nil {
+		fmt.Printf("[SendResetToken] Failed inserting token. %+v\n", err)
+		return
+	}
+	m.SendSingleEmail("Password Reset", user.Email, constants.EmailTemplateReset, map[string]string{
+		"name": user.Name,
+		"link": fmt.Sprintf(constants.EmailLinkReset, config.AppConfig.Hostname, token.Hash),
+	})
+	return
+}
+
+func (m *module) CheckResetToken(key string) (err error) {
+	if _, err = m.db.tokenOrm.GetOneByHash(key); err != nil {
+		fmt.Printf("[CheckResetToken] Failed retrieving token details. %+v\n", err)
+		return
+	}
+	return
+}
+
+func (m *module) UpdatePassword(info datatransfers.UserUpdatePassword) (err error) {
 	var user datatransfers.User
+	var token datatransfers.Token
+	if token, err = m.db.tokenOrm.GetOneByHash(info.Key); err != nil {
+		fmt.Printf("[UpdatePassword] Failed retrieving token details. %+v\n", err)
+		return
+	}
+	if user, err = m.db.userOrm.GetOneByID(token.Invoker); err != nil {
+		fmt.Printf("[UpdatePassword] Failed retrieving user from ID. %+v\n", err)
+		return
+	}
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(info.Password), bcrypt.DefaultCost)
+	user.Password = string(hashed)
+	if err = m.db.userOrm.EditUser(user); err != nil {
+		fmt.Printf("[UpdatePassword] Failed updating user password. %+v\n", err)
+		return
+	}
+	if err = m.db.tokenOrm.DeleteOneByHash(info.Key); err != nil {
+		fmt.Printf("[Verify] Failed removing token. %+v\n", err)
+		return
+	}
+	return
+}
+
+func (m *module) Authenticate(info datatransfers.UserLogin) (user datatransfers.User, token string, err error) {
 	if user, err = m.validate(info); err != nil {
 		return
 	}
-	if token, err = m.generateToken(user, info.Remember); err != nil {
+	if token, err = m.generateJWT(user, info.Remember); err != nil {
 		return
 	}
 	return
@@ -124,10 +176,17 @@ func (m *module) Authenticate(info datatransfers.UserLogin) (token string, err e
 
 func (m *module) validate(info datatransfers.UserLogin) (user datatransfers.User, err error) {
 	if user, err = m.db.userOrm.GetOneByUsername(info.Username); err != nil {
-		if err == orm.ErrNoRows {
-			return datatransfers.User{}, errors2.ErrNotRegistered
+		if err == mongo.ErrNoDocuments {
+			if user, err = m.db.userOrm.GetOneByEmail(info.Username); err != nil {
+				if err == mongo.ErrNoDocuments {
+					return datatransfers.User{}, errors2.ErrNotRegistered
+				} else {
+					return
+				}
+			}
+		} else {
+			return
 		}
-		return
 	}
 	if !user.Verified {
 		return datatransfers.User{}, errors2.ErrNotVerified
@@ -138,7 +197,7 @@ func (m *module) validate(info datatransfers.UserLogin) (user datatransfers.User
 	return
 }
 
-func (m *module) generateToken(user datatransfers.User, extended bool) (tokenString string, err error) {
+func (m *module) generateJWT(user datatransfers.User, extended bool) (tokenString string, err error) {
 	timeout := time.Now().Add(constants.AuthenticationTimeout)
 	if extended {
 		timeout = time.Now().Add(constants.AuthenticationTimeoutExtended)
@@ -150,4 +209,12 @@ func (m *module) generateToken(user datatransfers.User, extended bool) (tokenStr
 	})
 	tokenString, _ = token.SignedString([]byte(config.AppConfig.JWTSecret))
 	return
+}
+
+func (m *module) generateHash(length int) string {
+	hash := make([]byte, length)
+	for i := range hash {
+		hash[i] = constants.TokenHashCharacters[rand.Intn(len(constants.TokenHashCharacters))]
+	}
+	return string(hash)
 }
