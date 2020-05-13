@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Alert, Button, Card, Col, Container, Form, Image, InputGroup, Row, Spinner} from "react-bootstrap";
+import {Alert, Button, Card, Col, Container, Form, Image, InputGroup, ProgressBar, Row, Spinner} from "react-bootstrap";
 import Dropzone from "react-dropzone";
 import SidebarProfile from "./SidebarProfile";
 import axios from "axios";
@@ -9,6 +9,7 @@ import auth from "../helper/auth";
 import MediaQuery from "react-responsive";
 import {MOBILE_BP} from "../constants/breakpoint";
 import {PROFILE_MAX_SIZE} from "../constants/file";
+import zxcvbn from "zxcvbn";
 
 let timeout = {};
 
@@ -22,10 +23,14 @@ class Profile extends Component {
       video_count: 0,
       name: "",
       email: "",
+      password: "",
+      password2: "",
       before: {},
       error_name: "",
       error_email: "",
       error_profile: "",
+      error_password: "",
+      error_password2: "",
       loading_edit: false,
       loading_info: true,
       editing: false
@@ -79,6 +84,8 @@ class Profile extends Component {
         error_name: "",
         error_email: "",
         error_profile: "",
+        error_password: "",
+        error_password2: "",
         show_email: false,
         editing: true
       })
@@ -90,6 +97,8 @@ class Profile extends Component {
       this.setState({
         name: this.state.before.name,
         email: this.state.before.email,
+        password: "",
+        password2: "",
         new_profile: "",
         before: {},
         editing: false
@@ -138,6 +147,30 @@ class Profile extends Component {
         }
         this.setState({error_profile: ""});
         return true;
+      case "password":
+        if (value) {
+          if (value.length < 8) {
+            this.setState({error_password: "Password must be at least 8 characters"});
+            return false;
+          }
+          this.setState({error_password: ""});
+          return true;
+        }
+        this.setState({error_password: "", error_password2: ""});
+        return true;
+      case "password2":
+        if (this.state.password) {
+          if (!value) {
+            this.setState({error_password2: "Please re-enter your password"});
+            return false;
+          }
+          if (value !== this.state.password) {
+            this.setState({error_password2: "Passwords do not match"});
+            return false;
+          }
+        }
+        this.setState({error_password2: ""});
+        return true;
       default:
         return false;
     }
@@ -168,15 +201,22 @@ class Profile extends Component {
       this.setState({error_edit: "", attempted: true});
       ok &= this.validate("name", this.state.name);
       ok &= this.validate("email", this.state.email);
+      ok &= this.validate("password", this.state.password);
+      ok &= this.validate("password2", this.state.password2);
+      ok &= !this.state.error_profile;
     } else {
       ok &= !this.state.error_name;
       ok &= !this.state.error_email;
+      ok &= !this.state.error_password;
+      ok &= !this.state.error_password2;
+      ok &= !this.state.error_profile;
     }
     if (!ok) return;
     this.setState({error_edit: "", loading_edit: true});
     const form = new FormData();
     form.append("name", this.state.name);
     form.append("email", this.state.email);
+    if (this.state.password) form.append("password", this.state.password);
     if (this.state.new_profile) form.append("profile", this.state.new_profile);
     axios.put(urls().edit_user(), form, {
         headers: {
@@ -192,9 +232,13 @@ class Profile extends Component {
           editing: false,
           loading_edit: false,
           before: {},
+          password: "",
+          password2: "",
           error_name: "",
           error_email: "",
           error_profile: "",
+          error_password: "",
+          error_password2: "",
           new_profile: "",
         });
         this.setState({error_edit: response.data.error, loading_edit: false});
@@ -206,6 +250,7 @@ class Profile extends Component {
   }
 
   render() {
+    let strength = zxcvbn(this.state.password).score;
     return (
       <>
         <Container fluid style={style.content_container}>
@@ -254,7 +299,7 @@ class Profile extends Component {
                       {this.state.error_edit && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
                       {this.state.editing ?
                         <>
-                          <Form autocomplete={"off"}>
+                          <Form autocomplete={"off"} onSubmit={e => e.preventDefault()}>
                             <Form.Group>
                               <Form.Control name={"name"} value={this.state.name} onBlur={this.handleChange}
                                             onChange={this.handleChange} type={"text"} size={"lg"} style={style.name}
@@ -290,7 +335,7 @@ class Profile extends Component {
                   </Card>
                   <h1 style={style.h1}>Details</h1>
                   <Card body style={style.profile_detail}>
-                    <Row>
+                    <Form.Row>
                       <Col md={6} sm={12}>
                         <Form.Group>
                           <Form.Label>Email</Form.Label>
@@ -324,13 +369,52 @@ class Profile extends Component {
                                         style={style.email} disabled={true}/>
                         </Form.Group>
                       </Col>
-                    </Row>
+                    </Form.Row>
                   </Card>
+                  {this.state.editing && <>
+                    <h1 style={style.h1}>Update Password</h1>
+                    <Card body style={style.profile_detail}>
+                      <Form autocomplete={"off"} onSubmit={e => e.preventDefault()}>
+                        <Form.Row>
+                          <Col md={6} sm={12}>
+                            <Form.Group>
+                              <Form.Label>New Password</Form.Label>
+                              <Form.Control name={"password"} value={this.state.password} onBlur={this.handleChange}
+                                            onChange={this.handleChange} disabled={false}
+                                            type={"password"} style={style.email}
+                                            isInvalid={this.state.editing ? this.state.error_password : false}/>
+                              <Form.Control.Feedback
+                                type={"invalid"}>{this.state.error_password}</Form.Control.Feedback>
+                            </Form.Group>
+                          </Col>
+                          <Col md={6} sm={12}>
+                            <Form.Group>
+                              <Form.Label>Re-enter New Password</Form.Label>
+                              <Form.Control name={"password2"} value={this.state.password2} onBlur={this.handleChange}
+                                            onChange={this.handleChange} disabled={false}
+                                            type={"password"} style={style.email}
+                                            isInvalid={this.state.editing ? this.state.error_password2 : false}/>
+                              <Form.Control.Feedback
+                                type={"invalid"}>{this.state.error_password2}</Form.Control.Feedback>
+                            </Form.Group>
+                          </Col>
+                          <Col>
+                            <ProgressBar variant={["danger", "warning", "info", "success"][strength - 1]}
+                                         label={["very weak", "weak", "medium", "strong"][strength - 1]}
+                                         now={25 * strength} className={"password-strength"}/>
+                          </Col>
+                        </Form.Row>
+                      </Form>
+                    </Card>
+                  </>}
                 </Col>
                 <Col xl={"auto"} xs={12}>
                   <Button variant={"success"} block size={"sm"} style={style.button} onClick={this.pressEdit}
-                          disabled={this.state.before && (this.state.name === this.state.before.name &&
-                            this.state.email === this.state.before.email && !this.state.new_profile)}>
+                          disabled={(this.state.before && (this.state.name === this.state.before.name &&
+                            this.state.email === this.state.before.email && !this.state.new_profile &&
+                            (!this.state.password || this.state.password !== this.state.password2))) ||
+                          this.state.error_name || this.state.error_email || this.state.error_password ||
+                          this.state.error_password2 || this.state.error_profile}>
                     {this.state.loading_edit ?
                       <Spinner animation="grow" style={style.spinner}/> :
                       <span className="material-icons">{this.state.editing ? "check" : "edit"}</span>
