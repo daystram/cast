@@ -171,8 +171,7 @@ class SignUp extends Component {
       }
     }).catch((error) => {
       console.log(error);
-      this.setState({error_signup: "An error has occurred!"});
-      this.setState({loading: false});
+      this.setState({error_signup: "An error has occurred!", loading: false});
     });
   }
 
