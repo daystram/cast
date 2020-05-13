@@ -18,8 +18,10 @@ function Navigation() {
   axios.interceptors.response.use(
     (response) => response,
     (error) => {
-      if (error.response.status === 403) auth().deauthenticate();
-      history.push("/login");
+      if (error.response.status === 403) {
+        auth().deauthenticate();
+        history.push("/login");
+      }
     });
   let profileButton = (
     auth().username() ?
