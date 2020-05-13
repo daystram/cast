@@ -31,7 +31,7 @@ class LogIn extends Component {
     switch (field) {
       case "username":
         if (!value.trim()) {
-          this.setState({error_username: "Please enter your username"});
+          this.setState({error_username: "Please enter your username or email"});
           return false;
         }
         this.setState({error_username: ""});
@@ -68,7 +68,7 @@ class LogIn extends Component {
           else this.props.history.push("/");
           return;
         case 404:
-          this.setState({error_username: "Username not registered"});
+          this.setState({error_username: "Username or email not registered"});
           return;
         case 403:
           this.setState({error_password: "Incorrect password"});
@@ -104,7 +104,7 @@ class LogIn extends Component {
         </Alert>}
         <Form noValidate onSubmit={this.submitForm}>
           <Form.Group>
-            <Form.Label>Username</Form.Label>
+            <Form.Label>Username or Email</Form.Label>
             <Form.Control name={"username"} value={this.state.username} onBlur={this.handleChange}
                           onChange={this.handleChange} type={"name"}
                           isInvalid={!!this.state.error_username}/>
@@ -130,8 +130,7 @@ class LogIn extends Component {
         </Form>
         <br/>
         <p style={{display: "flex", justifyContent: "space-evenly"}}>
-          <Link className={"inline"} to={'/forget?field=username'}>Forgot username?</Link>
-          <Link className={"inline"} to={'/forget?field=password'}>Forgot password?</Link>
+          <Link className={"inline"} to={'/forget'}>Forgot password?</Link>
         </p>
         <p style={{textAlign: "center"}}>Don't have an account? <Link className={"inline"} to={'/signup'}>
           Sign up</Link> now!</p>
