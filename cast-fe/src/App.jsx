@@ -13,7 +13,7 @@ function App() {
   return (
     <BrowserRouter>
       <Route path={['/', '/w/:hash', '/s', '/profile', '/dashboard',
-        '/manage', '/verify', '/login', '/signup']} exact component={Navigation}/>
+        '/manage', '/verify', '/login', '/signup', '/forget']} exact component={Navigation}/>
       <Routes/>
     </BrowserRouter>
   );
