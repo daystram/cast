@@ -76,6 +76,7 @@ func (o *userOrm) EditUser(user datatransfers.User) (err error) {
 		bson.D{{"$set", bson.D{
 			{"name", user.Name},
 			{"email", user.Email},
+			{"password", user.Password},
 		}}},
 	).Err()
 }
