@@ -5,4 +5,5 @@ const (
 	DBCollectionVideo = "video"
 	DBCollectionLike = "like"
 	DBCollectionComment = "comment"
+	DBCollectionToken = "token"
 )
