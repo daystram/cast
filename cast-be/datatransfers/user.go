@@ -61,6 +61,12 @@ type UserFieldCheck struct {
 }
 
 type UserEditForm struct {
-	Name  string `form:"name"`
-	Email string `form:"email"`
+	Name     string `form:"name"`
+	Email    string `form:"email"`
+	Password string `form:"password"`
+}
+
+type UserUpdatePassword struct {
+	UserVerify
+	Password string `json:"password"`
 }
