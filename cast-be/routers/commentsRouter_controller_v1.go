@@ -20,6 +20,17 @@ func init() {
 
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"],
         beego.ControllerComments{
+            Method: "PostResetPassword",
+            Router: `/forget`,
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(
+				param.New("info", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"],
+        beego.ControllerComments{
             Method: "PostAuthenticate",
             Router: `/login`,
             AllowHTTPMethods: []string{"post"},
@@ -53,6 +64,28 @@ func init() {
         beego.ControllerComments{
             Method: "PostRegister",
             Router: `/signup`,
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(
+				param.New("info", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"],
+        beego.ControllerComments{
+            Method: "PostUpdatePassword",
+            Router: `/update`,
+            AllowHTTPMethods: []string{"put"},
+            MethodParams: param.Make(
+				param.New("info", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:AuthController"],
+        beego.ControllerComments{
+            Method: "PostValidateReset",
+            Router: `/validate_reset`,
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(
 				param.New("info", param.IsRequired, param.InBody),

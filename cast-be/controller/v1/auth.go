@@ -46,7 +46,7 @@ func (c *AuthController) PostCheckUnique(info datatransfers.UserFieldCheck) data
 	return datatransfers.Response{Code: http.StatusOK}
 }
 
-// @Title Verify
+// @Title Verify Email
 // @Param   info    body	{datatransfers.UserVerify}	true	"verification token"
 // @Success 200 success
 // @router /verify [post]
@@ -59,7 +59,7 @@ func (c *AuthController) PostVerify(info datatransfers.UserVerify) datatransfers
 	return datatransfers.Response{Code: http.StatusOK}
 }
 
-// @Title Resend
+// @Title Resend Verification
 // @Param   info    body	{datatransfers.UserResend}	true	"email"
 // @Success 200 success
 // @router /resend [post]
@@ -86,18 +86,18 @@ func (c *AuthController) PostResend(info datatransfers.UserResend) datatransfers
 // @Success 200 success
 // @router /login [post]
 func (c *AuthController) PostAuthenticate(info datatransfers.UserLogin) datatransfers.Response {
-	token, err := c.Handler.Authenticate(info)
+	user, token, err := c.Handler.Authenticate(info)
 	switch err {
 	case nil:
 		timeout := int(constants.AuthenticationTimeout.Seconds())
 		if info.Remember {
 			timeout = int(constants.AuthenticationTimeoutExtended.Seconds())
 		}
-		c.Ctx.SetCookie(constants.AuthenticationCookieKey, fmt.Sprintf("%s|Bearer %s", info.Username, token), timeout, "/", config.AppConfig.Domain, !config.AppConfig.Debug)
-		return datatransfers.Response{Data: fmt.Sprintf("Bearer %s", token), Code: http.StatusOK}
+		c.Ctx.SetCookie(constants.AuthenticationCookieKey, fmt.Sprintf("%s|Bearer %s", user.Username, token), timeout, "/", config.AppConfig.Domain, !config.AppConfig.Debug)
+		return datatransfers.Response{Code: http.StatusOK}
 	case errors.ErrNotRegistered:
 		log.Printf("[AuthController::PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
-		return datatransfers.Response{Error: "Username not registered", Code: http.StatusNotFound}
+		return datatransfers.Response{Error: "Username or email not registered", Code: http.StatusNotFound}
 	case errors.ErrIncorrectPassword:
 		log.Printf("[AuthController::PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
 		return datatransfers.Response{Error: "Incorrect password", Code: http.StatusForbidden}
@@ -106,8 +106,56 @@ func (c *AuthController) PostAuthenticate(info datatransfers.UserLogin) datatran
 		return datatransfers.Response{Error: "User not verified", Code: http.StatusNotAcceptable}
 	default:
 		log.Printf("[AuthController::PostAuthenticate] failed authenticating %s. %+v\n", info.Username, err)
-		return datatransfers.Response{Error: "Username not registered", Code: http.StatusNotFound}
+		return datatransfers.Response{Error: "An error has occurred", Code: http.StatusNotFound}
 	}
+}
+
+// @Title Forget Password
+// @Param   info    body	{datatransfers.UserResend}	true	"email"
+// @Success 200 success
+// @router /forget [post]
+func (c *AuthController) PostResetPassword(info datatransfers.UserResend) datatransfers.Response {
+	user, err := c.Handler.GetUserByEmail(info.Email)
+	if err != nil {
+		log.Printf("[AuthController::PostResetPassword] cannot find user with email %s. %+v\n", info.Email, err)
+		return datatransfers.Response{Error: "Email not registered", Code: http.StatusNotFound}
+	}
+	if !user.Verified {
+		log.Printf("[AuthController::PostResetPassword] user not verified\n")
+		return datatransfers.Response{Error: "Email not verified", Code: http.StatusForbidden}
+	}
+	err = c.Handler.SendResetToken(user)
+	if err != nil {
+		log.Printf("[AuthController::PostResetPassword] cannot send password reset email. %+v\n", err)
+		return datatransfers.Response{Error: "Failed sending email", Code: http.StatusInternalServerError}
+	}
+	return datatransfers.Response{Code: http.StatusOK}
+}
+
+// @Title Validate Reset Token
+// @Param   info    body	{datatransfers.UserVerify}	true	"verification token"
+// @Success 200 success
+// @router /validate_reset [post]
+func (c *AuthController) PostValidateReset(info datatransfers.UserVerify) datatransfers.Response {
+	err := c.Handler.CheckResetToken(info.Key)
+	if err != nil {
+		log.Printf("[AuthController::PostValidateReset] cannot validate reset token. %+v\n", err)
+		return datatransfers.Response{Error: "Reset token invalid", Code: http.StatusUnauthorized}
+	}
+	return datatransfers.Response{Code: http.StatusOK}
+}
+
+// @Title Update Password
+// @Param   info    body	{datatransfers.UserUpdatePassword}	true	"updated password"
+// @Success 200 success
+// @router /update [put]
+func (c *AuthController) PostUpdatePassword(info datatransfers.UserUpdatePassword) datatransfers.Response {
+	err := c.Handler.UpdatePassword(info)
+	if err != nil {
+		log.Printf("[AuthController::PostUpdatePassword] cannot find update password. %+v\n", err)
+		return datatransfers.Response{Error: "Password update failed", Code: http.StatusInternalServerError}
+	}
+	return datatransfers.Response{Code: http.StatusOK}
 }
 
 // @Title Logout
