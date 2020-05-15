@@ -1,6 +1,21 @@
 import React from "react";
 import {Redirect, Route, Switch} from 'react-router-dom'
-import {Chat, Dashboard, Forget, Home, LogIn, LogOut, Profile, Scene, Search, SignUp, Verify} from "./components";
+import {
+  Chat,
+  Dashboard,
+  Forget,
+  Fresh,
+  Home,
+  Live,
+  LogIn,
+  LogOut,
+  Profile,
+  Scene,
+  Search,
+  SignUp,
+  Trending,
+  Verify
+} from "./components";
 import Manage from "./components/Manage";
 import auth from "./helper/auth";
 
@@ -8,18 +23,21 @@ const Routes = () => {
   return (
     <Switch>
       <Route path={"/"} exact component={Home}/>
-      <Route path="/w/:hash" exact component={Scene}/>
-      <Route path="/c/:hash" exact component={Chat}/>
-      <Route path="/s" exact component={Search}/>
-      <Route path="/logout" component={LogOut}/>
-      <PrivateRoute path="/profile" exact component={Profile}/>
-      <PrivateRoute path="/dashboard" exact component={Dashboard}/>
-      <PrivateRoute path="/manage" exact component={Manage}/>
-      <PublicRoute path="/verify" exact component={Verify}/>
-      <PublicRoute path="/forget" exact component={Forget}/>
-      <PublicRoute path="/login" exact component={LogIn}/>
-      <PublicRoute path="/signup" exact component={SignUp}/>
-      <Route><Redirect to="/"/></Route>
+      <Route path={"/trending"} exact component={Trending}/>
+      <Route path={"/live"} exact component={Live}/>
+      <Route path={"/fresh"} exact component={Fresh}/>
+      <Route path={"/w/:hash"} exact component={Scene}/>
+      <Route path={"/c/:hash"} exact component={Chat}/>
+      <Route path={"/s"} exact component={Search}/>
+      <Route path={"/logout"} component={LogOut}/>
+      <PrivateRoute path={"/profile"} exact component={Profile}/>
+      <PrivateRoute path={"/dashboard"} exact component={Dashboard}/>
+      <PrivateRoute path={"/manage"} exact component={Manage}/>
+      <PublicRoute path={"/verify"} exact component={Verify}/>
+      <PublicRoute path={"/forget"} exact component={Forget}/>
+      <PublicRoute path={"/login"} exact component={LogIn}/>
+      <PublicRoute path={"/signup"} exact component={SignUp}/>
+      <Route><Redirect to={"/"}/></Route>
     </Switch>
   )
 };
