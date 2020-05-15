@@ -15,6 +15,8 @@ import (
 
 type VideoOrmer interface {
 	GetRecent(variant string, count int, offset int) (videos []datatransfers.Video, err error)
+	GetTrending(count int, offset int) (videos []datatransfers.Video, err error)
+	GetLiked(userID primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error)
 	GetAllVODByAuthor(author primitive.ObjectID) (videos []datatransfers.Video, err error)
 	GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error)
 	Search(query string, count, offset int) (videos []datatransfers.Video, err error)
@@ -53,6 +55,83 @@ func (o *videoOrm) GetRecent(variant string, count int, offset int) (result []da
 			{"as", "author"},
 		}}},
 		{{"$unwind", "$author"}}}); err != nil {
+		return
+	}
+	for query.Next(context.TODO()) {
+		var video datatransfers.Video
+		if err = query.Decode(&video); err != nil {
+			return
+		}
+		result = append(result, video)
+	}
+	return
+}
+
+func (o *videoOrm) GetLiked(userID primitive.ObjectID, count int, offset int) (result []datatransfers.Video, err error) {
+	query := &mongo.Cursor{}
+	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
+		{{"$match", bson.D{{"is_live", true}}}},
+		{{"$sort", bson.D{{"created_at", -1}}}},
+		{{"$lookup", bson.D{
+			{"from", constants.DBCollectionLike},
+			{"localField", "hash"},
+			{"foreignField", "hash"},
+			{"as", "likes"},
+		}}},
+		{{"$project", bson.D{{"likes", 0}}}},
+		{{"$skip", offset}},
+		{{"$limit", count}},
+		{{"$match", bson.D{{"$expr", bson.D{{"$in", bson.A{userID, "$likes.author"}}}}}}},
+		{{"$lookup", bson.D{
+			{"from", constants.DBCollectionUser},
+			{"localField", "author"},
+			{"foreignField", "_id"},
+			{"as", "author"},
+		}}},
+		{{"$unwind", "$author"}},
+	}); err != nil {
+		return
+	}
+	for query.Next(context.TODO()) {
+		var video datatransfers.Video
+		if err = query.Decode(&video); err != nil {
+			return
+		}
+		result = append(result, video)
+	}
+	return
+}
+
+func (o *videoOrm) GetTrending(count int, offset int) (result []datatransfers.Video, err error) {
+	query := &mongo.Cursor{}
+	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
+		{{"$match", bson.D{{"is_live", true}}}},
+		{{"$lookup", bson.D{
+			{"from", constants.DBCollectionLike},
+			{"localField", "hash"},
+			{"foreignField", "hash"},
+			{"as", "likes"},
+		}}},
+		{{"$addFields", bson.D{
+			{"weight", bson.D{{
+				"$add", bson.A{"$views",
+					bson.D{{"$multiply",
+						bson.A{bson.D{{"$size", "$likes"}}, 5}}}}}}},
+		}}},
+		{{"$sort", bson.D{{"weight", -1}}}},
+		{{"$project", bson.D{{"weight", 0}, {"likes", 0}}}},
+		{{"$skip", offset}},
+		{{"$limit", count}},
+		{{"$lookup", bson.D{
+			{"from", constants.DBCollectionUser},
+			{"localField", "author"},
+			{"foreignField", "_id"},
+			{"as", "author"},
+		}}},
+		{{"$unwind", "$author"}},
+	}); err != nil {
 		return
 	}
 	for query.Next(context.TODO()) {
@@ -104,7 +183,17 @@ func (o *videoOrm) GetAllVODByAuthorPaginated(author primitive.ObjectID, count i
 			{"foreignField", "_id"},
 			{"as", "author"},
 		}}},
-		{{"$unwind", "$author"}}}); err != nil {
+		{{"$unwind", "$author"}},
+		{{"$lookup", bson.D{
+			{"from", constants.DBCollectionLike},
+			{"localField", "hash"},
+			{"foreignField", "hash"},
+			{"as", "likes"},
+		}}},
+		{{"$addFields", bson.D{
+			{"likes", bson.D{{"$size", "$likes"}}},
+		}}},
+	}); err != nil {
 		return
 	}
 	for query.Next(context.TODO()) {
@@ -177,7 +266,17 @@ func (o *videoOrm) GetOneByHash(hash string) (video datatransfers.Video, err err
 			{"foreignField", "_id"},
 			{"as", "author"},
 		}}},
-		{{"$unwind", "$author"}}}); err != nil {
+		{{"$unwind", "$author"}},
+		{{"$lookup", bson.D{
+			{"from", constants.DBCollectionLike},
+			{"localField", "hash"},
+			{"foreignField", "hash"},
+			{"as", "likes"},
+		}}},
+		{{"$addFields", bson.D{
+			{"likes", bson.D{{"$size", "$likes"}}},
+		}}},
+	}); err != nil {
 		return
 	}
 	if exists := query.Next(context.TODO()); exists {
