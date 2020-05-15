@@ -36,7 +36,7 @@ class Search extends Component {
     axios.get(urls().search(), {
       params: {
         query: query.trim(),
-        count: 8,
+        count: 64,
         offset: 0,
       }
     }).then((response) => {

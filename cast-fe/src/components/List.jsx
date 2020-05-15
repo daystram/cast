@@ -26,7 +26,6 @@ class List extends Component {
     }).then((response) => {
       if (response.data.code === 200) {
         if (!response.data.data) {
-          console.log("COMPLETE " + this.state.page);
           this.setState({finished: true});
           return;
         }
