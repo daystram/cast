@@ -45,7 +45,7 @@ func (o *videoOrm) GetRecent(variant string, count int, offset int) (result []da
 		{{"$match", bson.D{{"type", variant}}}},
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
 		{{"$match", bson.D{{"is_live", true}}}},
-		{{"$sort", bson.D{{"created_at", -1}}}},
+		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
 		{{"$skip", offset}},
 		{{"$limit", count}},
 		{{"$lookup", bson.D{
@@ -72,17 +72,17 @@ func (o *videoOrm) GetLiked(userID primitive.ObjectID, count int, offset int) (r
 	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
 		{{"$match", bson.D{{"is_live", true}}}},
-		{{"$sort", bson.D{{"created_at", -1}}}},
+		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
 		{{"$lookup", bson.D{
 			{"from", constants.DBCollectionLike},
 			{"localField", "hash"},
 			{"foreignField", "hash"},
 			{"as", "likes"},
 		}}},
+		{{"$match", bson.D{{"$expr", bson.D{{"$in", bson.A{userID, "$likes.author"}}}}}}},
 		{{"$project", bson.D{{"likes", 0}}}},
 		{{"$skip", offset}},
 		{{"$limit", count}},
-		{{"$match", bson.D{{"$expr", bson.D{{"$in", bson.A{userID, "$likes.author"}}}}}}},
 		{{"$lookup", bson.D{
 			{"from", constants.DBCollectionUser},
 			{"localField", "author"},
@@ -120,7 +120,7 @@ func (o *videoOrm) GetTrending(count int, offset int) (result []datatransfers.Vi
 					bson.D{{"$multiply",
 						bson.A{bson.D{{"$size", "$likes"}}, 5}}}}}}},
 		}}},
-		{{"$sort", bson.D{{"weight", -1}}}},
+		{{"$sort", bson.D{{"weight", -1,}, {"_id", 1}}}},
 		{{"$project", bson.D{{"weight", 0}, {"likes", 0}}}},
 		{{"$skip", offset}},
 		{{"$limit", count}},
@@ -149,7 +149,7 @@ func (o *videoOrm) GetAllVODByAuthor(author primitive.ObjectID) (videos []datatr
 	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
 		{{"$match", bson.D{{"author", author}}}},
 		{{"$match", bson.D{{"type", constants.VideoTypeVOD}}}},
-		{{"$sort", bson.D{{"created_at", -1}}}},
+		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
 		{{"$lookup", bson.D{
 			{"from", constants.DBCollectionUser},
 			{"localField", "author"},
@@ -174,7 +174,7 @@ func (o *videoOrm) GetAllVODByAuthorPaginated(author primitive.ObjectID, count i
 	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
 		{{"$match", bson.D{{"author", author}}}},
 		{{"$match", bson.D{{"type", constants.VideoTypeVOD}}}},
-		{{"$sort", bson.D{{"created_at", -1}}}},
+		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
 		{{"$skip", offset}},
 		{{"$limit", count}},
 		{{"$lookup", bson.D{
@@ -212,7 +212,7 @@ func (o *videoOrm) Search(queryString string, count int, offset int) (result []d
 		{{"$match", bson.D{{"$text", bson.D{{"$search", queryString}}}}}},
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
 		{{"$match", bson.D{{"is_live", true}}}},
-		{{"$sort", bson.D{{"created_at", -1}}}},
+		{{"$sort", bson.D{{"views", -1}, {"created_at", -1}, {"_id", 1}}}},
 		{{"$skip", offset}},
 		{{"$limit", count}},
 		{{"$lookup", bson.D{
