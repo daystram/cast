@@ -5,9 +5,9 @@ import {MOBILE_BP} from "../constants/breakpoint";
 import MediaQuery from "react-responsive";
 import List from "./List";
 
-class Live extends Component {
+class Fresh extends Component {
   componentDidMount() {
-    document.title = "Live Casts | cast";
+    document.title = "Fresh Casts | cast";
   }
 
   render() {
@@ -21,10 +21,8 @@ class Live extends Component {
               </Col>
             </MediaQuery>
             <Col xl={10} xs={12} className={"mid-container-right"}>
-              <h1 style={style.h1}>Trending Casts</h1>
-              <Row noGutters>
-                <List variant={"live"}/>
-              </Row>
+              <h1 style={style.h1}>Fresh Casts</h1>
+              <List variant={"vod"}/>
             </Col>
           </Row>
         </Container>
@@ -48,4 +46,4 @@ let style = {
   },
 };
 
-export default Live
+export default Fresh

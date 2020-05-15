@@ -1,45 +1,13 @@
 import React, {Component} from 'react';
-import {Card, Col, Container, Row, Spinner} from "react-bootstrap";
-import Cast from "./Cast"
+import {Card, Col, Container, Row} from "react-bootstrap";
 import Sidebar from "./Sidebar";
-import axios from "axios";
-import urls from "../helper/url";
 import {MOBILE_BP} from "../constants/breakpoint";
 import MediaQuery from "react-responsive";
 import List from "./List";
 
-class Trending extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      trending: null,
-      loading: {
-        trending: true,
-      }
-    }
-  }
-
+class Live extends Component {
   componentDidMount() {
-    document.title = "Trending Casts | cast";
-    this.fetchVideos("trending");
-  }
-
-  fetchVideos(variant) {
-    axios.get(urls().list(), {
-      params: {
-        variant: variant,
-        count: 16,
-        offset: 0,
-      }
-    }).then((response) => {
-      this.setState({loading: {...this.state.loading, [variant]: false}});
-      if (response.data.code === 200) {
-        this.setState({[variant]: response.data.data})
-      }
-    }).catch((error) => {
-      console.log(error);
-      this.setState({loading: {...this.state.loading, [variant]: false}});
-    });
+    document.title = "Live Casts | cast";
   }
 
   render() {
@@ -53,10 +21,8 @@ class Trending extends Component {
               </Col>
             </MediaQuery>
             <Col xl={10} xs={12} className={"mid-container-right"}>
-              <h1 style={style.h1}>Trending Casts</h1>
-              <Row noGutters>
-                <List variant={"trending"}/>
-              </Row>
+              <h1 style={style.h1}>Live Casts</h1>
+              <List variant={"live"}/>
             </Col>
           </Row>
         </Container>
@@ -80,4 +46,4 @@ let style = {
   },
 };
 
-export default Trending
+export default Live
