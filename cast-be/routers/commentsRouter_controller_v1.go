@@ -222,10 +222,9 @@ func init() {
         beego.ControllerComments{
             Method: "CommentVideo",
             Router: `/comment`,
-            AllowHTTPMethods: []string{"get"},
+            AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(
-				param.New("hash", param.IsRequired),
-				param.New("content", param.IsRequired),
+				param.New("info", param.IsRequired, param.InBody),
 			),
             Filters: nil,
             Params: nil})
@@ -254,12 +253,35 @@ func init() {
 
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"],
         beego.ControllerComments{
+            Method: "SubscribeAuthor",
+            Router: `/like`,
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(
+				param.New("info", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"],
+        beego.ControllerComments{
             Method: "LikeVideo",
             Router: `/like`,
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(
+				param.New("info", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:VideoControllerAuth"],
+        beego.ControllerComments{
+            Method: "GetList",
+            Router: `/list`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(
-				param.New("hash", param.IsRequired),
-				param.New("like", param.IsRequired),
+				param.New("variant"),
+				param.New("count", param.Default("false")),
+				param.New("offset", param.Default("false")),
 			),
             Filters: nil,
             Params: nil})

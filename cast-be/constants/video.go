@@ -7,4 +7,8 @@ const (
 	ThumbnailDefault = "_default"
 	ThumbnailWidth   = 720
 	ThumbnailHeight  = 405
+
+	VideoListTrending   = "trending"
+	VideoListSubscribed = "subscribed"
+	VideoListLiked      = "liked"
 )

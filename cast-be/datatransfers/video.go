@@ -19,7 +19,7 @@ type Video struct {
 	IsLive      bool               `json:"is_live" bson:"is_live"`             // only for Live
 	Pending     bool               `json:"pending" bson:"pending"`
 	Resolutions int                `json:"resolutions" bson:"resolutions"` // 0:None, 1:180p, 2:360p, 3:480p, 4:720p, 5:1080p, only for VODs
-	Likes       int                `json:"likes" bson:"-"`
+	Likes       int                `json:"likes" bson:"likes"`
 	Liked       bool               `json:"liked" bson:"-"`
 	Comments    []Comment          `json:"comments" bson:"-"`
 	CreatedAt   time.Time          `json:"created_at" bson:"created_at"`
@@ -82,11 +82,26 @@ type CommentInsert struct {
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 }
 
+type CommentBody struct {
+	Hash    string `json:"hash"`
+	Content string `json:"content"`
+}
+
 type Like struct {
 	ID        primitive.ObjectID `json:"_id" bson:"_id"`
 	Hash      string             `json:"hash" bson:"hash"`
 	Author    primitive.ObjectID `json:"author" bson:"author"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
+}
+
+type LikeBody struct {
+	Hash string `json:"hash"`
+	Like bool   `json:"like"`
+}
+
+type SubscribeBody struct {
+	Username  string `json:"username"`
+	Subscribe bool   `json:"subscribe"`
 }
 
 type ChatInsert struct {

@@ -81,7 +81,7 @@ type Handler interface {
 	UpdateUser(user data.UserEditForm, ID primitive.ObjectID) (err error)
 	NormalizeProfile(username string) (err error)
 
-	FreshList(variant string, count, offset int) (videos []data.Video, err error)
+	CastList(variant string, count, offset int, userID ...primitive.ObjectID) (videos []data.Video, err error)
 	AuthorList(author string, count, offset int) (videos []data.Video, err error)
 	SearchVideo(query string, tags []string, count, offset int) (videos []data.Video, err error)
 	VideoDetails(hash string) (video data.Video, err error)
@@ -91,6 +91,7 @@ type Handler interface {
 	CheckUniqueVideoTitle(title string) (err error)
 	NormalizeThumbnail(hash string) (err error)
 	LikeVideo(userID primitive.ObjectID, hash string, like bool) (err error)
+	Subscribe(userID primitive.ObjectID, username string, subscribe bool) (err error)
 	CheckUserLikes(hash, username string) (liked bool, err error)
 	CommentVideo(userID primitive.ObjectID, hash, content string) (comment data.Comment, err error)
 

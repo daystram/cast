@@ -2,11 +2,12 @@ package v1
 
 import (
 	"fmt"
+	"net/http"
+
 	"gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/constants"
 	"gitlab.com/daystram/cast/cast-be/datatransfers"
 	"gitlab.com/daystram/cast/cast-be/handlers"
-	"net/http"
 
 	"github.com/astaxie/beego"
 	"go.mongodb.org/mongo-driver/bson/primitive"
