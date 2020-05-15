@@ -166,11 +166,9 @@ class Scene extends Component {
   handleLike() {
     if (this.state.loading.current) return;
     if (auth().is_authenticated()) {
-      axios.get(urls().like(), {
-        params: {
-          hash: this.state.video.hash,
-          like: !this.state.liked,
-        }
+      axios.post(urls().like(), {
+        hash: this.state.video.hash,
+        like: !this.state.liked,
       }).then(() => {
         this.setState({likes: this.state.likes + (this.state.liked ? -1 : 1), liked: !this.state.liked});
       }).catch((error) => {
@@ -196,11 +194,9 @@ class Scene extends Component {
       if (this.state.loading.comment) return;
       this.setState({loading: {...this.state.loading, comment: true}});
       this.setState({error_submit: ""});
-      axios.get(urls().comment(), {
-        params: {
-          hash: this.state.video.hash,
-          content: this.state.comment.trim(),
-        }
+      axios.post(urls().comment(), {
+        hash: this.state.video.hash,
+        content: this.state.comment.trim(),
       }).then((response) => {
         this.setState({
           comment: "",
@@ -219,7 +215,7 @@ class Scene extends Component {
   handleSubscribe() {
     if (this.state.loading.current) return;
     if (auth().is_authenticated()) {
-      // TODO: subscribe
+      axios.post()
     } else {
       this.promptSignup();
     }
