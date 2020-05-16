@@ -8,7 +8,7 @@ import {VIDEO_LIST_LIKED} from "../constants/video";
 
 class Liked extends Component {
   componentDidMount() {
-    document.title = "Live Casts | cast";
+    document.title = "Liked Casts | cast";
   }
 
   render() {
