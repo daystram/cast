@@ -33,11 +33,10 @@ func (m *module) CastList(variant string, count int, offset int, userID ...primi
 			return nil, errors.New(fmt.Sprintf("[CastList] error retrieving liked videos. %+v", err))
 		}
 	case variant == constants.VideoListSubscribed:
-		// TODO
 		if len(userID) != 1 {
 			return nil, errors.New(fmt.Sprintf("[CastList] userID not provided"))
 		}
-		if videos, err = m.db.videoOrm.GetRecent(variant, count, offset); err != nil {
+		if videos, err = m.db.videoOrm.GetSubscribed(userID[0], count, offset); err != nil {
 			return nil, errors.New(fmt.Sprintf("[CastList] error retrieving subscribed videos. %+v", err))
 		}
 	default:
@@ -169,8 +168,34 @@ func (m *module) CheckUserLikes(hash, username string) (liked bool, err error) {
 }
 
 func (m *module) Subscribe(userID primitive.ObjectID, username string, subscribe bool) (err error) {
-	// TODO
+	var author data.User
+	if author, err = m.db.userOrm.GetOneByUsername(username); err != nil {
+		return errors.New(fmt.Sprintf("[Subscribe] failed to get author by username. %+v", err))
+	}
+	if subscribe {
+		_, err = m.db.subscriptionOrm.InsertSubscription(data.Subscription{
+			AuthorID:  author.ID,
+			UserID:    userID,
+			CreatedAt: time.Now(),
+		})
+	} else {
+		err = m.db.subscriptionOrm.RemoveSubscriptionByAuthorIDUserID(author.ID, userID)
+	}
 	return
+}
+
+func (m *module) CheckUserSubscribes(authorID primitive.ObjectID, username string) (subscribed bool, err error) {
+	var user data.User
+	if user, err = m.db.userOrm.GetOneByUsername(username); err != nil {
+		return false, errors.New(fmt.Sprintf("[CheckUserSubscribes] failed to get user by username. %+v", err))
+	}
+	if _, err = m.db.subscriptionOrm.GetOneByAuthorIDUserID(authorID, user.ID); err != nil {
+		if err != mongo.ErrNoDocuments {
+			return false, errors.New(fmt.Sprintf("[CheckUserSubscribes] failed to subscription info. %+v", err))
+		}
+		return false, nil
+	}
+	return true, nil
 }
 
 func (m *module) CommentVideo(userID primitive.ObjectID, hash, content string) (comment data.Comment, err error) {

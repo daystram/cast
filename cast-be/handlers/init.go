@@ -48,11 +48,12 @@ type Component struct {
 }
 
 type Entity struct {
-	videoOrm   models.VideoOrmer
-	userOrm    models.UserOrmer
-	likeOrm    models.LikeOrmer
-	commentOrm models.CommentOrmer
-	tokenOrm   models.TokenOrmer
+	videoOrm        models.VideoOrmer
+	userOrm         models.UserOrmer
+	likeOrm         models.LikeOrmer
+	subscriptionOrm models.SubscriptionOrmer
+	commentOrm      models.CommentOrmer
+	tokenOrm        models.TokenOrmer
 }
 
 type MQ struct {
@@ -93,6 +94,7 @@ type Handler interface {
 	LikeVideo(userID primitive.ObjectID, hash string, like bool) (err error)
 	Subscribe(userID primitive.ObjectID, username string, subscribe bool) (err error)
 	CheckUserLikes(hash, username string) (liked bool, err error)
+	CheckUserSubscribes(authorID primitive.ObjectID, username string) (subscribed bool, err error)
 	CommentVideo(userID primitive.ObjectID, hash, content string) (comment data.Comment, err error)
 
 	TranscodeListenerWorker()
@@ -105,11 +107,12 @@ type Handler interface {
 func NewHandler(component Component) Handler {
 	return &module{
 		db: &Entity{
-			videoOrm:   models.NewVideoOrmer(component.DB),
-			userOrm:    models.NewUserOrmer(component.DB),
-			likeOrm:    models.NewLikeOrmer(component.DB),
-			commentOrm: models.NewCommentOrmer(component.DB),
-			tokenOrm:   models.NewTokenOrmer(component.DB),
+			videoOrm:        models.NewVideoOrmer(component.DB),
+			userOrm:         models.NewUserOrmer(component.DB),
+			likeOrm:         models.NewLikeOrmer(component.DB),
+			subscriptionOrm: models.NewSubscriptionOrmer(component.DB),
+			commentOrm:      models.NewCommentOrmer(component.DB),
+			tokenOrm:        models.NewTokenOrmer(component.DB),
 		},
 		mq: &MQ{
 			transcodeTopic:       component.MQClient.Topic(config.AppConfig.TopicNameTranscode),
