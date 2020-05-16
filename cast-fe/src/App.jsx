@@ -12,8 +12,9 @@ axios.defaults.withCredentials = true;
 function App() {
   return (
     <BrowserRouter>
-      <Route path={['/', '/trending', '/live', '/fresh', '/liked', '/subscribed', '/bookmarked', '/w/:hash',
-        '/s', '/profile', '/dashboard', '/manage', '/verify', '/login', '/signup', '/forget']} exact component={Navigation}/>
+      <Route path={['/', '/trending', '/live', '/fresh', '/liked', '/subscribed', '/w/:hash',
+        '/s', '/profile', '/dashboard', '/manage', '/verify', '/login', '/signup', '/forget']} exact
+             component={Navigation}/>
       <Routes/>
     </BrowserRouter>
   );

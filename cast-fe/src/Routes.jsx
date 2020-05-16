@@ -26,6 +26,8 @@ const Routes = () => {
       <Route path={"/trending"} exact component={Trending}/>
       <Route path={"/live"} exact component={Live}/>
       <Route path={"/fresh"} exact component={Fresh}/>
+      <PrivateRoute path={"/liked"} exact component={Fresh}/>
+      <PrivateRoute path={"/subscribed"} exact component={Fresh}/>
       <Route path={"/w/:hash"} exact component={Scene}/>
       <Route path={"/c/:hash"} exact component={Chat}/>
       <Route path={"/s"} exact component={Search}/>
