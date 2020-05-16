@@ -20,6 +20,7 @@ export default function urls() {
     window: () => `${api_base}/p/live/window`,
     delete: () => `${api_base}/p/video/delete`,
     list: () => `${api_base}/video/list`,
+    list_authed: () => `${api_base}/p/video/list`,
     search: () => `${api_base}/video/search`,
     auth_check: () => `${api_base}/auth/check`,
     login: () => `${api_base}/auth/login`,
