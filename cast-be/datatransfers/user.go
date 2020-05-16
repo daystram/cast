@@ -12,7 +12,6 @@ type User struct {
 	Username    string             `json:"username" bson:"username"`
 	Email       string             `json:"email" bson:"email"`
 	Password    string             `json:"-" bson:"password"`
-	Subscribers int                `json:"subscribers" bson:"subscribers"`
 	Verified    bool               `json:"verified" bson:"verified"`
 	CreatedAt   time.Time          `json:"created_at,omitempty" bson:"created_at"`
 }

@@ -15,12 +15,16 @@ import (
 func (m *module) UserDetails(userID primitive.ObjectID) (detail data.UserDetail, err error) {
 	var user data.User
 	var videos []data.Video
+	var subscriberCount int
 	views := 0
 	if user, err = m.db.userOrm.GetOneByID(userID); err != nil {
 		return data.UserDetail{}, errors.New(fmt.Sprintf("[UserDetails] user not found. %+v\n", err))
 	}
 	if videos, err = m.db.videoOrm.GetAllVODByAuthor(userID); err != nil {
 		return data.UserDetail{}, errors.New(fmt.Sprintf("[UserDetails] cannot retrieve all user videos. %+v\n", err))
+	}
+	if subscriberCount, err = m.db.subscriptionOrm.GetCountByAuthorID(user.ID); err != nil {
+		return data.UserDetail{}, errors.New(fmt.Sprintf("[UserDetails] cannot retrieve user subscriber count. %+v\n", err))
 	}
 	for _, video := range videos {
 		views += video.Views
@@ -29,7 +33,7 @@ func (m *module) UserDetails(userID primitive.ObjectID) (detail data.UserDetail,
 		Name:        user.Name,
 		Username:    user.Username,
 		Email:       user.Email,
-		Subscribers: user.Subscribers,
+		Subscribers: subscriberCount,
 		Views:       views,
 		Uploads:     len(videos),
 	}
