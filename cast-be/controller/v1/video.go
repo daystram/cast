@@ -73,7 +73,8 @@ func (c *VideoController) GetDetails(hash, username string) datatransfers.Respon
 		return datatransfers.Response{Code: http.StatusNotFound}
 	}
 	if username != "" {
-		video.Liked, _ = c.Handler.CheckUserLikes(hash, username)
+		video.Liked, _ = c.Handler.CheckUserLikes(video.Hash, username)
+		video.Subscribed, _ = c.Handler.CheckUserSubscribes(video.Author.ID, username)
 	}
 	return datatransfers.Response{Data: video, Code: http.StatusOK}
 }
@@ -244,7 +245,7 @@ func (c *VideoControllerAuth) LikeVideo(info datatransfers.LikeBody) datatransfe
 // @Param   info    body	{datatransfers.SubscribeBody}	true	"body"
 // @router /subscribe [post]
 func (c *VideoControllerAuth) SubscribeAuthor(info datatransfers.SubscribeBody) datatransfers.Response {
-	err := c.Handler.Subscribe(c.userID, info.Username, info.Subscribe)
+	err := c.Handler.Subscribe(c.userID, info.AuthorUsername, info.Subscribe)
 	if err != nil {
 		fmt.Printf("[VideoControllerAuth::SubscribeAuthor] failed subscribing author. %+v\n", err)
 		return datatransfers.Response{Error: "Failed subscribing author", Code: http.StatusConflict}
