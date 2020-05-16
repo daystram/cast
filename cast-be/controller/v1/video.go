@@ -242,7 +242,7 @@ func (c *VideoControllerAuth) LikeVideo(info datatransfers.LikeBody) datatransfe
 // @Title Subscribe
 // @Success 200 {object} models.Object
 // @Param   info    body	{datatransfers.SubscribeBody}	true	"body"
-// @router /like [post]
+// @router /subscribe [post]
 func (c *VideoControllerAuth) SubscribeAuthor(info datatransfers.SubscribeBody) datatransfers.Response {
 	err := c.Handler.Subscribe(c.userID, info.Username, info.Subscribe)
 	if err != nil {
