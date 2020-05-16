@@ -304,16 +304,16 @@ class Scene extends Component {
                 </div>
               </div>
               <Row noGutters>
-                <Col xl={1} sm={0}/>
+                <Col xl={1} xs={0}/>
                 <Col>
                   <div style={style.description}>{this.state.video && this.state.video.description}</div>
                 </Col>
-                <Col xl={1} sm={0}/>
+                <Col xl={1} xs={0}/>
               </Row>
               <hr/>
               <h3>Comments</h3>
               <Row noGutters style={{marginTop: 28}}>
-                <Col xl={1} sm={0}/>
+                <Col xl={1} xs={0}/>
                 <Col>
                   <Form noValidate onSubmit={this.handleComment}>
                     {this.state.error_submit && <Alert variant={"danger"}>{this.state.error_submit}</Alert>}
