@@ -28,13 +28,13 @@ func NewLikeOrmer(db *mongo.Client) LikeOrmer {
 }
 
 func (o *likeOrm) GetOneByUserIDHash(userID primitive.ObjectID, hash string) (like datatransfers.Like, err error) {
-	err = o.collection.FindOne(context.TODO(), bson.M{"author": userID, "hash": hash}).Decode(&like)
+	err = o.collection.FindOne(context.Background(), bson.M{"author": userID, "hash": hash}).Decode(&like)
 	return
 }
 
 func (o *likeOrm) GetCountByHash(hash string) (count int, err error) {
 	var count64 int64
-	count64, err = o.collection.CountDocuments(context.TODO(), bson.M{"hash": hash})
+	count64, err = o.collection.CountDocuments(context.Background(), bson.M{"hash": hash})
 	count = int(count64)
 	return
 }
@@ -42,13 +42,13 @@ func (o *likeOrm) GetCountByHash(hash string) (count int, err error) {
 func (o *likeOrm) InsertLike(like datatransfers.Like) (ID primitive.ObjectID, err error) {
 	result := &mongo.InsertOneResult{}
 	like.ID = primitive.NewObjectID()
-	if result, err = o.collection.InsertOne(context.TODO(), like); err != nil {
+	if result, err = o.collection.InsertOne(context.Background(), like); err != nil {
 		return
 	}
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
 func (o *likeOrm) RemoveLikeByUserIDHash(userID primitive.ObjectID, hash string) (err error) {
-	_, err = o.collection.DeleteOne(context.TODO(), bson.M{"author": userID, "hash": hash})
+	_, err = o.collection.DeleteOne(context.Background(), bson.M{"author": userID, "hash": hash})
 	return
 }

@@ -34,23 +34,23 @@ func NewUserOrmer(db *mongo.Client) UserOrmer {
 }
 
 func (o *userOrm) GetOneByID(ID primitive.ObjectID) (user datatransfers.User, err error) {
-	err = o.collection.FindOne(context.TODO(), bson.M{"_id": ID}).Decode(&user)
+	err = o.collection.FindOne(context.Background(), bson.M{"_id": ID}).Decode(&user)
 	return
 }
 
 func (o *userOrm) GetOneByEmail(email string) (user datatransfers.User, err error) {
-	err = o.collection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
+	err = o.collection.FindOne(context.Background(), bson.M{"email": email}).Decode(&user)
 	return
 }
 
 func (o *userOrm) GetOneByUsername(username string) (user datatransfers.User, err error) {
-	err = o.collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
+	err = o.collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&user)
 	return
 }
 
 func (o *userOrm) CheckUnique(field, value string) (err error) {
 	uniqueOptions := &options.FindOneOptions{Collation: &options.Collation{Locale: "en", Strength: 2}}
-	if err = o.collection.FindOne(context.TODO(), bson.M{field: value}, uniqueOptions).Err(); err == mongo.ErrNoDocuments {
+	if err = o.collection.FindOne(context.Background(), bson.M{field: value}, uniqueOptions).Err(); err == mongo.ErrNoDocuments {
 		return nil
 	}
 	if err == nil {
@@ -64,14 +64,14 @@ func (o *userOrm) InsertUser(user datatransfers.User) (ID primitive.ObjectID, er
 	if user.ID.IsZero() {
 		user.ID = primitive.NewObjectID()
 	}
-	if result, err = o.collection.InsertOne(context.TODO(), user); err != nil {
+	if result, err = o.collection.InsertOne(context.Background(), user); err != nil {
 		return
 	}
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
 func (o *userOrm) EditUser(user datatransfers.User) (err error) {
-	return o.collection.FindOneAndUpdate(context.TODO(),
+	return o.collection.FindOneAndUpdate(context.Background(),
 		bson.M{"_id": user.ID},
 		bson.D{{"$set", bson.D{
 			{"name", user.Name},
@@ -82,13 +82,13 @@ func (o *userOrm) EditUser(user datatransfers.User) (err error) {
 }
 
 func (o *userOrm) SetVerified(ID primitive.ObjectID) (err error) {
-	return o.collection.FindOneAndUpdate(context.TODO(),
+	return o.collection.FindOneAndUpdate(context.Background(),
 		bson.M{"_id": ID},
 		bson.D{{"$set", bson.D{{"verified", true}}}},
 	).Err()
 }
 
 func (o *userOrm) DeleteOneByID(ID primitive.ObjectID) (err error) {
-	_, err = o.collection.DeleteOne(context.TODO(), bson.M{"_id": ID})
+	_, err = o.collection.DeleteOne(context.Background(), bson.M{"_id": ID})
 	return
 }

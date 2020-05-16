@@ -17,6 +17,7 @@ type VideoOrmer interface {
 	GetRecent(variant string, count int, offset int) (videos []datatransfers.Video, err error)
 	GetTrending(count int, offset int) (videos []datatransfers.Video, err error)
 	GetLiked(userID primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error)
+	GetSubscribed(userID primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error)
 	GetAllVODByAuthor(author primitive.ObjectID) (videos []datatransfers.Video, err error)
 	GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error)
 	Search(query string, count, offset int) (videos []datatransfers.Video, err error)
@@ -41,7 +42,7 @@ func NewVideoOrmer(db *mongo.Client) VideoOrmer {
 
 func (o *videoOrm) GetRecent(variant string, count int, offset int) (result []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
-	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"type", variant}}}},
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
 		{{"$match", bson.D{{"is_live", true}}}},
@@ -57,7 +58,7 @@ func (o *videoOrm) GetRecent(variant string, count int, offset int) (result []da
 		{{"$unwind", "$author"}}}); err != nil {
 		return
 	}
-	for query.Next(context.TODO()) {
+	for query.Next(context.Background()) {
 		var video datatransfers.Video
 		if err = query.Decode(&video); err != nil {
 			return
@@ -69,7 +70,7 @@ func (o *videoOrm) GetRecent(variant string, count int, offset int) (result []da
 
 func (o *videoOrm) GetLiked(userID primitive.ObjectID, count int, offset int) (result []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
-	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
 		{{"$match", bson.D{{"is_live", true}}}},
 		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
@@ -93,7 +94,43 @@ func (o *videoOrm) GetLiked(userID primitive.ObjectID, count int, offset int) (r
 	}); err != nil {
 		return
 	}
-	for query.Next(context.TODO()) {
+	for query.Next(context.Background()) {
+		var video datatransfers.Video
+		if err = query.Decode(&video); err != nil {
+			return
+		}
+		result = append(result, video)
+	}
+	return
+}
+
+func (o *videoOrm) GetSubscribed(userID primitive.ObjectID, count int, offset int) (result []datatransfers.Video, err error) {
+	query := &mongo.Cursor{}
+	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
+		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
+		{{"$match", bson.D{{"is_live", true}}}},
+		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
+		{{"$lookup", bson.D{
+			{"from", constants.DBCollectionSubscription},
+			{"localField", "author"},
+			{"foreignField", "author"},
+			{"as", "subscribers"},
+		}}},
+		{{"$match", bson.D{{"$expr", bson.D{{"$in", bson.A{userID, "$subscribers.user"}}}}}}},
+		{{"$project", bson.D{{"subscribers", 0}}}},
+		{{"$skip", offset}},
+		{{"$limit", count}},
+		{{"$lookup", bson.D{
+			{"from", constants.DBCollectionUser},
+			{"localField", "author"},
+			{"foreignField", "_id"},
+			{"as", "author"},
+		}}},
+		{{"$unwind", "$author"}},
+	}); err != nil {
+		return
+	}
+	for query.Next(context.Background()) {
 		var video datatransfers.Video
 		if err = query.Decode(&video); err != nil {
 			return
@@ -105,7 +142,7 @@ func (o *videoOrm) GetLiked(userID primitive.ObjectID, count int, offset int) (r
 
 func (o *videoOrm) GetTrending(count int, offset int) (result []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
-	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
 		{{"$match", bson.D{{"is_live", true}}}},
 		{{"$lookup", bson.D{
@@ -134,7 +171,7 @@ func (o *videoOrm) GetTrending(count int, offset int) (result []datatransfers.Vi
 	}); err != nil {
 		return
 	}
-	for query.Next(context.TODO()) {
+	for query.Next(context.Background()) {
 		var video datatransfers.Video
 		if err = query.Decode(&video); err != nil {
 			return
@@ -146,7 +183,7 @@ func (o *videoOrm) GetTrending(count int, offset int) (result []datatransfers.Vi
 
 func (o *videoOrm) GetAllVODByAuthor(author primitive.ObjectID) (videos []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
-	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"author", author}}}},
 		{{"$match", bson.D{{"type", constants.VideoTypeVOD}}}},
 		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
@@ -159,7 +196,7 @@ func (o *videoOrm) GetAllVODByAuthor(author primitive.ObjectID) (videos []datatr
 		{{"$unwind", "$author"}}}); err != nil {
 		return
 	}
-	for query.Next(context.TODO()) {
+	for query.Next(context.Background()) {
 		var video datatransfers.Video
 		if err = query.Decode(&video); err != nil {
 			return
@@ -171,7 +208,7 @@ func (o *videoOrm) GetAllVODByAuthor(author primitive.ObjectID) (videos []datatr
 
 func (o *videoOrm) GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
-	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"author", author}}}},
 		{{"$match", bson.D{{"type", constants.VideoTypeVOD}}}},
 		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
@@ -196,7 +233,7 @@ func (o *videoOrm) GetAllVODByAuthorPaginated(author primitive.ObjectID, count i
 	}); err != nil {
 		return
 	}
-	for query.Next(context.TODO()) {
+	for query.Next(context.Background()) {
 		var video datatransfers.Video
 		if err = query.Decode(&video); err != nil {
 			return
@@ -208,7 +245,7 @@ func (o *videoOrm) GetAllVODByAuthorPaginated(author primitive.ObjectID, count i
 
 func (o *videoOrm) Search(queryString string, count int, offset int) (result []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
-	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"$text", bson.D{{"$search", queryString}}}}}},
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
 		{{"$match", bson.D{{"is_live", true}}}},
@@ -224,7 +261,7 @@ func (o *videoOrm) Search(queryString string, count int, offset int) (result []d
 		{{"$unwind", "$author"}}}); err != nil {
 		return
 	}
-	for query.Next(context.TODO()) {
+	for query.Next(context.Background()) {
 		var video datatransfers.Video
 		if err = query.Decode(&video); err != nil {
 			return
@@ -236,7 +273,7 @@ func (o *videoOrm) Search(queryString string, count int, offset int) (result []d
 
 func (o *videoOrm) GetLiveByAuthor(userID primitive.ObjectID) (video datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
-	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"author", userID}}}},
 		{{"$limit", 1}},
 		{{"$lookup", bson.D{
@@ -248,7 +285,7 @@ func (o *videoOrm) GetLiveByAuthor(userID primitive.ObjectID) (video datatransfe
 		{{"$unwind", "$author"}}}); err != nil {
 		return
 	}
-	if exists := query.Next(context.TODO()); exists {
+	if exists := query.Next(context.Background()); exists {
 		err = query.Decode(&video)
 		return
 	}
@@ -257,7 +294,7 @@ func (o *videoOrm) GetLiveByAuthor(userID primitive.ObjectID) (video datatransfe
 
 func (o *videoOrm) GetOneByHash(hash string) (video datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
-	if query, err = o.collection.Aggregate(context.TODO(), mongo.Pipeline{
+	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"hash", hash}}}},
 		{{"$limit", 1}},
 		{{"$lookup", bson.D{
@@ -279,7 +316,7 @@ func (o *videoOrm) GetOneByHash(hash string) (video datatransfers.Video, err err
 	}); err != nil {
 		return
 	}
-	if exists := query.Next(context.TODO()); exists {
+	if exists := query.Next(context.Background()); exists {
 		err = query.Decode(&video)
 		return
 	}
@@ -291,12 +328,12 @@ func (o *videoOrm) IncrementViews(hash string, decrement ...bool) error {
 	if len(decrement) > 0 && decrement[0] {
 		delta = -1
 	}
-	return o.collection.FindOneAndUpdate(context.TODO(), bson.M{"hash": hash}, bson.M{"$inc": bson.M{"views": delta}}).Err()
+	return o.collection.FindOneAndUpdate(context.Background(), bson.M{"hash": hash}, bson.M{"$inc": bson.M{"views": delta}}).Err()
 }
 
 func (o *videoOrm) SetLive(authorID primitive.ObjectID, pending, live bool) (err error) {
 	var stream datatransfers.VideoInsert
-	if err = o.collection.FindOneAndUpdate(context.TODO(),
+	if err = o.collection.FindOneAndUpdate(context.Background(),
 		bson.M{"author": authorID, "type": constants.VideoTypeLive},
 		bson.D{{"$set", bson.D{
 			{"is_live", live},
@@ -306,7 +343,7 @@ func (o *videoOrm) SetLive(authorID primitive.ObjectID, pending, live bool) (err
 		return
 	}
 	if stream.IsLive != live {
-		if err = o.collection.FindOneAndUpdate(context.TODO(),
+		if err = o.collection.FindOneAndUpdate(context.Background(),
 			bson.M{"author": authorID, "type": constants.VideoTypeLive},
 			bson.D{{"$set", bson.D{
 				{"created_at", time.Now()},
@@ -316,7 +353,7 @@ func (o *videoOrm) SetLive(authorID primitive.ObjectID, pending, live bool) (err
 		}
 	}
 	if !pending && live {
-		err = o.collection.FindOneAndUpdate(context.TODO(),
+		err = o.collection.FindOneAndUpdate(context.Background(),
 			bson.M{"author": authorID, "type": constants.VideoTypeLive},
 			bson.D{{"$set", bson.D{
 				{"views", 0},
@@ -327,7 +364,7 @@ func (o *videoOrm) SetLive(authorID primitive.ObjectID, pending, live bool) (err
 }
 
 func (o *videoOrm) SetResolution(hash string, resolution int) (err error) {
-	return o.collection.FindOneAndUpdate(context.TODO(),
+	return o.collection.FindOneAndUpdate(context.Background(),
 		bson.M{"hash": hash, "type": constants.VideoTypeVOD},
 		bson.D{{"$set", bson.D{{"resolutions", resolution}}}},
 	).Err()
@@ -342,14 +379,14 @@ func (o *videoOrm) InsertVideo(video datatransfers.VideoInsert) (ID primitive.Ob
 	if video.ID.IsZero() {
 		video.ID = primitive.NewObjectID()
 	}
-	if result, err = o.collection.InsertOne(context.TODO(), video); err != nil {
+	if result, err = o.collection.InsertOne(context.Background(), video); err != nil {
 		return
 	}
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
 func (o *videoOrm) EditVideo(video datatransfers.VideoInsert) (err error) {
-	return o.collection.FindOneAndUpdate(context.TODO(),
+	return o.collection.FindOneAndUpdate(context.Background(),
 		bson.M{"hash": video.Hash, "author": video.Author},
 		bson.D{{"$set", bson.D{
 			{"title", video.Title},
@@ -360,13 +397,13 @@ func (o *videoOrm) EditVideo(video datatransfers.VideoInsert) (err error) {
 }
 
 func (o *videoOrm) DeleteOneByID(ID primitive.ObjectID) (err error) {
-	_, err = o.collection.DeleteOne(context.TODO(), bson.M{"_id": ID})
+	_, err = o.collection.DeleteOne(context.Background(), bson.M{"_id": ID})
 	return
 }
 
 func (o *videoOrm) CheckUnique(title string) (err error) {
 	uniqueOptions := &options.FindOneOptions{Collation: &options.Collation{Locale: "en", Strength: 2}}
-	if err = o.collection.FindOne(context.TODO(), bson.M{"title": title}, uniqueOptions).Err(); err == mongo.ErrNoDocuments {
+	if err = o.collection.FindOne(context.Background(), bson.M{"title": title}, uniqueOptions).Err(); err == mongo.ErrNoDocuments {
 		return nil
 	}
 	if err == nil {
