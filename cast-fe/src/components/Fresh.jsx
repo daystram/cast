@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import {MOBILE_BP} from "../constants/breakpoint";
 import MediaQuery from "react-responsive";
 import List from "./List";
+import {VIDEO_TYPE_VOD} from "../constants/video";
 
 class Fresh extends Component {
   componentDidMount() {
@@ -22,7 +23,7 @@ class Fresh extends Component {
             </MediaQuery>
             <Col xl={10} xs={12} className={"mid-container-right"}>
               <h1 style={style.h1}>Fresh Casts</h1>
-              <List variant={"vod"}/>
+              <List variant={VIDEO_TYPE_VOD}/>
             </Col>
           </Row>
         </Container>

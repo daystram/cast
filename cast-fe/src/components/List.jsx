@@ -4,7 +4,7 @@ import InfiniteScroll from 'react-infinite-scroller';
 import Cast from "./Cast"
 import axios from "axios";
 import urls from "../helper/url";
-import {VIDEO_LIST_PAGE_SIZE} from "../constants/video";
+import {VIDEO_LIST_LIKED, VIDEO_LIST_PAGE_SIZE, VIDEO_LIST_SUBSCRIBED} from "../constants/video";
 
 class List extends Component {
   constructor(props) {
@@ -36,10 +36,19 @@ class List extends Component {
         }
       };
     } else {
-      target = urls().list();
+      switch (this.props.variant) {
+        case VIDEO_LIST_LIKED:
+          target = urls().list_authed();
+          break;
+        case VIDEO_LIST_SUBSCRIBED:
+          target = urls().list_authed();
+          break;
+        default:
+          target = urls().list();
+      }
       config = {
         params: {
-          variant: this.props.variant.trim(),
+          variant: this.props.variant,
           count: VIDEO_LIST_PAGE_SIZE,
           offset: VIDEO_LIST_PAGE_SIZE * this.state.page,
         }

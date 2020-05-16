@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import {MOBILE_BP} from "../constants/breakpoint";
 import MediaQuery from "react-responsive";
 import List from "./List";
+import {VIDEO_TYPE_LIVE} from "../constants/video";
 
 class Live extends Component {
   componentDidMount() {
@@ -22,7 +23,7 @@ class Live extends Component {
             </MediaQuery>
             <Col xl={10} xs={12} className={"mid-container-right"}>
               <h1 style={style.h1}>Live Casts</h1>
-              <List variant={"live"}/>
+              <List variant={VIDEO_TYPE_LIVE} emptyMessage={"No creators are live now!"}/>
             </Col>
           </Row>
         </Container>
