@@ -303,18 +303,15 @@ class Scene extends Component {
                   </Button>
                 </div>
               </div>
-              <Row noGutters>
-                <Col xl={1} xs={0}/>
-                <Col>
+              <Row className="justify-content-center" noGutters>
+                <Col xl={10} xs={12}>
                   <div style={style.description}>{this.state.video && this.state.video.description}</div>
                 </Col>
-                <Col xl={1} xs={0}/>
               </Row>
               <hr/>
               <h3>Comments</h3>
-              <Row noGutters style={{marginTop: 28}}>
-                <Col xl={1} xs={0}/>
-                <Col>
+              <Row className="justify-content-center" noGutters style={{marginTop: 28}}>
+                <Col xl={10} xs={12}>
                   <Form noValidate onSubmit={this.handleComment}>
                     {this.state.error_submit && <Alert variant={"danger"}>{this.state.error_submit}</Alert>}
                     <Form.Group>
@@ -344,7 +341,6 @@ class Scene extends Component {
                     }) : <h5 style={style.h5}>Post the first comment!</h5>}
                   </div>
                 </Col>
-                <Col xl={1} xs={0}/>
               </Row>
               <MediaQuery maxDeviceWidth={MOBILE_BP}>
                 <hr/>
