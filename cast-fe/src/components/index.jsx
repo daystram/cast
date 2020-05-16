@@ -7,6 +7,7 @@ import Scene from './Scene'
 import Search from './Search'
 import SignUp from './SignUp'
 import Trending from './Trending'
+import Liked from './Liked'
 import Live from './Live'
 import LogIn from './LogIn'
 import LogOut from './LogOut'
@@ -14,4 +15,4 @@ import Manage from './Manage'
 import Profile from './Profile'
 import Verify from './Verify'
 
-export {Chat, Dashboard, Forget, Fresh, Home, Scene, Search, SignUp, Trending, Live, LogIn, LogOut, Manage, Profile, Verify}
+export {Chat, Dashboard, Forget, Fresh, Home, Scene, Search, SignUp, Trending, Liked, Live, LogIn, LogOut, Manage, Profile, Verify}
