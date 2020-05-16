@@ -21,7 +21,7 @@ class Sidebar extends Component {
           <NavLink to="/liked" style={style.nav_item} activeStyle={style.nav_item_current}>
             <i className="material-icons">thumb_up</i> Liked Casts</NavLink>
           <NavLink to="/subscribed" style={style.nav_item} activeStyle={style.nav_item_current}>
-            <i className="material-icons">video_library</i> Subscription</NavLink>
+            <i className="material-icons">video_library</i> Subscribed</NavLink>
         </>}
       </Nav>
     )

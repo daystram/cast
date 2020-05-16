@@ -13,6 +13,7 @@ import {
   Profile,
   Scene,
   Search,
+  Subscribed,
   SignUp,
   Trending,
   Verify
@@ -28,7 +29,7 @@ const Routes = () => {
       <Route path={"/live"} exact component={Live}/>
       <Route path={"/fresh"} exact component={Fresh}/>
       <PrivateRoute path={"/liked"} exact component={Liked}/>
-      <PrivateRoute path={"/subscribed"} exact component={Fresh}/>
+      <PrivateRoute path={"/subscribed"} exact component={Subscribed}/>
       <Route path={"/w/:hash"} exact component={Scene}/>
       <Route path={"/c/:hash"} exact component={Chat}/>
       <Route path={"/s"} exact component={Search}/>
