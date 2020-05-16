@@ -46,6 +46,7 @@ class Scene extends Component {
         comment: false
       },
       liked: false,
+      subscribed: false,
       likes: 0,
       comment: "",
       comments: [],
@@ -120,7 +121,7 @@ class Scene extends Component {
         this.setState({
           offline: data.type === VIDEO_TYPE_LIVE && !data.is_live,
           not_found: false,
-          video: data, likes: data.likes, liked: data.liked, comments: data.comments,
+          video: data, likes: data.likes, liked: data.liked, subscribed: data.subscribed, comments: data.comments,
           [data.type]: {...this.state[data.type], [data.hash]: data}
         });
         document.title = `${data.title} - ${data.author.name} | cast`;
@@ -188,7 +189,7 @@ class Scene extends Component {
     if (this.state.loading.current) return;
     if (auth().is_authenticated()) {
       if (!this.state.comment.trim() || this.state.error_comment) {
-        this.setState({error_comment: "Please enter comment"});
+        this.setState({error_comment: "Please enter your comment"});
         return;
       }
       if (this.state.loading.comment) return;
@@ -215,7 +216,17 @@ class Scene extends Component {
   handleSubscribe() {
     if (this.state.loading.current) return;
     if (auth().is_authenticated()) {
-      axios.post()
+      axios.post(urls().subscribe(), {
+        author: this.state.video.author.username,
+        subscribe: !this.state.subscribed,
+      }).then(() => {
+        this.setState({
+          subscribed: !this.state.subscribed,
+          loading: {...this.state.loading, subscribe: false}
+        });
+      }).catch((error) => {
+        console.log(error);
+      });
     } else {
       this.promptSignup();
     }
@@ -287,7 +298,9 @@ class Scene extends Component {
                 </div>
                 <div>
                   <Button style={style.sub_button} onClick={this.handleSubscribe}
-                          disabled={this.state.video && this.state.video.author.isSubscribed}>SUBSCRIBE</Button>
+                          variant={this.state.subscribed ? "outline-primary" : "primary"}>
+                    {this.state.subscribed ? "SUBSCRIBED" : "SUBSCRIBE"}
+                  </Button>
                 </div>
               </div>
               <Row noGutters>
@@ -487,7 +500,8 @@ let style = {
     alignSelf: "center"
   },
   sub_button: {
-    fontWeight: 600
+    fontWeight: 600,
+    width: 128
   },
   description: {
     // marginLeft: 48,
