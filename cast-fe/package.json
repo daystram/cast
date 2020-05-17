@@ -27,6 +27,7 @@
     "react-scroll": "^1.7.16",
     "react-tag-input": "^6.4.2",
     "react-timeago": "^4.4.0",
+    "react-toastify": "^6.0.4",
     "react-truncate": "^2.4.0",
     "video.js": "^7.6.6",
     "videojs-contrib-dash": "^2.11.0",
