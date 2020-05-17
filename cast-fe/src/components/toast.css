@@ -1,0 +1,20 @@
+/** Used to define container behavior: width, position: fixed etc... **/
+.Toastify__toast-container {
+    padding: 0;
+    right: -8px;
+    top: 71px;
+}
+
+/** Classes for the displayed toast **/
+.Toastify__toast {
+    border-radius: 8px;
+    margin: 0 15px 15px 15px;
+    background: #55180287;
+    backdrop-filter: blur(8px);
+}
+
+/** Classes for the progress bar **/
+.Toastify__progress-bar {
+    height: 2px;
+    background: #E84409;
+}

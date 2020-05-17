@@ -11,8 +11,28 @@ html {
 }
 
 body {
-    overflow: overlay;
+    overflow-y: overlay;
+    overflow-x: hidden;
+    /*overflow-y: scroll;*/
+    /*scrollbar-width: none;*/
+    /*-ms-overflow-style: none;*/
 }
+
+body::-webkit-scrollbar {
+    /*background: #8B280344;*/
+    width: 8px;
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: #571803;
+    border-radius: 4px;
+    /*padding-right: 8px;*/
+}
+
+/*body::-webkit-scrollbar {*/
+/*    width: 0;*/
+/*    height: 0;*/
+/*}*/
 
 hr {
     border-color: #E8440944;
@@ -154,17 +174,6 @@ p, h5, .form-label, .form-check-label {
 .form-control:focus, .custom-file-input:focus ~ .custom-file-label {
     border-color: #E84409;
     box-shadow: 0 0 0 0.2rem rgba(232, 68, 9, 0.5) !important;
-}
-
-::-webkit-scrollbar {
-    /*background: #8B280344;*/
-    width: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-    background-color: #571803;
-    border-radius: 4px;
-    padding-right: 8px;
 }
 
 .share-twitter.btn-primary, .share-twitter.btn-primary:focus, .share-twitter.btn-primary:disabled {
