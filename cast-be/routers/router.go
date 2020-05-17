@@ -71,7 +71,7 @@ func init() {
 				&v1.LiveController{Handler: h},
 			),
 		),
-		beego.NSNamespace("/chat",
+		beego.NSNamespace("/ws",
 			beego.NSInclude(
 				&v1.WebSocketController{Handler: h},
 			),
@@ -93,7 +93,7 @@ func init() {
 					&v1.LiveControllerAuth{Handler: h},
 				),
 			),
-			beego.NSNamespace("/chat",
+			beego.NSNamespace("/ws",
 				beego.NSInclude(
 					&v1.WebSocketControllerAuth{Handler: h},
 				),

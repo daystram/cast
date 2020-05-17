@@ -300,7 +300,7 @@ func init() {
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:WebSocketController"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:WebSocketController"],
         beego.ControllerComments{
             Method: "Connect",
-            Router: `/:hash`,
+            Router: `/chat/:hash`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(
 				param.New("hash", param.InPath),
@@ -311,11 +311,22 @@ func init() {
 
     beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:WebSocketControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:WebSocketControllerAuth"],
         beego.ControllerComments{
-            Method: "Connect",
-            Router: `/:hash`,
+            Method: "ConnectChat",
+            Router: `/chat/:hash`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(
 				param.New("hash", param.InPath),
+				param.New("_"),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:WebSocketControllerAuth"] = append(beego.GlobalControllerRouter["gitlab.com/daystram/cast/cast-be/controller/v1:WebSocketControllerAuth"],
+        beego.ControllerComments{
+            Method: "ConnectNotification",
+            Router: `/notification`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
 				param.New("_"),
 			),
             Filters: nil,
