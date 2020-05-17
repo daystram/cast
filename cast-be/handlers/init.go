@@ -19,11 +19,12 @@ import (
 )
 
 type module struct {
-	db     *Entity
-	mq     *MQ
-	chat   *Chat
-	mailer *mailgun.MailgunImpl
-	live   Live
+	db           *Entity
+	mq           *MQ
+	chat         *Chat
+	notification *Notification
+	mailer       *mailgun.MailgunImpl
+	live         Live
 }
 
 type Live struct {
@@ -34,6 +35,11 @@ type Live struct {
 
 type Chat struct {
 	sockets  map[string][]*websocket.Conn
+	upgrader websocket.Upgrader
+}
+
+type Notification struct {
+	sockets  map[string]*websocket.Conn
 	upgrader websocket.Upgrader
 }
 
@@ -100,8 +106,12 @@ type Handler interface {
 	TranscodeListenerWorker()
 	StartTranscode(hash string)
 
-	ConnectWebSocket(ctx *context.Context, hash string, userID ...primitive.ObjectID) (err error)
+	ConnectNotificationWS(ctx *context.Context, userID primitive.ObjectID) (err error)
+	ConnectChatWS(ctx *context.Context, hash string, userID ...primitive.ObjectID) (err error)
+	NotificationPingWorker(conn *websocket.Conn)
 	ChatReaderWorker(conn *websocket.Conn, hash string, user data.User, live bool)
+	PushNotification(userID primitive.ObjectID, message data.NotificationOutgoing)
+	BroadcastNotificationSubscriber(authorID primitive.ObjectID, message data.NotificationOutgoing)
 }
 
 func NewHandler(component Component) Handler {
@@ -120,6 +130,10 @@ func NewHandler(component Component) Handler {
 		},
 		chat: &Chat{
 			sockets:  make(map[string][]*websocket.Conn),
+			upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
+		},
+		notification: &Notification{
+			sockets:  make(map[string]*websocket.Conn),
 			upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
 		},
 		mailer: component.Mailer,
