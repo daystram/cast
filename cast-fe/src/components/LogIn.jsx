@@ -3,6 +3,7 @@ import {Alert, Button, Container, Form, Spinner} from "react-bootstrap";
 import axios from "axios";
 import urls from "../helper/url";
 import {Link, withRouter} from "react-router-dom";
+import notification from "../helper/notification";
 
 class LogIn extends Component {
   constructor(props) {
@@ -63,6 +64,7 @@ class LogIn extends Component {
       this.setState({loading: false});
       switch (response.data.code) {
         case 200:
+          notification().init();
           const {from} = this.props.location.state || {from: false};
           if (from) this.props.history.push(from.pathname);
           else this.props.history.push("/");
