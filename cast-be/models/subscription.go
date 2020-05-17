@@ -13,6 +13,7 @@ import (
 )
 
 type SubscriptionOrmer interface {
+	GetSubscriptionsByAuthorID(authorID primitive.ObjectID) (subscribers []datatransfers.Subscription, err error)
 	GetCountByAuthorID(authorID primitive.ObjectID) (count int, err error)
 	GetOneByAuthorIDUserID(authorID, userID primitive.ObjectID) (subscription datatransfers.Subscription, err error)
 	InsertSubscription(subscription datatransfers.Subscription) (ID primitive.ObjectID, err error)
@@ -25,6 +26,23 @@ type subscriptionOrmer struct {
 
 func NewSubscriptionOrmer(db *mongo.Client) SubscriptionOrmer {
 	return &subscriptionOrmer{db.Database(config.AppConfig.MongoDBName).Collection(constants.DBCollectionSubscription)}
+}
+
+func (o *subscriptionOrmer) GetSubscriptionsByAuthorID(authorID primitive.ObjectID) (result []datatransfers.Subscription, err error) {
+	query := &mongo.Cursor{}
+	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
+		{{"$match", bson.D{{"author", authorID}}}},
+	}); err != nil {
+		return
+	}
+	for query.Next(context.Background()) {
+		var subscription datatransfers.Subscription
+		if err = query.Decode(&subscription); err != nil {
+			return
+		}
+		result = append(result, subscription)
+	}
+	return
 }
 
 func (o *subscriptionOrmer) GetCountByAuthorID(authorID primitive.ObjectID) (count int, err error) {
