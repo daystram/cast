@@ -44,11 +44,11 @@ class Chat extends Component {
       this.setState({connection})
     };
     connection.onerror = () => {
-      console.log("Cannot connect to server!");
+      console.log("Cannot connect to chat server!");
       if (!this.props.embedded) this.props.history.push("/")
     };
     connection.onclose = () => {
-      console.log("Server disconnected!");
+      console.log("Chat server disconnected!");
       if (!this.props.embedded) this.props.history.push("/")
     };
     connection.onmessage = (message) => {

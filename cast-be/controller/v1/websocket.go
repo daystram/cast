@@ -20,10 +20,10 @@ type WebSocketController struct {
 
 // @Title Connect
 // @Success 200 success
-// @router /:hash [get]
+// @router /chat/:hash [get]
 func (c *WebSocketController) Connect(hash string, _ string) {
 	var err error
-	err = c.Handler.ConnectWebSocket(c.Ctx, hash)
+	err = c.Handler.ConnectChatWS(c.Ctx, hash)
 	if _, ok := err.(websocket.HandshakeError); ok {
 		http.Error(c.Ctx.ResponseWriter, "Not a websocket handshake!", http.StatusBadRequest)
 		log.Printf("[WebSocketControllerAuth::Connect] handshake error. %+v\n", err)
@@ -45,19 +45,36 @@ func (c *WebSocketControllerAuth) Prepare() {
 	c.userID, _ = primitive.ObjectIDFromHex(c.Ctx.Input.Param(constants.ContextParamUserID))
 }
 
-// @Title Connect
+// @Title Connect Notification
 // @Success 200 success
 // @Param	access_token	query	string	false	"Bearer token"	""
-// @router /:hash [get]
-func (c *WebSocketControllerAuth) Connect(hash string, _ string) {
+// @router /notification [get]
+func (c *WebSocketControllerAuth) ConnectNotification(_ string) {
 	var err error
-	err = c.Handler.ConnectWebSocket(c.Ctx, hash, c.userID)
+	err = c.Handler.ConnectNotificationWS(c.Ctx, c.userID)
 	if _, ok := err.(websocket.HandshakeError); ok {
 		http.Error(c.Ctx.ResponseWriter, "Not a websocket handshake!", http.StatusBadRequest)
-		log.Printf("[WebSocketControllerAuth::Connect] handshake error. %+v\n", err)
+		log.Printf("[WebSocketControllerAuth::ConnectNotification] handshake error. %+v\n", err)
 		return
 	} else if err != nil {
-		log.Printf("[WebSocketControllerAuth::Connect] failed upgrading to WSS. %+v\n", err)
+		log.Printf("[WebSocketControllerAuth::ConnectNotification] failed upgrading to WSS. %+v\n", err)
+		return
+	}
+}
+
+// @Title Connect Chat
+// @Success 200 success
+// @Param	access_token	query	string	false	"Bearer token"	""
+// @router /chat/:hash [get]
+func (c *WebSocketControllerAuth) ConnectChat(hash string, _ string) {
+	var err error
+	err = c.Handler.ConnectChatWS(c.Ctx, hash, c.userID)
+	if _, ok := err.(websocket.HandshakeError); ok {
+		http.Error(c.Ctx.ResponseWriter, "Not a websocket handshake!", http.StatusBadRequest)
+		log.Printf("[WebSocketControllerAuth::ConnectChat] handshake error. %+v\n", err)
+		return
+	} else if err != nil {
+		log.Printf("[WebSocketControllerAuth::ConnectChat] failed upgrading to WSS. %+v\n", err)
 		return
 	}
 }

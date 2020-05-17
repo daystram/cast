@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {Alert, Button, Container, Form, Spinner} from "react-bootstrap";
 import axios from "axios";
 import urls from "../helper/url";
-import {Redirect} from "react-router-dom";
+import {withRouter} from "react-router-dom";
 
 class Verify extends Component {
   constructor(props) {
@@ -96,8 +96,6 @@ class Verify extends Component {
   render() {
     return (
       <Container fluid style={style.content_container}>
-        {this.state.redirectLogin ? <Redirect to={"/login"}/> : ""}
-        {this.state.redirectVerify ? <Redirect to={"/verify"}/> : ""}
         <h1 style={style.h1}>Verify Email</h1>
         {this.state.key ?
           <>
@@ -107,7 +105,7 @@ class Verify extends Component {
               <p>Your verification link is invalid! Please request for a new verification link sent to your email.</p>
               <hr/>
               <div className="d-flex justify-content-end">
-                <Button onClick={() => this.setState({redirectVerify: true, key: "", error_verify: ""})}
+                <Button onClick={() => {this.setState({key: "", error_verify: ""}); this.props.history.push("/verify")}}
                         variant="outline-danger">
                   Re-send Link
                 </Button>
@@ -121,7 +119,7 @@ class Verify extends Component {
               </p>
               <hr/>
               <div className="d-flex justify-content-end">
-                <Button onClick={() => this.setState({redirectLogin: true})} variant="outline-success">
+                <Button onClick={() => this.props.history.push("/login")} variant="outline-success">
                   Log In
                 </Button>
               </div>
@@ -140,7 +138,7 @@ class Verify extends Component {
               </p>
               <hr/>
               <div className="d-flex justify-content-end">
-                <Button onClick={() => this.setState({redirectLogin: true})} variant="outline-success">
+                <Button onClick={() => this.props.history.push("/login")} variant="outline-success">
                   Log In
                 </Button>
               </div>
@@ -153,7 +151,7 @@ class Verify extends Component {
             </Form.Group>
             <Button variant="primary" type="submit" block disabled={this.state.loading}
                     onClick={this.submitForm}>
-              Send Email{" "}
+              Send Verification Link{" "}
               {this.state.loading &&
               <Spinner style={{verticalAlign: "initial"}} as="span" animation="grow"
                        size="sm" role="status" aria-hidden="true"/>}
@@ -178,4 +176,4 @@ let style = {
   },
 };
 
-export default Verify
+export default withRouter(Verify)

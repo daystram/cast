@@ -3,21 +3,44 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"gitlab.com/daystram/cast/cast-be/util"
-	"go.mongodb.org/mongo-driver/mongo"
 	"os"
 	"time"
 
 	"gitlab.com/daystram/cast/cast-be/config"
 	"gitlab.com/daystram/cast/cast-be/constants"
 	data "gitlab.com/daystram/cast/cast-be/datatransfers"
+	"gitlab.com/daystram/cast/cast-be/util"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func (m *module) FreshList(variant string, count int, offset int) (videos []data.Video, err error) {
-	if videos, err = m.db.videoOrm.GetRecent(variant, count, offset); err != nil {
-		return nil, errors.New(fmt.Sprintf("[FreshList] error retrieving recent videos. %+v", err))
+func (m *module) CastList(variant string, count int, offset int, userID ...primitive.ObjectID) (videos []data.Video, err error) {
+	switch {
+	case variant == constants.VideoListTrending:
+		if videos, err = m.db.videoOrm.GetTrending(count, offset); err != nil {
+			return nil, errors.New(fmt.Sprintf("[CastList] error retrieving trending videos. %+v", err))
+		}
+	case variant == constants.VideoTypeLive || variant == constants.VideoTypeVOD:
+		if videos, err = m.db.videoOrm.GetRecent(variant, count, offset); err != nil {
+			return nil, errors.New(fmt.Sprintf("[CastList] error retrieving recent videos. %+v", err))
+		}
+	case variant == constants.VideoListLiked:
+		if len(userID) != 1 {
+			return nil, errors.New(fmt.Sprintf("[CastList] userID not provided"))
+		}
+		if videos, err = m.db.videoOrm.GetLiked(userID[0], count, offset); err != nil {
+			return nil, errors.New(fmt.Sprintf("[CastList] error retrieving liked videos. %+v", err))
+		}
+	case variant == constants.VideoListSubscribed:
+		if len(userID) != 1 {
+			return nil, errors.New(fmt.Sprintf("[CastList] userID not provided"))
+		}
+		if videos, err = m.db.videoOrm.GetSubscribed(userID[0], count, offset); err != nil {
+			return nil, errors.New(fmt.Sprintf("[CastList] error retrieving subscribed videos. %+v", err))
+		}
+	default:
+		return nil, errors.New(fmt.Sprintf("[CastList] invalid variant %s. %+v", variant, err))
 	}
 	return
 }
@@ -40,19 +63,14 @@ func (m *module) SearchVideo(query string, _ []string, count, offset int) (video
 }
 
 func (m *module) VideoDetails(hash string) (video data.Video, err error) {
-	var likes int
 	var comments []data.Comment
 	if video, err = m.db.videoOrm.GetOneByHash(hash); err != nil {
 		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] video with hash %s not found. %+v", hash, err))
-	}
-	if likes, err = m.db.likeOrm.GetCountByHash(hash); err != nil {
-		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] failed getting likes count for %s. %+v", hash, err))
 	}
 	if comments, err = m.db.commentOrm.GetAllByHash(hash); err != nil {
 		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] failed getting comment list for %s. %+v", hash, err))
 	}
 	video.Views++
-	video.Likes = likes
 	video.Comments = comments
 	if video.Type == constants.VideoTypeVOD {
 		if err = m.db.videoOrm.IncrementViews(hash); err != nil {
@@ -145,6 +163,46 @@ func (m *module) CheckUserLikes(hash, username string) (liked bool, err error) {
 			return false, nil
 		}
 		return false, errors.New(fmt.Sprintf("[CheckUserLikes] failed to fetch likes by user. %+v", err))
+	}
+	return true, nil
+}
+
+func (m *module) Subscribe(userID primitive.ObjectID, username string, subscribe bool) (err error) {
+	var user data.User
+	var author data.User
+	if user, err = m.db.userOrm.GetOneByID(userID); err != nil {
+		return errors.New(fmt.Sprintf("[Subscribe] failed to get user by ID. %+v", err))
+	}
+	if author, err = m.db.userOrm.GetOneByUsername(username); err != nil {
+		return errors.New(fmt.Sprintf("[Subscribe] failed to get author by username. %+v", err))
+	}
+	if subscribe {
+		_, err = m.db.subscriptionOrm.InsertSubscription(data.Subscription{
+			AuthorID:  author.ID,
+			UserID:    userID,
+			CreatedAt: time.Now(),
+		})
+		m.PushNotification(author.ID, data.NotificationOutgoing{
+			Message:   fmt.Sprintf("%s just subscribed!", user.Name),
+			Username:  user.Username,
+			CreatedAt: time.Now(),
+		})
+	} else {
+		err = m.db.subscriptionOrm.RemoveSubscriptionByAuthorIDUserID(author.ID, userID)
+	}
+	return
+}
+
+func (m *module) CheckUserSubscribes(authorID primitive.ObjectID, username string) (subscribed bool, err error) {
+	var user data.User
+	if user, err = m.db.userOrm.GetOneByUsername(username); err != nil {
+		return false, errors.New(fmt.Sprintf("[CheckUserSubscribes] failed to get user by username. %+v", err))
+	}
+	if _, err = m.db.subscriptionOrm.GetOneByAuthorIDUserID(authorID, user.ID); err != nil {
+		if err != mongo.ErrNoDocuments {
+			return false, errors.New(fmt.Sprintf("[CheckUserSubscribes] failed to subscription info. %+v", err))
+		}
+		return false, nil
 	}
 	return true, nil
 }

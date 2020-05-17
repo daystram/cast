@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
-import {Card, Col, Container, Row, Spinner} from "react-bootstrap";
-import Cast from "./Cast"
+import {Card, Col, Container, Row} from "react-bootstrap";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import urls from "../helper/url";
 import {Redirect} from "react-router-dom";
 import MediaQuery from "react-responsive";
 import {MOBILE_BP} from "../constants/breakpoint";
+import List from "./List";
 
 class Search extends Component {
   constructor(props) {
@@ -20,7 +20,7 @@ class Search extends Component {
 
   componentDidMount() {
     document.title = this.state.query + " - cast";
-    if (this.state.query) this.fetchResults(this.state.query);
+    // if (this.state.query) this.fetchResults(this.state.query);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -28,7 +28,7 @@ class Search extends Component {
     if (query !== prevState.query && this.props.location.search !== prevProps.location.search) {
       document.title = this.state.query + " - cast";
       this.setState({query: query});
-      if (query) this.fetchResults(query);
+      // if (query) this.fetchResults(query);
     }
   }
 
@@ -36,7 +36,7 @@ class Search extends Component {
     axios.get(urls().search(), {
       params: {
         query: query.trim(),
-        count: 8,
+        count: 64,
         offset: 0,
       }
     }).then((response) => {
@@ -62,14 +62,9 @@ class Search extends Component {
               </Col>
             </MediaQuery>
             <Col md={10} sm={12} className={"mid-container-right"}>
-              <h1 style={style.h1}>"{this.state.query}"</h1>
-              <Row noGutters>
-                {!this.state.loading && (this.state.results ? this.state.results.map(video =>
-                  <Col xl={3} lg={4} md={6} sm={12} key={video.hash} style={{padding: "0 8px 16px 8px"}}>
-                    <Cast video={video}/></Col>
-                ) : <h5 style={style.h5}>No casts found!</h5>)}
-                {this.state.loading && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
-              </Row>
+              <h1 style={style.h1}>Results for "{this.state.query}"</h1>
+              <List search={true} query={this.state.query} emptyMessage={"No casts found!"}
+                    finishedMessage={"No more results!"}/>
             </Col>
           </Row>
         </Container>
@@ -91,8 +86,7 @@ let style = {
   spinner: {
     margin: "32px auto 64px auto",
   },
-  content_container: {
-  },
+  content_container: {},
 };
 
 export default Search

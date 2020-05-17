@@ -46,6 +46,7 @@ class Scene extends Component {
         comment: false
       },
       liked: false,
+      subscribed: false,
       likes: 0,
       comment: "",
       comments: [],
@@ -120,7 +121,7 @@ class Scene extends Component {
         this.setState({
           offline: data.type === VIDEO_TYPE_LIVE && !data.is_live,
           not_found: false,
-          video: data, likes: data.likes, liked: data.liked, comments: data.comments,
+          video: data, likes: data.likes, liked: data.liked, subscribed: data.subscribed, comments: data.comments,
           [data.type]: {...this.state[data.type], [data.hash]: data}
         });
         document.title = `${data.title} - ${data.author.name} | cast`;
@@ -166,11 +167,9 @@ class Scene extends Component {
   handleLike() {
     if (this.state.loading.current) return;
     if (auth().is_authenticated()) {
-      axios.get(urls().like(), {
-        params: {
-          hash: this.state.video.hash,
-          like: !this.state.liked,
-        }
+      axios.post(urls().like(), {
+        hash: this.state.video.hash,
+        like: !this.state.liked,
       }).then(() => {
         this.setState({likes: this.state.likes + (this.state.liked ? -1 : 1), liked: !this.state.liked});
       }).catch((error) => {
@@ -190,17 +189,15 @@ class Scene extends Component {
     if (this.state.loading.current) return;
     if (auth().is_authenticated()) {
       if (!this.state.comment.trim() || this.state.error_comment) {
-        this.setState({error_comment: "Please enter comment"});
+        this.setState({error_comment: "Please enter your comment"});
         return;
       }
       if (this.state.loading.comment) return;
       this.setState({loading: {...this.state.loading, comment: true}});
       this.setState({error_submit: ""});
-      axios.get(urls().comment(), {
-        params: {
-          hash: this.state.video.hash,
-          content: this.state.comment.trim(),
-        }
+      axios.post(urls().comment(), {
+        hash: this.state.video.hash,
+        content: this.state.comment.trim(),
       }).then((response) => {
         this.setState({
           comment: "",
@@ -219,7 +216,17 @@ class Scene extends Component {
   handleSubscribe() {
     if (this.state.loading.current) return;
     if (auth().is_authenticated()) {
-      // TODO: subscribe
+      axios.post(urls().subscribe(), {
+        author: this.state.video.author.username,
+        subscribe: !this.state.subscribed,
+      }).then(() => {
+        this.setState({
+          subscribed: !this.state.subscribed,
+          loading: {...this.state.loading, subscribe: false}
+        });
+      }).catch((error) => {
+        console.log(error);
+      });
     } else {
       this.promptSignup();
     }
@@ -291,21 +298,20 @@ class Scene extends Component {
                 </div>
                 <div>
                   <Button style={style.sub_button} onClick={this.handleSubscribe}
-                          disabled={this.state.video && this.state.video.author.isSubscribed}>SUBSCRIBE</Button>
+                          variant={this.state.subscribed ? "outline-primary" : "primary"}>
+                    {this.state.subscribed ? "SUBSCRIBED" : "SUBSCRIBE"}
+                  </Button>
                 </div>
               </div>
-              <Row noGutters>
-                <Col xl={1} sm={0}/>
-                <Col>
+              <Row className="justify-content-center" noGutters>
+                <Col xl={10} xs={12}>
                   <div style={style.description}>{this.state.video && this.state.video.description}</div>
                 </Col>
-                <Col xl={1} sm={0}/>
               </Row>
               <hr/>
               <h3>Comments</h3>
-              <Row noGutters style={{marginTop: 28}}>
-                <Col xl={1} sm={0}/>
-                <Col>
+              <Row className="justify-content-center" noGutters style={{marginTop: 28}}>
+                <Col xl={10} xs={12}>
                   <Form noValidate onSubmit={this.handleComment}>
                     {this.state.error_submit && <Alert variant={"danger"}>{this.state.error_submit}</Alert>}
                     <Form.Group>
@@ -335,7 +341,6 @@ class Scene extends Component {
                     }) : <h5 style={style.h5}>Post the first comment!</h5>}
                   </div>
                 </Col>
-                <Col xl={1} xs={0}/>
               </Row>
               <MediaQuery maxDeviceWidth={MOBILE_BP}>
                 <hr/>
@@ -491,7 +496,8 @@ let style = {
     alignSelf: "center"
   },
   sub_button: {
-    fontWeight: 600
+    fontWeight: 600,
+    width: 128
   },
   description: {
     // marginLeft: 48,

@@ -33,13 +33,13 @@ func (c *VideoController) GetList(variant, author string, count, offset int) dat
 	var videos []datatransfers.Video
 	var err error
 	if author == "" {
-		videos, err = c.Handler.FreshList(variant, count, offset)
+		videos, err = c.Handler.CastList(variant, count, offset)
 	} else {
 		videos, err = c.Handler.AuthorList(author, count, offset)
 	}
 	if err != nil {
-		fmt.Printf("[VideoController::GetList] failed retrieving fresh videos. %+v\n", err)
-		return datatransfers.Response{Error: "Failed retrieving fresh videos", Code: http.StatusInternalServerError}
+		fmt.Printf("[VideoController::GetList] failed retrieving video list. %+v\n", err)
+		return datatransfers.Response{Error: "Failed retrieving video list", Code: http.StatusInternalServerError}
 	}
 	return datatransfers.Response{Data: videos, Code: http.StatusOK}
 }
@@ -73,7 +73,8 @@ func (c *VideoController) GetDetails(hash, username string) datatransfers.Respon
 		return datatransfers.Response{Code: http.StatusNotFound}
 	}
 	if username != "" {
-		video.Liked, _ = c.Handler.CheckUserLikes(hash, username)
+		video.Liked, _ = c.Handler.CheckUserLikes(video.Hash, username)
+		video.Subscribed, _ = c.Handler.CheckUserSubscribes(video.Author.ID, username)
 	}
 	return datatransfers.Response{Data: video, Code: http.StatusOK}
 }
@@ -87,6 +88,23 @@ type VideoControllerAuth struct {
 
 func (c *VideoControllerAuth) Prepare() {
 	c.userID, _ = primitive.ObjectIDFromHex(c.Ctx.Input.Param(constants.ContextParamUserID))
+}
+
+// @Title Get List
+// @Success 200 {object} models.Object
+// @Param   variant		query	string	false	"variant"
+// @Param   count		query   int 	false 8	"count"
+// @Param   offset		query   int 	false 0	"offset"
+// @router /list [get]
+func (c *VideoControllerAuth) GetList(variant string, count, offset int) datatransfers.Response {
+	var videos []datatransfers.Video
+	var err error
+	videos, err = c.Handler.CastList(variant, count, offset, c.userID)
+	if err != nil {
+		fmt.Printf("[VideoControllerAuth::GetList] failed retrieving video list. %+v\n", err)
+		return datatransfers.Response{Error: "Failed retrieving video list", Code: http.StatusInternalServerError}
+	}
+	return datatransfers.Response{Data: videos, Code: http.StatusOK}
 }
 
 // @Title Check Title
@@ -211,27 +229,38 @@ func (c *VideoControllerAuth) UploadVideo(_ string) datatransfers.Response {
 
 // @Title Like Video
 // @Success 200 {object} models.Object
-// @Param   hash		query	string	true	"hash"
-// @Param   like		query	bool	true	"like"
-// @router /like [get]
-func (c *VideoControllerAuth) LikeVideo(hash string, like bool) datatransfers.Response {
-	err := c.Handler.LikeVideo(c.userID, hash, like)
+// @Param   info    body	{datatransfers.LikeBody}	true	"body"
+// @router /like [post]
+func (c *VideoControllerAuth) LikeVideo(info datatransfers.LikeBody) datatransfers.Response {
+	err := c.Handler.LikeVideo(c.userID, info.Hash, info.Like)
 	if err != nil {
 		fmt.Printf("[VideoController::LikeVideo] failed liking video. %+v\n", err)
-		return datatransfers.Response{Error: "Already liked", Code: http.StatusConflict}
+		return datatransfers.Response{Error: "Failed liking video", Code: http.StatusConflict}
+	}
+	return datatransfers.Response{Code: http.StatusOK}
+}
+
+// @Title Subscribe
+// @Success 200 {object} models.Object
+// @Param   info    body	{datatransfers.SubscribeBody}	true	"body"
+// @router /subscribe [post]
+func (c *VideoControllerAuth) SubscribeAuthor(info datatransfers.SubscribeBody) datatransfers.Response {
+	err := c.Handler.Subscribe(c.userID, info.AuthorUsername, info.Subscribe)
+	if err != nil {
+		fmt.Printf("[VideoControllerAuth::SubscribeAuthor] failed subscribing author. %+v\n", err)
+		return datatransfers.Response{Error: "Failed subscribing author", Code: http.StatusConflict}
 	}
 	return datatransfers.Response{Code: http.StatusOK}
 }
 
 // @Title Content Video
 // @Success 200 {object} models.Object
-// @Param   hash		query	string	true	"hash"
-// @Param   content		query	string	true	"content"
-// @router /comment [get]
-func (c *VideoControllerAuth) CommentVideo(hash, content string) datatransfers.Response {
-	comment, err := c.Handler.CommentVideo(c.userID, hash, content)
+// @Param   info    body	{datatransfers.LikeBody}	true	"body"
+// @router /comment [post]
+func (c *VideoControllerAuth) CommentVideo(info datatransfers.CommentBody) datatransfers.Response {
+	comment, err := c.Handler.CommentVideo(c.userID, info.Hash, info.Content)
 	if err != nil {
-		fmt.Printf("[VideoController::CommentVideo] failed liking video. %+v\n", err)
+		fmt.Printf("[VideoControllerAuth::CommentVideo] failed commenting video. %+v\n", err)
 		return datatransfers.Response{Error: "Failed commenting video", Code: http.StatusInternalServerError}
 	}
 	return datatransfers.Response{Data: comment, Code: http.StatusOK}

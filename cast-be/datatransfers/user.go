@@ -12,7 +12,6 @@ type User struct {
 	Username    string             `json:"username" bson:"username"`
 	Email       string             `json:"email" bson:"email"`
 	Password    string             `json:"-" bson:"password"`
-	Subscribers int                `json:"-" bson:"subscribers"`
 	Verified    bool               `json:"verified" bson:"verified"`
 	CreatedAt   time.Time          `json:"created_at,omitempty" bson:"created_at"`
 }
@@ -61,6 +60,12 @@ type UserFieldCheck struct {
 }
 
 type UserEditForm struct {
-	Name  string `form:"name"`
-	Email string `form:"email"`
+	Name     string `form:"name"`
+	Email    string `form:"email"`
+	Password string `form:"password"`
+}
+
+type UserUpdatePassword struct {
+	UserVerify
+	Password string `json:"password"`
 }

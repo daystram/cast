@@ -18,8 +18,10 @@ function Navigation() {
   axios.interceptors.response.use(
     (response) => response,
     (error) => {
-      if (error.response.status === 403) auth().deauthenticate();
-      history.push("/login");
+      if (error.response.status === 403) {
+        auth().deauthenticate();
+        history.push("/login");
+      }
     });
   let profileButton = (
     auth().username() ?
@@ -105,7 +107,8 @@ function Navigation() {
                 </Col>
               </Row>
             </Nav>
-            <Route path={['/', '/w/:hash', '/s', '/verify', '/login', '/signup', '/forget']} exact
+            <Route path={['/', '/trending', '/live', '/fresh', '/liked', '/subscribed',
+              '/w/:hash', '/s', '/verify', '/login', '/signup', '/forget']} exact
                    render={props => <Sidebar {...props} onSelect={() => setExpanded(false)}/>}/>
             <Route path={['/profile', '/dashboard', '/manage']} exact
                    render={props => <SidebarProfile {...props} onSelect={() => setExpanded(false)}/>}/>
