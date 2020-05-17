@@ -168,7 +168,11 @@ func (m *module) CheckUserLikes(hash, username string) (liked bool, err error) {
 }
 
 func (m *module) Subscribe(userID primitive.ObjectID, username string, subscribe bool) (err error) {
+	var user data.User
 	var author data.User
+	if user, err = m.db.userOrm.GetOneByID(userID); err != nil {
+		return errors.New(fmt.Sprintf("[Subscribe] failed to get user by ID. %+v", err))
+	}
 	if author, err = m.db.userOrm.GetOneByUsername(username); err != nil {
 		return errors.New(fmt.Sprintf("[Subscribe] failed to get author by username. %+v", err))
 	}
@@ -176,6 +180,11 @@ func (m *module) Subscribe(userID primitive.ObjectID, username string, subscribe
 		_, err = m.db.subscriptionOrm.InsertSubscription(data.Subscription{
 			AuthorID:  author.ID,
 			UserID:    userID,
+			CreatedAt: time.Now(),
+		})
+		m.PushNotification(author.ID, data.NotificationOutgoing{
+			Message:   fmt.Sprintf("%s just subscribed!", user.Name),
+			Username:  user.Username,
 			CreatedAt: time.Now(),
 		})
 	} else {
