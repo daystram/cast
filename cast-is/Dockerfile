@@ -1,12 +1,10 @@
-FROM daystram/go-builder:1.13 AS builder
-WORKDIR $GOPATH/src/gitlab.com/daystram/cast/cast-is
-COPY Gopkg.toml Gopkg.lock ./
-RUN dep ensure --vendor-only
+FROM daystram/go-builder:1.15 as builder
+WORKDIR /build
 COPY . ./
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o /cast-is .
+RUN go mod tidy
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o app .
 
-FROM daystram/ingest-base:latest
+FROM alpine:latest
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /cast-is /app/
-COPY app.conf /
-ENTRYPOINT ["/app/cast-is"]
+COPY --from=builder /build/app ./
+ENTRYPOINT ["/app"]
