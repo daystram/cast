@@ -138,7 +138,7 @@ deplpoy dev cast-fe:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - cd cast-fe
-    - cp $VUE_ENV_FILE ./.env.production
+    - cp $FE_ENV_FILE ./.env.production
     - docker build --tag $CI_REGISTRY_IMAGE:fe-dev .
     - docker push $CI_REGISTRY_IMAGE:fe-dev
   when: manual
@@ -161,7 +161,7 @@ deploy prod cast-fe:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - cd cast-fe
-    - cp $VUE_ENV_FILE ./.env.production
+    - cp $FE_ENV_FILE ./.env.production
     - docker build -t $CI_REGISTRY_IMAGE:fe -t $CI_REGISTRY_IMAGE:fe-$CI_COMMIT_TAG .
     - docker push $CI_REGISTRY_IMAGE:fe
     - docker push $CI_REGISTRY_IMAGE:fe-$CI_COMMIT_TAG
