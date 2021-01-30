@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
-	"gitlab.com/daystram/cast/cast-be/config"
-	"gitlab.com/daystram/cast/cast-be/constants"
-	data "gitlab.com/daystram/cast/cast-be/datatransfers"
-	"gitlab.com/daystram/cast/cast-be/util"
+	"github.com/daystram/cast/cast-be/config"
+	"github.com/daystram/cast/cast-be/constants"
+	data "github.com/daystram/cast/cast-be/datatransfers"
+	"github.com/daystram/cast/cast-be/util"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

@@ -3,14 +3,16 @@ package models
 import (
 	"context"
 	"errors"
-	"gitlab.com/daystram/cast/cast-be/config"
-	"gitlab.com/daystram/cast/cast-be/constants"
-	"gitlab.com/daystram/cast/cast-be/datatransfers"
+	"time"
+
+	"github.com/daystram/cast/cast-be/config"
+	"github.com/daystram/cast/cast-be/constants"
+	"github.com/daystram/cast/cast-be/datatransfers"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 type VideoOrmer interface {
@@ -157,7 +159,7 @@ func (o *videoOrm) GetTrending(count int, offset int) (result []datatransfers.Vi
 					bson.D{{"$multiply",
 						bson.A{bson.D{{"$size", "$likes"}}, 5}}}}}}},
 		}}},
-		{{"$sort", bson.D{{"weight", -1,}, {"_id", 1}}}},
+		{{"$sort", bson.D{{"weight", -1}, {"_id", 1}}}},
 		{{"$project", bson.D{{"weight", 0}, {"likes", 0}}}},
 		{{"$skip", offset}},
 		{{"$limit", count}},

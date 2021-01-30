@@ -6,7 +6,7 @@ import (
 	"image"
 	"os"
 
-	"gitlab.com/daystram/cast/cast-be/config"
+	"github.com/daystram/cast/cast-be/config"
 
 	"github.com/disintegration/imaging"
 )

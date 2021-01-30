@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	conf "gitlab.com/daystram/cast/cast-be/config"
-	"gitlab.com/daystram/cast/cast-be/controller/middleware"
-	v1 "gitlab.com/daystram/cast/cast-be/controller/v1"
-	"gitlab.com/daystram/cast/cast-be/handlers"
+	conf "github.com/daystram/cast/cast-be/config"
+	"github.com/daystram/cast/cast-be/controller/middleware"
+	v1 "github.com/daystram/cast/cast-be/controller/v1"
+	"github.com/daystram/cast/cast-be/handlers"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/astaxie/beego"

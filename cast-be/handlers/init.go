@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"sync"
 
-	"gitlab.com/daystram/cast/cast-be/config"
-	data "gitlab.com/daystram/cast/cast-be/datatransfers"
-	"gitlab.com/daystram/cast/cast-be/models"
+	"github.com/daystram/cast/cast-be/config"
+	data "github.com/daystram/cast/cast-be/datatransfers"
+	"github.com/daystram/cast/cast-be/models"
 
 	googlePS "cloud.google.com/go/pubsub"
 	"github.com/astaxie/beego/context"
-	"github.com/daystram/websocket"
+	"github.com/gorilla/websocket"
 	"github.com/mailgun/mailgun-go"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/rtmp"
