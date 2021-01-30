@@ -123,9 +123,6 @@ build cast-fe:
   artifacts:
     paths:
       - cast-fe/dist/
-  only:
-    changes:
-      - cast-fe/**/*
 
 deplpoy dev cast-fe:
   stage: deploy
