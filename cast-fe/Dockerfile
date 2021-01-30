@@ -6,7 +6,7 @@ COPY . .
 RUN yarn build --mode production
 
 FROM nginx:stable-alpine as production
-COPY --from=builder /build/dist /usr/share/nginx/html
+COPY --from=builder /build/build /usr/share/nginx/html
 COPY --from=builder /build/nginx.conf /etc/nginx/conf.d
 RUN rm /etc/nginx/conf.d/default.conf
 EXPOSE 80
