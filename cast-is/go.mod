@@ -1,0 +1,41 @@
+module github.com/daystram/cast/cast-is
+
+go 1.15
+
+require (
+	cloud.google.com/go v0.55.0
+	cloud.google.com/go/pubsub v1.2.0
+	github.com/BurntSushi/toml v0.3.1
+	github.com/fsnotify/fsnotify v1.4.9
+	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
+	github.com/golang/protobuf v1.3.5
+	github.com/google/go-cmp v0.4.0
+	github.com/hashicorp/hcl v1.0.0
+	github.com/jstemmer/go-junit-report v0.9.1
+	github.com/magiconair/properties v1.8.1
+	github.com/mitchellh/mapstructure v1.2.2
+	github.com/pelletier/go-toml v1.6.0
+	github.com/spf13/afero v1.2.2
+	github.com/spf13/cast v1.3.1
+	github.com/spf13/jwalterweatherman v1.1.0
+	github.com/spf13/pflag v1.0.5
+	github.com/spf13/viper v1.6.2
+	github.com/subosito/gotenv v1.2.0
+	go.opencensus.io v0.22.3
+	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
+	golang.org/x/mod v0.2.0
+	golang.org/x/net v0.0.0-20200320220750-118fecf932d8
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
+	golang.org/x/sys v0.0.0-20200320181252-af34d8274f85
+	golang.org/x/text v0.3.2
+	golang.org/x/tools v0.0.0-20200321014904-268ba720d32c
+	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+	google.golang.org/api v0.20.0
+	google.golang.org/appengine v1.6.5
+	google.golang.org/genproto v0.0.0-20200319113533-08878b785e9c
+	google.golang.org/grpc v1.28.0
+	gopkg.in/ini.v1 v1.55.0
+	gopkg.in/yaml.v2 v2.2.8
+	honnef.co/go/tools v0.0.1-2020.1.3
+)
