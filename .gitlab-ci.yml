@@ -2,242 +2,172 @@ stages:
   - build
   - deploy
 
-variables:
-  GOPATH: ${CI_PROJECT_DIR}/go
-  GOPROJECT: gitlab.com/daystram/cast
-
-build:backend:
-  image: daystram/go-builder:1.13
+# ------------------------ cast-be
+build cast-be:
   stage: build
+  image: daystram/go-builder:1.15
   script:
-    - . scripts/init_backend.sh
-    - go get github.com/mailgun/mailgun-go
-    - dep ensure
-    - go build
+    - cd cast-be
+    - go mod tidy
+    - go build -a -o app .
   artifacts:
-    name: "$CI_COMMIT_REF_NAME-backend"
     paths:
-      - ${GOPATH}/src/${GOPROJECT}/cast-be
-      - ${GOPATH}/src/${GOPROJECT}/vendor/
-  only:
-    changes:
-      - cast-be/**/*
+      - cast-be/app
 
-build:ingest:
-  image: daystram/go-builder:1.13
-  stage: build
+deploy dev cast-be:
+  stage: deploy
+  image: docker:19.03.12
+  needs: ["build cast-be"]
+  environment:
+    name: development-be
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  services:
+    - docker:19.03.12-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
-    - . scripts/init_ingest.sh
-    - dep ensure
-    - go build
+    - cd cast-be
+    - docker build --tag $CI_REGISTRY_IMAGE:be-dev .
+    - docker push $CI_REGISTRY_IMAGE:be-dev
+  when: manual
+  only:
+    - branches
+  except:
+    - master
+
+deploy prod cast-be:
+  stage: deploy
+  image: docker:19.03.12
+  needs: ["build cast-be"]
+  environment:
+    name: production-be
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  services:
+    - docker:19.03.12-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - cd cast-be
+    - docker build -t $CI_REGISTRY_IMAGE:be -t $CI_REGISTRY_IMAGE:be-$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE:be
+    - docker push $CI_REGISTRY_IMAGE:be-$CI_COMMIT_TAG
+  when: on_success
+  only:
+    - tags
+
+# ------------------------ cast-is
+build cast-is:
+  stage: build
+  image: daystram/go-builder:1.15
+  script:
+    - cd cast-is
+    - go mod tidy
+    - go build -a -o app .
   artifacts:
-    name: "$CI_COMMIT_REF_NAME-ingest"
     paths:
-      - ${GOPATH}/src/${GOPROJECT}/cast-is
-      - ${GOPATH}/src/${GOPROJECT}/vendor/
-  only:
-    changes:
-      - cast-is/**/*
+      - cast-is/app
 
-build:frontend:
-  image: node:12.10.0-buster
-  stage: build
+deploy dev cast-is:
+  stage: deploy
+  image: docker:19.03.12
+  needs: ["build cast-is"]
+  environment:
+    name: development-is
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  services:
+    - docker:19.03.12-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
-    - . scripts/init_frontend.sh
+    - cd cast-is
+    - docker build --tag $CI_REGISTRY_IMAGE:is-dev .
+    - docker push $CI_REGISTRY_IMAGE:is-dev
+  when: manual
+  only:
+    - branches
+  except:
+    - master
+
+deploy prod cast-is:
+  stage: deploy
+  image: docker:19.03.12
+  needs: ["build cast-is"]
+  environment:
+    name: production-is
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  services:
+    - docker:19.03.12-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - cd cast-is
+    - docker build -t $CI_REGISTRY_IMAGE:is -t $CI_REGISTRY_IMAGE:is-$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE:is
+    - docker push $CI_REGISTRY_IMAGE:is-$CI_COMMIT_TAG
+  when: on_success
+  only:
+    - tags
+
+# ------------------------ cast-fe
+build cast-fe:
+  stage: build
+  image: node:lts-alpine
+  script:
+    - cd cast-fe
     - yarn install
     - yarn build
   artifacts:
-    name: "$CI_COMMIT_REF_NAME-frontend"
     paths:
-      - build/
-      - cast-fe/node_modules/
+      - cast-fe/dist/
   only:
     changes:
       - cast-fe/**/*
 
-deploy_dev:backend:
-  image: docker:git
+deplpoy dev cast-fe:
   stage: deploy
-  tags:
-    - docker
+  image: docker:19.03.12
+  needs: ["cast cast-fe"]
   environment:
-    name: dev/$CI_COMMIT_REF_NAME
-  dependencies: []
-  services:
-    - name: docker:dind
-      entrypoint: ["env", "-u", "DOCKER_HOST"]
-      command: ["dockerd-entrypoint.sh"]
+    name: development-fe
   variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-    SERVICE_NAME: dev-cast-be
+    DOCKER_TLS_CERTDIR: "/certs"
+  services:
+    - docker:19.03.12-dind
   before_script:
-    - . scripts/init_deploy.sh
-    - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
-    - echo $CONFIG_BACKEND | base64 -d > ./cast-be/config/app.conf
-    - docker pull $CI_REGISTRY_IMAGE:dev-cast-be || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-be --tag $CI_REGISTRY_IMAGE:dev-cast-be cast-be/
-    - docker push $CI_REGISTRY_IMAGE:dev-cast-be
-    - ssh $HOST "make update SERVICE=$SERVICE_NAME"
-  except:
-    refs:
-      - master
-      - staging
+    - cd cast-fe
+    - cp $VUE_ENV_FILE ./.env.production
+    - docker build --tag $CI_REGISTRY_IMAGE:fe-dev .
+    - docker push $CI_REGISTRY_IMAGE:fe-dev
   when: manual
-
-deploy_dev:ingest:
-  image: docker:git
-  stage: deploy
-  tags:
-    - docker
-  environment:
-    name: dev/$CI_COMMIT_REF_NAME
-  dependencies: []
-  services:
-    - name: docker:dind
-      entrypoint: ["env", "-u", "DOCKER_HOST"]
-      command: ["dockerd-entrypoint.sh"]
-  variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-    SERVICE_NAME: dev-cast-is
-  before_script:
-    - . scripts/init_deploy.sh
-    - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
-  script:
-    - echo $CONFIG_INGEST | base64 -d > ./cast-is/app.conf
-    - docker pull $CI_REGISTRY_IMAGE:dev-cast-is || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-is --tag $CI_REGISTRY_IMAGE:dev-cast-is cast-is/
-    - docker push $CI_REGISTRY_IMAGE:dev-cast-is
-    - ssh $HOST "make update SERVICE=$SERVICE_NAME"
-  except:
-    refs:
-      - master
-      - staging
-  when: manual
-
-deploy_dev:frontend:
-  image: docker:git
-  stage: deploy
-  tags:
-    - docker
-  environment:
-    name: dev/$CI_COMMIT_REF_NAME
-  dependencies: []
-  services:
-    - name: docker:dind
-      entrypoint: ["env", "-u", "DOCKER_HOST"]
-      command: ["dockerd-entrypoint.sh"]
-  variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-    SERVICE_NAME: dev-cast-fe
-  before_script:
-    - . scripts/init_deploy.sh
-    - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
-  script:
-    - docker pull $CI_REGISTRY_IMAGE:dev-cast-fe || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE:dev-cast-fe --tag $CI_REGISTRY_IMAGE:dev-cast-fe cast-fe/
-    - docker push $CI_REGISTRY_IMAGE:dev-cast-fe
-    - ssh $HOST "make update SERVICE=$SERVICE_NAME"
-  except:
-    refs:
-      - master
-      - staging
-  when: manual
-
-deploy_prod:backend:
-  image: docker:git
-  stage: deploy
-  tags:
-    - docker
-  environment:
-    name: production
-  dependencies: []
-  services:
-    - name: docker:dind
-      entrypoint: ["env", "-u", "DOCKER_HOST"]
-      command: ["dockerd-entrypoint.sh"]
-  variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-    SERVICE_NAME: prod-cast-be
-  before_script:
-    - . scripts/init_deploy.sh
-    - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
-  script:
-    - echo $CONFIG_BACKEND | base64 -d > ./cast-be/config/app.conf
-    - docker pull $CI_REGISTRY_IMAGE:cast-be || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE:cast-be --tag $CI_REGISTRY_IMAGE:cast-be cast-be/
-    - docker push $CI_REGISTRY_IMAGE:cast-be
-    - ssh $HOST "make update SERVICE=$SERVICE_NAME"
   only:
-    refs:
-      - master
-  when: manual
+    - branches
+  except:
+    - master
 
-deploy_prod:ingest:
-  image: docker:git
+deploy prod cast-fe:
   stage: deploy
-  tags:
-    - docker
+  image: docker:19.03.12
+  needs: ["build cast-fe"]
   environment:
-    name: production
-  dependencies: []
-  services:
-    - name: docker:dind
-      entrypoint: ["env", "-u", "DOCKER_HOST"]
-      command: ["dockerd-entrypoint.sh"]
+    name: production-fe
   variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-    SERVICE_NAME: prod-cast-is
-  before_script:
-    - . scripts/init_deploy.sh
-    - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
-  script:
-    - echo $CONFIG_INGEST | base64 -d > ./cast-is/app.conf
-    - docker pull $CI_REGISTRY_IMAGE:cast-is || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE:cast-is --tag $CI_REGISTRY_IMAGE:cast-is cast-is/
-    - docker push $CI_REGISTRY_IMAGE:cast-is
-    - ssh $HOST "make update SERVICE=$SERVICE_NAME"
-  only:
-    refs:
-      - master
-  when: manual
-
-deploy_prod:frontend:
-  image: docker:git
-  stage: deploy
-  tags:
-    - docker
-  environment:
-    name: production
-  dependencies: []
+    DOCKER_TLS_CERTDIR: "/certs"
   services:
-    - name: docker:dind
-      entrypoint: ["env", "-u", "DOCKER_HOST"]
-      command: ["dockerd-entrypoint.sh"]
-  variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-    SERVICE_NAME: prod-cast-fe
+    - docker:19.03.12-dind
   before_script:
-    - . scripts/init_deploy.sh
-    - echo "$CI_REGISTRY_PASS" | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
-    - docker pull $CI_REGISTRY_IMAGE:cast-fe || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE:cast-fe --tag $CI_REGISTRY_IMAGE:cast-fe cast-fe/
-    - docker push $CI_REGISTRY_IMAGE:cast-fe
-    - ssh $HOST "make update SERVICE=$SERVICE_NAME"
+    - cd cast-fe
+    - cp $VUE_ENV_FILE ./.env.production
+    - docker build -t $CI_REGISTRY_IMAGE:fe -t $CI_REGISTRY_IMAGE:fe-$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE:fe
+    - docker push $CI_REGISTRY_IMAGE:fe-$CI_COMMIT_TAG
+  when: on_success
   only:
-    refs:
-      - master
-  when: manual
+    - tags
