@@ -124,7 +124,7 @@ build cast-fe:
     paths:
       - cast-fe/dist/
 
-deplpoy dev cast-fe:
+deploy dev cast-fe:
   stage: deploy
   image: docker:19.03.12
   needs: ["build cast-fe"]
