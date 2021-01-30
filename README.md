@@ -18,8 +18,5 @@ The application comes in three parts:
 |Front-end|`cast-fe`|JavaScript, [ReactJS](https://beego.me/)|
 |Transcoder|`cast-is`|[Go](https://golang.org/), [FFMpeg](https://ffmpeg.org/)|
 
-## Architecture
-![](./architecture.svg)
-
 ## License
 This project is licensed under the [MIT License](https://github.com/daystram/cast/blob/master/LICENSE).
