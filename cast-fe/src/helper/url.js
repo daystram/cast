@@ -1,5 +1,5 @@
-const cdn_base = '/cdn';
-const api_base = '/api/v1';
+const cdn_base = "/cdn";
+const api_base = "/api/v1";
 
 export default function urls() {
   return {
@@ -12,9 +12,13 @@ export default function urls() {
     like: () => `${api_base}/p/video/like`,
     subscribe: () => `${api_base}/p/video/subscribe`,
     comment: () => `${api_base}/p/video/comment`,
-    chat: (hash, token) => `wss://${window.location.hostname}${api_base}${token && '/p'}/ws/chat/${hash}${token && '?access_token=' + token}`,
+    chat: (hash, token) =>
+      `wss://${window.location.hostname}${api_base}${
+        token && "/p"
+      }/ws/chat/${hash}${token && "?access_token=" + token}`,
     // chat: (hash, token) => `ws://localhost:8080${api_base}${token && '/p'}/ws/chat/${hash}${token && '?access_token=' + token}`,
-    notification: (token) => `wss://${window.location.hostname}${api_base}/p/ws/notification?access_token=${token}`,
+    notification: (token) =>
+      `wss://${window.location.hostname}${api_base}/p/ws/notification?access_token=${token}`,
     // notification: (token) => `ws://localhost:8080${api_base}/p/ws/notification?access_token=${token}`,
     title_check: () => `${api_base}/p/video/check`,
     upload: () => `${api_base}/p/video/upload`,
@@ -36,8 +40,8 @@ export default function urls() {
     user_info: () => `${api_base}/p/user/info`,
     edit_user: () => `${api_base}/p/user/edit`,
     current_hash: () => {
-      let split = window.location.href.split('/');
-      return split.pop() || split.pop()
-    }
-  }
+      let split = window.location.href.split("/");
+      return split.pop() || split.pop();
+    },
+  };
 }

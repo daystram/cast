@@ -1,3 +1,3 @@
 import HybridPlayer from "./HybridPlayer";
 
-export {HybridPlayer}
+export { HybridPlayer };
