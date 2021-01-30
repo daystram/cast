@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
+	"cloud.google.com/go/pubsub"
+
 	"github.com/daystram/cast/cast-be/constants"
 	"github.com/daystram/cast/cast-be/datatransfers"
-
-	"cloud.google.com/go/pubsub"
 )
 
 func (m *module) TranscodeListenerWorker() {

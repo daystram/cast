@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/daystram/cast/cast-be/constants"
 	data "github.com/daystram/cast/cast-be/datatransfers"
 	"github.com/daystram/cast/cast-be/util"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func (m *module) UserDetails(userID primitive.ObjectID) (detail data.UserDetail, err error) {

@@ -5,14 +5,14 @@ import (
 	"errors"
 	"time"
 
-	"github.com/daystram/cast/cast-be/config"
-	"github.com/daystram/cast/cast-be/constants"
-	"github.com/daystram/cast/cast-be/datatransfers"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/daystram/cast/cast-be/config"
+	"github.com/daystram/cast/cast-be/constants"
+	"github.com/daystram/cast/cast-be/datatransfers"
 )
 
 type VideoOrmer interface {

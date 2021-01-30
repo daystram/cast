@@ -5,14 +5,14 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	
+
+	"github.com/astaxie/beego"
+
 	"github.com/daystram/cast/cast-be/config"
 	"github.com/daystram/cast/cast-be/constants"
 	"github.com/daystram/cast/cast-be/datatransfers"
 	"github.com/daystram/cast/cast-be/errors"
 	"github.com/daystram/cast/cast-be/handlers"
-
-	"github.com/astaxie/beego"
 )
 
 type AuthController struct {

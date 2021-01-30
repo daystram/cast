@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/daystram/cast/cast-be/constants"
-	"github.com/daystram/cast/cast-be/datatransfers"
-
 	"github.com/astaxie/beego/context"
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/daystram/cast/cast-be/constants"
+	"github.com/daystram/cast/cast-be/datatransfers"
 )
 
 func (m *module) ConnectNotificationWS(ctx *context.Context, userID primitive.ObjectID) (err error) {

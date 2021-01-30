@@ -5,11 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	conf "github.com/daystram/cast/cast-be/config"
-	"github.com/daystram/cast/cast-be/controller/middleware"
-	v1 "github.com/daystram/cast/cast-be/controller/v1"
-	"github.com/daystram/cast/cast-be/handlers"
-
 	"cloud.google.com/go/pubsub"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/plugins/cors"
@@ -18,6 +13,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/api/option"
+
+	conf "github.com/daystram/cast/cast-be/config"
+	"github.com/daystram/cast/cast-be/controller/middleware"
+	v1 "github.com/daystram/cast/cast-be/controller/v1"
+	"github.com/daystram/cast/cast-be/handlers"
 )
 
 func init() {

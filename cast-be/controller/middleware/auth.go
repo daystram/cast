@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/astaxie/beego/context"
+	"github.com/dgrijalva/jwt-go"
+
 	"github.com/daystram/cast/cast-be/config"
 	"github.com/daystram/cast/cast-be/constants"
 	"github.com/daystram/cast/cast-be/datatransfers"
-
-	"github.com/astaxie/beego/context"
-	"github.com/dgrijalva/jwt-go"
 )
 
 type JwtAuthorization struct {

@@ -7,13 +7,13 @@ import (
 	"os"
 	"strings"
 
+	"github.com/astaxie/beego"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	"github.com/daystram/cast/cast-be/config"
 	"github.com/daystram/cast/cast-be/constants"
 	"github.com/daystram/cast/cast-be/datatransfers"
 	"github.com/daystram/cast/cast-be/handlers"
-
-	"github.com/astaxie/beego"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Video Content Controller

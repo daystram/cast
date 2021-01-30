@@ -4,10 +4,6 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/daystram/cast/cast-be/config"
-	data "github.com/daystram/cast/cast-be/datatransfers"
-	"github.com/daystram/cast/cast-be/models"
-
 	googlePS "cloud.google.com/go/pubsub"
 	"github.com/astaxie/beego/context"
 	"github.com/gorilla/websocket"
@@ -16,6 +12,10 @@ import (
 	"github.com/nareix/joy4/format/rtmp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/daystram/cast/cast-be/config"
+	data "github.com/daystram/cast/cast-be/datatransfers"
+	"github.com/daystram/cast/cast-be/models"
 )
 
 type module struct {
