@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Card, Col, Container, Image, Row } from "react-bootstrap";
+import { Card, Col, Container, Row } from "react-bootstrap";
 import SidebarProfile from "./SidebarProfile";
 import axios from "axios";
 import urls from "../helper/url";
@@ -60,12 +60,24 @@ class Profile extends Component {
               <Row>
                 <Col xl xs={12} className={"responsive-fold"}>
                   <div style={style.profile_bar}>
-                    <Image
-                      src={urls().profile(this.state.username)}
-                      height={128}
-                      width={128}
-                      roundedCircle
-                    />
+                    <div
+                      className="text-center"
+                      style={{
+                        width: 128,
+                        height: 128,
+                        flexShrink: 0,
+                        borderRadius: 64,
+                        background: "gray",
+                        color: "white",
+                        fontSize: "64px",
+                        lineHeight: "128px",
+                        textAlign: "center",
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {this.state.user.given_name[0] +
+                        this.state.user.family_name[0]}
+                    </div>
                     <div style={style.profile_name}>
                       <h1 style={style.name}>
                         {this.state.user.given_name}{" "}
