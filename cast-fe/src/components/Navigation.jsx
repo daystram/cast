@@ -50,23 +50,22 @@ function Navigation() {
   ) : (
     <>
       <Button
-        variant="outline-primary"
-        style={{ marginRight: 8 }}
+        variant="primary"
         onClick={() => {
           setExpanded(false);
           history.push("/login");
         }}
       >
-        Log In
-      </Button>
-      <Button
-        variant="primary"
-        onClick={() => {
-          setExpanded(false);
-          history.push("/signup");
-        }}
-      >
-        Sign Up
+        Login with{" "}
+        <span>
+          <i
+            className="material-icons"
+            style={{ fontSize: 16, lineHeight: "22px", verticalAlign: "text-top" }}
+          >
+            lock
+          </i>
+          Ratify
+        </span>
       </Button>
     </>
   );
@@ -138,12 +137,7 @@ function Navigation() {
               style={{ border: "none", paddingRight: 0 }}
               onClick={() => setExpanded(!expanded)}
             >
-              <span
-                class="material-icons"
-                style={{ color: "#E84409", fontSize: 28, lineHeight: 1 }}
-              >
-                menu
-              </span>
+              blockl
             </Navbar.Toggle>
           </MediaQuery>
         </Col>
@@ -165,10 +159,7 @@ function Navigation() {
                 "/subscribed",
                 "/w/:hash",
                 "/s",
-                "/verify",
                 "/login",
-                "/signup",
-                "/forget",
               ]}
               exact
               render={(props) => (

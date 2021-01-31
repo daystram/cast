@@ -1,58 +1,25 @@
 import React, { Component } from "react";
-import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Container,
-  Form,
-  Image,
-  InputGroup,
-  ProgressBar,
-  Row,
-  Spinner,
-} from "react-bootstrap";
-import Dropzone from "react-dropzone";
+import { Card, Col, Container, Image, Row } from "react-bootstrap";
 import SidebarProfile from "./SidebarProfile";
 import axios from "axios";
 import urls from "../helper/url";
-import abbreviate from "../helper/abbreviate";
 import auth from "../helper/auth";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
-import { PROFILE_MAX_SIZE } from "../constants/file";
-import zxcvbn from "zxcvbn";
-
-let timeout = {};
 
 class Profile extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: auth().username(),
+      user: auth().user(),
       subscribers: 0,
       views: 0,
       video_count: 0,
-      name: "",
-      email: "",
-      password: "",
-      password2: "",
       before: {},
-      error_name: "",
-      error_email: "",
-      error_profile: "",
-      error_password: "",
       error_password2: "",
-      loading_edit: false,
       loading_info: true,
-      editing: false,
     };
     this.fetchUser = this.fetchUser.bind(this);
-    this.pressEdit = this.pressEdit.bind(this);
-    this.pressDelete = this.pressDelete.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.checkAvailability = this.checkAvailability.bind(this);
-    this.submitForm = this.submitForm.bind(this);
     this.fetchUser();
     document.title = "Profile | cast";
   }
@@ -65,8 +32,6 @@ class Profile extends Component {
         if (response.data.code === 200) {
           let data = response.data.data;
           this.setState({
-            name: data.name,
-            email: data.email,
             subscribers: data.subscribers,
             views: data.views,
             video_count: data.uploads,
@@ -79,208 +44,7 @@ class Profile extends Component {
       });
   }
 
-  handleChange(e) {
-    this.setState({ error_edit: "" });
-    this.setState({ [e.target.name]: e.target.value });
-    this.validate(e.target.name, e.target.value);
-  }
-
-  pressEdit() {
-    if (this.state.editing) {
-      this.setState({ show_email: false });
-      this.submitForm();
-    } else {
-      this.setState({
-        before: {
-          name: this.state.name,
-          email: this.state.email,
-        },
-        new_profile: "",
-        error_name: "",
-        error_email: "",
-        error_profile: "",
-        error_password: "",
-        error_password2: "",
-        show_email: false,
-        editing: true,
-      });
-    }
-  }
-
-  pressDelete() {
-    if (this.state.editing) {
-      this.setState({
-        name: this.state.before.name,
-        email: this.state.before.email,
-        password: "",
-        password2: "",
-        new_profile: "",
-        before: {},
-        editing: false,
-      });
-    }
-  }
-
-  validate(field, value) {
-    switch (field) {
-      case "name":
-        if (!value.trim()) {
-          this.setState({ error_name: "Please enter your name" });
-          return false;
-        }
-        if (value.trim().length < 4) {
-          this.setState({ error_name: "Name too short" });
-          return false;
-        }
-        if (value.trim().length > 22) {
-          this.setState({ error_name: "Name too long" });
-          return false;
-        }
-        this.setState({ error_name: "" });
-        if (value.trim() !== this.state.before.name.trim())
-          this.checkAvailability(field, value.trim());
-        return true;
-      case "email":
-        if (!value.trim()) {
-          this.setState({ error_email: "Please enter your email" });
-          return false;
-        }
-        let emailRe = /.+@.+\..+/;
-        if (!emailRe.test(value.trim())) {
-          this.setState({ error_email: "Invalid email address" });
-          return false;
-        }
-        this.setState({ error_email: "" });
-        if (value.trim() !== this.state.before.email.trim())
-          this.checkAvailability(field, value.trim());
-        return true;
-      case "profile":
-        if (value && value.size > PROFILE_MAX_SIZE) {
-          this.setState({
-            new_profile: null,
-            error_profile: "Maximum profile image size is 15 MB",
-          });
-          return false;
-        }
-        this.setState({ error_profile: "" });
-        return true;
-      case "password":
-        if (value) {
-          if (value.length < 8) {
-            this.setState({
-              error_password: "Password must be at least 8 characters",
-            });
-            return false;
-          }
-          this.setState({ error_password: "" });
-          return true;
-        }
-        this.setState({ error_password: "", error_password2: "" });
-        return true;
-      case "password2":
-        if (this.state.password) {
-          if (!value) {
-            this.setState({ error_password2: "Please re-enter your password" });
-            return false;
-          }
-          if (value !== this.state.password) {
-            this.setState({ error_password2: "Passwords do not match" });
-            return false;
-          }
-        }
-        this.setState({ error_password2: "" });
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  checkAvailability(field, value) {
-    clearTimeout(timeout[field]);
-    timeout[field] = setTimeout(() => {
-      axios
-        .post(urls().auth_check(), {
-          field: field.trim(),
-          value: value.trim(),
-        })
-        .then((response) => {
-          if (response.data.code !== 200) {
-            this.setState({ [`error_${field}`]: response.data.error });
-          } else {
-            this.setState({ [`error_${field}`]: "" });
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          this.setState({ error_edit: "An error has occurred!" });
-        });
-    }, 400);
-  }
-
-  submitForm() {
-    let ok = true;
-    if (!this.state.attempted) {
-      this.setState({ error_edit: "", attempted: true });
-      ok &= this.validate("name", this.state.name);
-      ok &= this.validate("email", this.state.email);
-      ok &= this.validate("password", this.state.password);
-      ok &= this.validate("password2", this.state.password2);
-      ok &= !this.state.error_profile;
-    } else {
-      ok &= !this.state.error_name;
-      ok &= !this.state.error_email;
-      ok &= !this.state.error_password;
-      ok &= !this.state.error_password2;
-      ok &= !this.state.error_profile;
-    }
-    if (!ok) return;
-    this.setState({ error_edit: "", loading_edit: true });
-    const form = new FormData();
-    form.append("name", this.state.name);
-    form.append("email", this.state.email);
-    if (this.state.password) form.append("password", this.state.password);
-    if (this.state.new_profile) form.append("profile", this.state.new_profile);
-    axios
-      .put(urls().edit_user(), form, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        Object.keys(timeout).map((field) => clearTimeout(timeout[field]));
-        if (response.data.code === 200) {
-          if (this.state.new_profile) window.location.reload();
-          this.setState({
-            editing: false,
-            loading_edit: false,
-            before: {},
-            password: "",
-            password2: "",
-            error_name: "",
-            error_email: "",
-            error_profile: "",
-            error_password: "",
-            error_password2: "",
-            new_profile: "",
-          });
-          this.setState({
-            error_edit: response.data.error,
-            loading_edit: false,
-          });
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-        this.setState({
-          error_edit: "An error has occurred! Please try again.",
-          loading_edit: false,
-        });
-      });
-  }
-
   render() {
-    let strength = zxcvbn(this.state.password).score;
     return (
       <>
         <Container fluid style={style.content_container}>
@@ -296,119 +60,19 @@ class Profile extends Component {
               <Row>
                 <Col xl xs={12} className={"responsive-fold"}>
                   <div style={style.profile_bar}>
-                    {this.state.editing ? (
-                      <Dropzone
-                        accept={"image/*"}
-                        multiple={false}
-                        onDrop={(files) => {
-                          this.setState({ new_profile: files[0] });
-                          this.validate("profile", files[0]);
-                        }}
-                        disabled={this.state.loading_edit}
-                      >
-                        {({ getRootProps, getInputProps }) => (
-                          <>
-                            <Image
-                              src={
-                                this.state.new_profile
-                                  ? URL.createObjectURL(this.state.new_profile)
-                                  : urls().profile(this.state.username)
-                              }
-                              height={128}
-                              width={128}
-                              roundedCircle
-                              style={{
-                                position: "absolute",
-                                zIndex: 0,
-                                objectFit: "cover",
-                              }}
-                            />
-                            <section
-                              style={{
-                                ...style.profile_upload,
-                                ...(this.state.new_profile &&
-                                  style.profile_upload_modified),
-                              }}
-                            >
-                              <div {...getRootProps()}>
-                                <input {...getInputProps()} />
-                                <p
-                                  style={{
-                                    textAlign: "center",
-                                    lineHeight: "128px",
-                                  }}
-                                >
-                                  {!this.state.new_profile && (
-                                    <span
-                                      className="material-icons"
-                                      style={{ fontSize: 32, color: "dimgray" }}
-                                    >
-                                      publish
-                                    </span>
-                                  )}
-                                </p>
-                              </div>
-                            </section>
-                          </>
-                        )}
-                      </Dropzone>
-                    ) : (
-                      <Image
-                        src={urls().profile(this.state.username)}
-                        height={128}
-                        width={128}
-                        roundedCircle
-                      />
-                    )}
+                    <Image
+                      src={urls().profile(this.state.username)}
+                      height={128}
+                      width={128}
+                      roundedCircle
+                    />
                     <div style={style.profile_name}>
-                      {this.state.loading_info && (
-                        <Spinner
-                          style={style.spinner}
-                          animation="grow"
-                          variant="primary"
-                        />
-                      )}
-                      {this.state.error_edit && (
-                        <Alert variant={"danger"}>
-                          {this.state.error_edit}
-                        </Alert>
-                      )}
-                      {this.state.editing ? (
-                        <>
-                          <Form
-                            autocomplete={"off"}
-                            onSubmit={(e) => e.preventDefault()}
-                          >
-                            <Form.Group>
-                              <Form.Control
-                                name={"name"}
-                                value={this.state.name}
-                                onBlur={this.handleChange}
-                                onChange={this.handleChange}
-                                type={"text"}
-                                size={"lg"}
-                                style={style.name}
-                                isInvalid={this.state.error_name}
-                                placeholder={"Name"}
-                              />
-                              <Form.Control.Feedback type={"invalid"}>
-                                {this.state.error_name}
-                              </Form.Control.Feedback>
-                              <div
-                                className={"invalid-feedback"}
-                                style={{ display: "block" }}
-                              >
-                                {this.state.error_profile}
-                              </div>
-                            </Form.Group>
-                          </Form>
-                        </>
-                      ) : (
-                        <h1 style={style.name}>{this.state.name}</h1>
-                      )}
+                      <h1 style={style.name}>
+                        {this.state.user.given_name}{" "}
+                        {this.state.user.family_name}
+                      </h1>
                       <h3 style={style.sub_count}>
-                        {abbreviate().number(this.state.subscribers)}{" "}
-                        subscribers
+                        {this.state.user.preferred_username}
                       </h3>
                     </div>
                   </div>
@@ -435,200 +99,6 @@ class Profile extends Component {
                       </Col>
                     </Row>
                   </Card>
-                  <h1 style={style.h1}>Details</h1>
-                  <Card body style={style.profile_detail}>
-                    <Form.Row>
-                      <Col md={6} sm={12}>
-                        <Form.Group>
-                          <Form.Label>Email</Form.Label>
-                          {this.state.editing ? (
-                            <>
-                              <Form.Control
-                                name={"email"}
-                                value={this.state.email}
-                                onBlur={this.handleChange}
-                                onChange={this.handleChange}
-                                disabled={false}
-                                type={"email"}
-                                style={style.email}
-                                isInvalid={
-                                  this.state.editing
-                                    ? this.state.error_email
-                                    : false
-                                }
-                              />
-                              <Form.Control.Feedback type={"invalid"}>
-                                {this.state.error_email}
-                              </Form.Control.Feedback>
-                            </>
-                          ) : (
-                            <>
-                              <InputGroup>
-                                <Form.Control
-                                  name={"email"}
-                                  value={this.state.email}
-                                  disabled={true}
-                                  type={
-                                    this.state.show_email ? "email" : "password"
-                                  }
-                                  style={style.email}
-                                />
-                                <InputGroup.Append>
-                                  <Button
-                                    variant={
-                                      this.state.show_email
-                                        ? "primary"
-                                        : "outline-primary"
-                                    }
-                                    onClick={() => {
-                                      this.setState({
-                                        show_email: !this.state.show_email,
-                                      });
-                                    }}
-                                  >
-                                    <span className="material-icons">
-                                      {this.state.show_email
-                                        ? "visibility_off"
-                                        : "visibility"}
-                                    </span>
-                                  </Button>
-                                </InputGroup.Append>
-                              </InputGroup>
-                            </>
-                          )}
-                        </Form.Group>
-                      </Col>
-                      <Col md={6} sm={12}>
-                        <Form.Group>
-                          <Form.Label>Username</Form.Label>
-                          <Form.Control
-                            name={"Username"}
-                            value={this.state.username}
-                            type={"text"}
-                            style={style.email}
-                            disabled={true}
-                          />
-                        </Form.Group>
-                      </Col>
-                    </Form.Row>
-                  </Card>
-                  {this.state.editing && (
-                    <>
-                      <h1 style={style.h1}>Update Password</h1>
-                      <Card body style={style.profile_detail}>
-                        <Form
-                          autocomplete={"off"}
-                          onSubmit={(e) => e.preventDefault()}
-                        >
-                          <Form.Row>
-                            <Col md={6} sm={12}>
-                              <Form.Group>
-                                <Form.Label>New Password</Form.Label>
-                                <Form.Control
-                                  name={"password"}
-                                  value={this.state.password}
-                                  onBlur={this.handleChange}
-                                  onChange={this.handleChange}
-                                  disabled={false}
-                                  type={"password"}
-                                  style={style.email}
-                                  isInvalid={
-                                    this.state.editing
-                                      ? this.state.error_password
-                                      : false
-                                  }
-                                />
-                                <Form.Control.Feedback type={"invalid"}>
-                                  {this.state.error_password}
-                                </Form.Control.Feedback>
-                              </Form.Group>
-                            </Col>
-                            <Col md={6} sm={12}>
-                              <Form.Group>
-                                <Form.Label>Re-enter New Password</Form.Label>
-                                <Form.Control
-                                  name={"password2"}
-                                  value={this.state.password2}
-                                  onBlur={this.handleChange}
-                                  onChange={this.handleChange}
-                                  disabled={false}
-                                  type={"password"}
-                                  style={style.email}
-                                  isInvalid={
-                                    this.state.editing
-                                      ? this.state.error_password2
-                                      : false
-                                  }
-                                />
-                                <Form.Control.Feedback type={"invalid"}>
-                                  {this.state.error_password2}
-                                </Form.Control.Feedback>
-                              </Form.Group>
-                            </Col>
-                            <Col>
-                              <ProgressBar
-                                variant={
-                                  ["danger", "warning", "info", "success"][
-                                    strength - 1
-                                  ]
-                                }
-                                label={
-                                  ["very weak", "weak", "medium", "strong"][
-                                    strength - 1
-                                  ]
-                                }
-                                now={25 * strength}
-                                className={"password-strength"}
-                              />
-                            </Col>
-                          </Form.Row>
-                        </Form>
-                      </Card>
-                    </>
-                  )}
-                </Col>
-                <Col xl={"auto"} xs={12}>
-                  <Button
-                    variant={"success"}
-                    block
-                    size={"sm"}
-                    style={style.button}
-                    onClick={this.pressEdit}
-                    disabled={
-                      (this.state.before &&
-                        this.state.name === this.state.before.name &&
-                        this.state.email === this.state.before.email &&
-                        !this.state.new_profile &&
-                        (!this.state.password ||
-                          this.state.password !== this.state.password2)) ||
-                      this.state.error_name ||
-                      this.state.error_email ||
-                      this.state.error_password ||
-                      this.state.error_password2 ||
-                      this.state.error_profile
-                    }
-                  >
-                    {this.state.loading_edit ? (
-                      <Spinner animation="grow" style={style.spinner} />
-                    ) : (
-                      <span className="material-icons">
-                        {this.state.editing ? "check" : "edit"}
-                      </span>
-                    )}
-                  </Button>
-                  {this.state.editing && (
-                    <Button
-                      variant={this.state.editing ? "info" : "danger"}
-                      block
-                      size={"sm"}
-                      onClick={this.pressDelete}
-                      style={{ ...style.button, marginBottom: 32 }}
-                    >
-                      <span className="material-icons">
-                        {this.state.editing ? "clear" : "delete"}
-                      </span>
-                    </Button>
-                  )}
                 </Col>
               </Row>
             </Col>
