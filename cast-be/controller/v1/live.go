@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"gitlab.com/daystram/cast/cast-be/constants"
-	"gitlab.com/daystram/cast/cast-be/datatransfers"
-	"gitlab.com/daystram/cast/cast-be/handlers"
-
 	"github.com/astaxie/beego"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/daystram/cast/cast-be/constants"
+	"github.com/daystram/cast/cast-be/datatransfers"
+	"github.com/daystram/cast/cast-be/handlers"
 )
 
 // Live Stream Upstream Controller

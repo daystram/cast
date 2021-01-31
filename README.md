@@ -1,15 +1,15 @@
 <br/>
-<img src="./cast-fe/src/components/logo.svg" alt="logo" width="200"/>
+<img src="https://raw.githubusercontent.com/daystram/cast/master/cast-fe/src/components/logo.svg" alt="logo" width="200"/>
 
-## Video Sharing and Live Streaming Platform
+---
 
-A project for INFS3202 course by Danny August Ramaputra
+[![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline/daystram/cast/master)](https://gitlab.com/daystram/cast/-/pipelines)
+[![Docker Pulls](https://img.shields.io/docker/pulls/daystram/cast)](https://hub.docker.com/r/daystram/cast)
+[![MIT License](https://img.shields.io/github/license/daystram/cast)](https://github.com/daystram/cast/blob/master/LICENSE)
 
-> Visit now at [cast.daystram.com](https://cast.daystram.com)!
+DASH video-streaming and RTMP live-streaming platform.
 
-[GitLab Repository](https://gitlab.com/daystram/cast)
-
-# Services
+## Services
 The application comes in three parts:
 
 |Name|Code Name|Stack|
@@ -18,14 +18,5 @@ The application comes in three parts:
 |Front-end|`cast-fe`|JavaScript, [ReactJS](https://beego.me/)|
 |Transcoder|`cast-is`|[Go](https://golang.org/), [FFMpeg](https://ffmpeg.org/)|
 
-# Third-Party Services
-A number of external services are used in tandem with *cast*:
-* [Google Pub/Sub](https://cloud.google.com/pubsub)
-* [Google Cloud Storage](https://cloud.google.com/storage)
-* [Mailgun](https://www.mailgun.com/)
-
-# Architecture
-![](./architecture.svg)
-
-# Deployment
-Utilizing GitLab CI, *cast* services are built and containerized for deployment into [Google Compute Engine]().
+## License
+This project is licensed under the [MIT License](https://github.com/daystram/cast/blob/master/LICENSE).

@@ -2,17 +2,17 @@ package v1
 
 import (
 	"fmt"
-	"gitlab.com/daystram/cast/cast-be/config"
-	"gitlab.com/daystram/cast/cast-be/constants"
 	"log"
 	"net/http"
 	"strings"
 
-	"gitlab.com/daystram/cast/cast-be/datatransfers"
-	"gitlab.com/daystram/cast/cast-be/errors"
-	"gitlab.com/daystram/cast/cast-be/handlers"
-
 	"github.com/astaxie/beego"
+
+	"github.com/daystram/cast/cast-be/config"
+	"github.com/daystram/cast/cast-be/constants"
+	"github.com/daystram/cast/cast-be/datatransfers"
+	"github.com/daystram/cast/cast-be/errors"
+	"github.com/daystram/cast/cast-be/handlers"
 )
 
 type AuthController struct {

@@ -3,17 +3,17 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.com/daystram/cast/cast-be/datatransfers"
 	"log"
 	"net/http"
 	"strings"
 	"time"
 
-	"gitlab.com/daystram/cast/cast-be/config"
-	"gitlab.com/daystram/cast/cast-be/constants"
-
 	"github.com/astaxie/beego/context"
 	"github.com/dgrijalva/jwt-go"
+
+	"github.com/daystram/cast/cast-be/config"
+	"github.com/daystram/cast/cast-be/constants"
+	"github.com/daystram/cast/cast-be/datatransfers"
 )
 
 type JwtAuthorization struct {
@@ -87,7 +87,7 @@ func AuthenticateJWT(ctx *context.Context) {
 	cookie := ctx.GetCookie(constants.AuthenticationCookieKey)
 	if bearerTokenStr == "" {
 		if cookie == "" {
-			log.Println("[AuthFilter] invalid auth cookie", )
+			log.Println("[AuthFilter] invalid auth cookie")
 			ctx.SetCookie(constants.AuthenticationCookieKey, "", -1)
 			ctx.ResponseWriter.WriteHeader(http.StatusForbidden)
 			return

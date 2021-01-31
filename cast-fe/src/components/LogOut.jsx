@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {Redirect} from 'react-router-dom';
+import React, { Component } from "react";
+import { Redirect } from "react-router-dom";
 import auth from "../helper/auth";
 import notification from "../helper/notification";
 
@@ -10,10 +10,8 @@ class Logout extends Component {
     auth().deauthenticate();
   }
   render() {
-    return (
-      <Redirect to={"/"}/>
-    )
+    return <Redirect to={"/"} />;
   }
 }
 
-export default Logout
+export default Logout;

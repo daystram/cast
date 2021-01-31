@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/spf13/viper"
 	"google.golang.org/api/option"
-	"gopkg.in/ini.v1"
 )
 
 type Config struct {
@@ -49,18 +49,19 @@ const (
 
 func main() {
 	// Init Configuration
-	configFile, err := ini.Load("app.conf")
-	if err != nil {
-		log.Fatalf("[Initialize] unable to find app.conf. %+v\n", err)
-	}
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
+	viper.AddConfigPath(".")
+	viper.AddConfigPath("./config")
+	viper.AddConfigPath("/")
+	viper.AllowEmptyEnv(true)
+	viper.AutomaticEnv()
+	_ = viper.ReadInConfig()
+
 	config := Config{
-		ProjectID:             configFile.Section("").Key("google_project_id").String(),
-		APIKey:                configFile.Section("").Key("google_api_key").String(),
-		TopicComplete:         configFile.Section("").Key("pubsub_topic_complete").String(),
-		SubscriptionTranscode: configFile.Section("").Key("pubsub_subscription_transcode").String(),
-		UploadsDir:            configFile.Section("").Key("uploads_dir").String(),
-		FFMpegExecutable:      configFile.Section("").Key("ffmpeg_executable").String(),
-		MP4BoxExecutable:      configFile.Section("").Key("mp4box_executable").String(),
+		UploadsDir:       viper.GetString("UPLOADS_DIR"),
+		FFMpegExecutable: viper.GetString("FFMPEG_EXECUTABLE"),
+		MP4BoxExecutable: viper.GetString("MP4BOX_EXECUTABLE"),
 	}
 	resolutions := []Resolution{
 		{"Audio", FlagsAudio},

@@ -1,13 +1,11 @@
-FROM daystram/go-builder:1.13 AS builder
-WORKDIR $GOPATH/src/gitlab.com/daystram/cast/cast-be
-COPY Gopkg.toml Gopkg.lock ./
-RUN go get github.com/mailgun/mailgun-go
-RUN dep ensure --vendor-only
+FROM daystram/go-builder:1.15 as builder
+WORKDIR /build
 COPY . ./
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o /cast-be .
+RUN go mod tidy
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o app .
 
-FROM alpine:3.10
+FROM alpine:latest
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /cast-be /app/
-COPY config/app.conf /app/conf/
-ENTRYPOINT ["/app/cast-be"]
+COPY --from=builder /build/app ./
+COPY config/app.conf /conf/
+ENTRYPOINT ["/app"]

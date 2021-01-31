@@ -6,9 +6,9 @@ import (
 	"image"
 	"os"
 
-	"gitlab.com/daystram/cast/cast-be/config"
-
 	"github.com/disintegration/imaging"
+
+	"github.com/daystram/cast/cast-be/config"
 )
 
 func NormalizeImage(root, filename string, width, height int) (err error) {

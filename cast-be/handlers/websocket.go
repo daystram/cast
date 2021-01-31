@@ -2,14 +2,15 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/context"
-	"github.com/daystram/websocket"
-	"gitlab.com/daystram/cast/cast-be/constants"
-	"gitlab.com/daystram/cast/cast-be/datatransfers"
 	"net/http"
 	"time"
 
+	"github.com/astaxie/beego/context"
+	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/daystram/cast/cast-be/constants"
+	"github.com/daystram/cast/cast-be/datatransfers"
 )
 
 func (m *module) ConnectNotificationWS(ctx *context.Context, userID primitive.ObjectID) (err error) {

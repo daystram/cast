@@ -2,19 +2,19 @@ package handlers
 
 import (
 	"fmt"
-	"go.mongodb.org/mongo-driver/mongo"
 	"math/rand"
 	"time"
 
-	"gitlab.com/daystram/cast/cast-be/config"
-	"gitlab.com/daystram/cast/cast-be/constants"
-	"gitlab.com/daystram/cast/cast-be/datatransfers"
-	errors2 "gitlab.com/daystram/cast/cast-be/errors"
-	"gitlab.com/daystram/cast/cast-be/util"
-
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/daystram/cast/cast-be/config"
+	"github.com/daystram/cast/cast-be/constants"
+	"github.com/daystram/cast/cast-be/datatransfers"
+	errors2 "github.com/daystram/cast/cast-be/errors"
+	"github.com/daystram/cast/cast-be/util"
 )
 
 func (m *module) CheckUniqueUserField(field, value string) (err error) {

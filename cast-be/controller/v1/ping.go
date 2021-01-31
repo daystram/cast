@@ -2,7 +2,6 @@ package v1
 
 import "github.com/astaxie/beego"
 
-// Simple Availability Test
 type PingController struct {
 	beego.Controller
 }

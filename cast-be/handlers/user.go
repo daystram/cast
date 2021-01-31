@@ -3,13 +3,13 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"gitlab.com/daystram/cast/cast-be/constants"
-	"golang.org/x/crypto/bcrypt"
-
-	data "gitlab.com/daystram/cast/cast-be/datatransfers"
-	"gitlab.com/daystram/cast/cast-be/util"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
+
+	"github.com/daystram/cast/cast-be/constants"
+	data "github.com/daystram/cast/cast-be/datatransfers"
+	"github.com/daystram/cast/cast-be/util"
 )
 
 func (m *module) UserDetails(userID primitive.ObjectID) (detail data.UserDetail, err error) {

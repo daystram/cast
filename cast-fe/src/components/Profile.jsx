@@ -1,5 +1,17 @@
-import React, {Component} from 'react';
-import {Alert, Button, Card, Col, Container, Form, Image, InputGroup, ProgressBar, Row, Spinner} from "react-bootstrap";
+import React, { Component } from "react";
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Container,
+  Form,
+  Image,
+  InputGroup,
+  ProgressBar,
+  Row,
+  Spinner,
+} from "react-bootstrap";
 import Dropzone from "react-dropzone";
 import SidebarProfile from "./SidebarProfile";
 import axios from "axios";
@@ -7,8 +19,8 @@ import urls from "../helper/url";
 import abbreviate from "../helper/abbreviate";
 import auth from "../helper/auth";
 import MediaQuery from "react-responsive";
-import {MOBILE_BP} from "../constants/breakpoint";
-import {PROFILE_MAX_SIZE} from "../constants/file";
+import { MOBILE_BP } from "../constants/breakpoint";
+import { PROFILE_MAX_SIZE } from "../constants/file";
 import zxcvbn from "zxcvbn";
 
 let timeout = {};
@@ -33,7 +45,7 @@ class Profile extends Component {
       error_password2: "",
       loading_edit: false,
       loading_info: true,
-      editing: false
+      editing: false,
     };
     this.fetchUser = this.fetchUser.bind(this);
     this.pressEdit = this.pressEdit.bind(this);
@@ -46,33 +58,36 @@ class Profile extends Component {
   }
 
   fetchUser() {
-    axios.get(urls().user_info(), {}).then((response) => {
-      this.setState({loading_info: false});
-      if (response.data.code === 200) {
-        let data = response.data.data;
-        this.setState({
-          name: data.name,
-          email: data.email,
-          subscribers: data.subscribers,
-          views: data.views,
-          video_count: data.uploads
-        })
-      }
-    }).catch((error) => {
-      console.log(error);
-      this.setState({loading_info: false});
-    });
+    axios
+      .get(urls().user_info(), {})
+      .then((response) => {
+        this.setState({ loading_info: false });
+        if (response.data.code === 200) {
+          let data = response.data.data;
+          this.setState({
+            name: data.name,
+            email: data.email,
+            subscribers: data.subscribers,
+            views: data.views,
+            video_count: data.uploads,
+          });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        this.setState({ loading_info: false });
+      });
   }
 
   handleChange(e) {
-    this.setState({error_edit: ""});
-    this.setState({[e.target.name]: e.target.value});
+    this.setState({ error_edit: "" });
+    this.setState({ [e.target.name]: e.target.value });
     this.validate(e.target.name, e.target.value);
   }
 
   pressEdit() {
     if (this.state.editing) {
-      this.setState({show_email: false});
+      this.setState({ show_email: false });
       this.submitForm();
     } else {
       this.setState({
@@ -87,8 +102,8 @@ class Profile extends Component {
         error_password: "",
         error_password2: "",
         show_email: false,
-        editing: true
-      })
+        editing: true,
+      });
     }
   }
 
@@ -101,8 +116,8 @@ class Profile extends Component {
         password2: "",
         new_profile: "",
         before: {},
-        editing: false
-      })
+        editing: false,
+      });
     }
   }
 
@@ -110,32 +125,34 @@ class Profile extends Component {
     switch (field) {
       case "name":
         if (!value.trim()) {
-          this.setState({error_name: "Please enter your name"});
+          this.setState({ error_name: "Please enter your name" });
           return false;
         }
         if (value.trim().length < 4) {
-          this.setState({error_name: "Name too short"});
+          this.setState({ error_name: "Name too short" });
           return false;
         }
         if (value.trim().length > 22) {
-          this.setState({error_name: "Name too long"});
+          this.setState({ error_name: "Name too long" });
           return false;
         }
-        this.setState({error_name: ""});
-        if (value.trim() !== this.state.before.name.trim()) this.checkAvailability(field, value.trim());
+        this.setState({ error_name: "" });
+        if (value.trim() !== this.state.before.name.trim())
+          this.checkAvailability(field, value.trim());
         return true;
       case "email":
         if (!value.trim()) {
-          this.setState({error_email: "Please enter your email"});
+          this.setState({ error_email: "Please enter your email" });
           return false;
         }
         let emailRe = /.+@.+\..+/;
         if (!emailRe.test(value.trim())) {
-          this.setState({error_email: "Invalid email address"});
+          this.setState({ error_email: "Invalid email address" });
           return false;
         }
-        this.setState({error_email: ""});
-        if (value.trim() !== this.state.before.email.trim()) this.checkAvailability(field, value.trim());
+        this.setState({ error_email: "" });
+        if (value.trim() !== this.state.before.email.trim())
+          this.checkAvailability(field, value.trim());
         return true;
       case "profile":
         if (value && value.size > PROFILE_MAX_SIZE) {
@@ -145,31 +162,33 @@ class Profile extends Component {
           });
           return false;
         }
-        this.setState({error_profile: ""});
+        this.setState({ error_profile: "" });
         return true;
       case "password":
         if (value) {
           if (value.length < 8) {
-            this.setState({error_password: "Password must be at least 8 characters"});
+            this.setState({
+              error_password: "Password must be at least 8 characters",
+            });
             return false;
           }
-          this.setState({error_password: ""});
+          this.setState({ error_password: "" });
           return true;
         }
-        this.setState({error_password: "", error_password2: ""});
+        this.setState({ error_password: "", error_password2: "" });
         return true;
       case "password2":
         if (this.state.password) {
           if (!value) {
-            this.setState({error_password2: "Please re-enter your password"});
+            this.setState({ error_password2: "Please re-enter your password" });
             return false;
           }
           if (value !== this.state.password) {
-            this.setState({error_password2: "Passwords do not match"});
+            this.setState({ error_password2: "Passwords do not match" });
             return false;
           }
         }
-        this.setState({error_password2: ""});
+        this.setState({ error_password2: "" });
         return true;
       default:
         return false;
@@ -179,26 +198,29 @@ class Profile extends Component {
   checkAvailability(field, value) {
     clearTimeout(timeout[field]);
     timeout[field] = setTimeout(() => {
-      axios.post(urls().auth_check(), {
-        field: field.trim(),
-        value: value.trim()
-      }).then((response) => {
-        if (response.data.code !== 200) {
-          this.setState({[`error_${field}`]: response.data.error});
-        } else {
-          this.setState({[`error_${field}`]: ""});
-        }
-      }).catch((error) => {
-        console.log(error);
-        this.setState({error_edit: "An error has occurred!"});
-      });
-    }, 400)
+      axios
+        .post(urls().auth_check(), {
+          field: field.trim(),
+          value: value.trim(),
+        })
+        .then((response) => {
+          if (response.data.code !== 200) {
+            this.setState({ [`error_${field}`]: response.data.error });
+          } else {
+            this.setState({ [`error_${field}`]: "" });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          this.setState({ error_edit: "An error has occurred!" });
+        });
+    }, 400);
   }
 
   submitForm() {
     let ok = true;
     if (!this.state.attempted) {
-      this.setState({error_edit: "", attempted: true});
+      this.setState({ error_edit: "", attempted: true });
       ok &= this.validate("name", this.state.name);
       ok &= this.validate("email", this.state.email);
       ok &= this.validate("password", this.state.password);
@@ -212,41 +234,49 @@ class Profile extends Component {
       ok &= !this.state.error_profile;
     }
     if (!ok) return;
-    this.setState({error_edit: "", loading_edit: true});
+    this.setState({ error_edit: "", loading_edit: true });
     const form = new FormData();
     form.append("name", this.state.name);
     form.append("email", this.state.email);
     if (this.state.password) form.append("password", this.state.password);
     if (this.state.new_profile) form.append("profile", this.state.new_profile);
-    axios.put(urls().edit_user(), form, {
+    axios
+      .put(urls().edit_user(), form, {
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Content-Type": "multipart/form-data"
+          "Content-Type": "multipart/form-data",
         },
-      }
-    ).then((response) => {
-      Object.keys(timeout).map(field => clearTimeout(timeout[field]));
-      if (response.data.code === 200) {
-        if (this.state.new_profile) window.location.reload();
+      })
+      .then((response) => {
+        Object.keys(timeout).map((field) => clearTimeout(timeout[field]));
+        if (response.data.code === 200) {
+          if (this.state.new_profile) window.location.reload();
+          this.setState({
+            editing: false,
+            loading_edit: false,
+            before: {},
+            password: "",
+            password2: "",
+            error_name: "",
+            error_email: "",
+            error_profile: "",
+            error_password: "",
+            error_password2: "",
+            new_profile: "",
+          });
+          this.setState({
+            error_edit: response.data.error,
+            loading_edit: false,
+          });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
         this.setState({
-          editing: false,
+          error_edit: "An error has occurred! Please try again.",
           loading_edit: false,
-          before: {},
-          password: "",
-          password2: "",
-          error_name: "",
-          error_email: "",
-          error_profile: "",
-          error_password: "",
-          error_password2: "",
-          new_profile: "",
         });
-        this.setState({error_edit: response.data.error, loading_edit: false});
-      }
-    }).catch((error) => {
-      console.log(error);
-      this.setState({error_edit: "An error has occurred! Please try again.", loading_edit: false});
-    });
+      });
   }
 
   render() {
@@ -256,64 +286,130 @@ class Profile extends Component {
         <Container fluid style={style.content_container}>
           <Row>
             <MediaQuery minDeviceWidth={MOBILE_BP}>
-              <Col xl={2} xs={12} style={{marginBottom: 32}}>
-                <Card body style={{borderRadius: "8px 48px 8px 8px"}}><SidebarProfile/></Card>
+              <Col xl={2} xs={12} style={{ marginBottom: 32 }}>
+                <Card body style={{ borderRadius: "8px 48px 8px 8px" }}>
+                  <SidebarProfile />
+                </Card>
               </Col>
             </MediaQuery>
             <Col xl={10} xs={12} className={"mid-container-right"}>
               <Row>
                 <Col xl xs={12} className={"responsive-fold"}>
                   <div style={style.profile_bar}>
-                    {this.state.editing ?
-                      <Dropzone accept={"image/*"} multiple={false}
-                                onDrop={files => {
-                                  this.setState({new_profile: files[0]});
-                                  this.validate("profile", files[0]);
-                                }}
-                                disabled={this.state.loading_edit}>
-                        {({getRootProps, getInputProps}) => (
+                    {this.state.editing ? (
+                      <Dropzone
+                        accept={"image/*"}
+                        multiple={false}
+                        onDrop={(files) => {
+                          this.setState({ new_profile: files[0] });
+                          this.validate("profile", files[0]);
+                        }}
+                        disabled={this.state.loading_edit}
+                      >
+                        {({ getRootProps, getInputProps }) => (
                           <>
                             <Image
-                              src={this.state.new_profile ? URL.createObjectURL(this.state.new_profile) : urls().profile(this.state.username)}
-                              height={128} width={128} roundedCircle
-                              style={{position: "absolute", zIndex: 0, objectFit: "cover"}}/>
+                              src={
+                                this.state.new_profile
+                                  ? URL.createObjectURL(this.state.new_profile)
+                                  : urls().profile(this.state.username)
+                              }
+                              height={128}
+                              width={128}
+                              roundedCircle
+                              style={{
+                                position: "absolute",
+                                zIndex: 0,
+                                objectFit: "cover",
+                              }}
+                            />
                             <section
-                              style={{...style.profile_upload, ...(this.state.new_profile && style.profile_upload_modified)}}>
+                              style={{
+                                ...style.profile_upload,
+                                ...(this.state.new_profile &&
+                                  style.profile_upload_modified),
+                              }}
+                            >
                               <div {...getRootProps()}>
                                 <input {...getInputProps()} />
-                                <p style={{textAlign: "center", lineHeight: "128px"}}>
-                                  {!this.state.new_profile &&
-                                  <span className="material-icons"
-                                        style={{fontSize: 32, color: "dimgray"}}>publish</span>
-                                  }
+                                <p
+                                  style={{
+                                    textAlign: "center",
+                                    lineHeight: "128px",
+                                  }}
+                                >
+                                  {!this.state.new_profile && (
+                                    <span
+                                      className="material-icons"
+                                      style={{ fontSize: 32, color: "dimgray" }}
+                                    >
+                                      publish
+                                    </span>
+                                  )}
                                 </p>
                               </div>
                             </section>
                           </>
                         )}
-                      </Dropzone> :
-                      <Image src={urls().profile(this.state.username)}
-                             height={128} width={128} roundedCircle/>}
+                      </Dropzone>
+                    ) : (
+                      <Image
+                        src={urls().profile(this.state.username)}
+                        height={128}
+                        width={128}
+                        roundedCircle
+                      />
+                    )}
                     <div style={style.profile_name}>
-                      {this.state.loading_info && <Spinner style={style.spinner} animation="grow" variant="primary"/>}
-                      {this.state.error_edit && <Alert variant={"danger"}>{this.state.error_edit}</Alert>}
-                      {this.state.editing ?
+                      {this.state.loading_info && (
+                        <Spinner
+                          style={style.spinner}
+                          animation="grow"
+                          variant="primary"
+                        />
+                      )}
+                      {this.state.error_edit && (
+                        <Alert variant={"danger"}>
+                          {this.state.error_edit}
+                        </Alert>
+                      )}
+                      {this.state.editing ? (
                         <>
-                          <Form autocomplete={"off"} onSubmit={e => e.preventDefault()}>
+                          <Form
+                            autocomplete={"off"}
+                            onSubmit={(e) => e.preventDefault()}
+                          >
                             <Form.Group>
-                              <Form.Control name={"name"} value={this.state.name} onBlur={this.handleChange}
-                                            onChange={this.handleChange} type={"text"} size={"lg"} style={style.name}
-                                            isInvalid={this.state.error_name} placeholder={"Name"}/>
-                              <Form.Control.Feedback type={"invalid"}>{this.state.error_name}</Form.Control.Feedback>
-                              <div className={"invalid-feedback"} style={{display: "block"}}>
+                              <Form.Control
+                                name={"name"}
+                                value={this.state.name}
+                                onBlur={this.handleChange}
+                                onChange={this.handleChange}
+                                type={"text"}
+                                size={"lg"}
+                                style={style.name}
+                                isInvalid={this.state.error_name}
+                                placeholder={"Name"}
+                              />
+                              <Form.Control.Feedback type={"invalid"}>
+                                {this.state.error_name}
+                              </Form.Control.Feedback>
+                              <div
+                                className={"invalid-feedback"}
+                                style={{ display: "block" }}
+                              >
                                 {this.state.error_profile}
                               </div>
                             </Form.Group>
                           </Form>
-                        </> :
+                        </>
+                      ) : (
                         <h1 style={style.name}>{this.state.name}</h1>
-                      }
-                      <h3 style={style.sub_count}>{abbreviate().number(this.state.subscribers)} subscribers</h3>
+                      )}
+                      <h3 style={style.sub_count}>
+                        {abbreviate().number(this.state.subscribers)}{" "}
+                        subscribers
+                      </h3>
                     </div>
                   </div>
                   <h1 style={style.h1}>Showcase</h1>
@@ -321,15 +417,21 @@ class Profile extends Component {
                     <Row>
                       <Col sm={4}>
                         <p style={style.show_count}>{this.state.subscribers}</p>
-                        <p style={style.show_caption}>subscriber{this.state.subscribers === 1 ? "" : "s"}</p>
+                        <p style={style.show_caption}>
+                          subscriber{this.state.subscribers === 1 ? "" : "s"}
+                        </p>
                       </Col>
                       <Col sm={4}>
                         <p style={style.show_count}>{this.state.views}</p>
-                        <p style={style.show_caption}>total view{this.state.views === 1 ? "" : "s"}</p>
+                        <p style={style.show_caption}>
+                          total view{this.state.views === 1 ? "" : "s"}
+                        </p>
                       </Col>
                       <Col sm={4}>
                         <p style={style.show_count}>{this.state.video_count}</p>
-                        <p style={style.show_caption}>cast{this.state.video_count === 1 ? "" : "s"} uploaded</p>
+                        <p style={style.show_caption}>
+                          cast{this.state.video_count === 1 ? "" : "s"} uploaded
+                        </p>
                       </Col>
                     </Row>
                   </Card>
@@ -339,97 +441,201 @@ class Profile extends Component {
                       <Col md={6} sm={12}>
                         <Form.Group>
                           <Form.Label>Email</Form.Label>
-                          {this.state.editing ?
+                          {this.state.editing ? (
                             <>
-                              <Form.Control name={"email"} value={this.state.email} onBlur={this.handleChange}
-                                            onChange={this.handleChange} disabled={false}
-                                            type={"email"} style={style.email}
-                                            isInvalid={this.state.editing ? this.state.error_email : false}/>
-                              <Form.Control.Feedback type={"invalid"}>{this.state.error_email}</Form.Control.Feedback>
-                            </> :
+                              <Form.Control
+                                name={"email"}
+                                value={this.state.email}
+                                onBlur={this.handleChange}
+                                onChange={this.handleChange}
+                                disabled={false}
+                                type={"email"}
+                                style={style.email}
+                                isInvalid={
+                                  this.state.editing
+                                    ? this.state.error_email
+                                    : false
+                                }
+                              />
+                              <Form.Control.Feedback type={"invalid"}>
+                                {this.state.error_email}
+                              </Form.Control.Feedback>
+                            </>
+                          ) : (
                             <>
                               <InputGroup>
-                                <Form.Control name={"email"} value={this.state.email} disabled={true}
-                                              type={this.state.show_email ? "email" : "password"} style={style.email}/>
+                                <Form.Control
+                                  name={"email"}
+                                  value={this.state.email}
+                                  disabled={true}
+                                  type={
+                                    this.state.show_email ? "email" : "password"
+                                  }
+                                  style={style.email}
+                                />
                                 <InputGroup.Append>
-                                  <Button variant={this.state.show_email ? "primary" : "outline-primary"}
-                                          onClick={() => {
-                                            this.setState({show_email: !this.state.show_email})
-                                          }}><span
-                                    className="material-icons">{this.state.show_email ? "visibility_off" : "visibility"}</span></Button>
+                                  <Button
+                                    variant={
+                                      this.state.show_email
+                                        ? "primary"
+                                        : "outline-primary"
+                                    }
+                                    onClick={() => {
+                                      this.setState({
+                                        show_email: !this.state.show_email,
+                                      });
+                                    }}
+                                  >
+                                    <span className="material-icons">
+                                      {this.state.show_email
+                                        ? "visibility_off"
+                                        : "visibility"}
+                                    </span>
+                                  </Button>
                                 </InputGroup.Append>
                               </InputGroup>
-                            </>}
+                            </>
+                          )}
                         </Form.Group>
                       </Col>
                       <Col md={6} sm={12}>
                         <Form.Group>
                           <Form.Label>Username</Form.Label>
-                          <Form.Control name={"Username"} value={this.state.username} type={"text"}
-                                        style={style.email} disabled={true}/>
+                          <Form.Control
+                            name={"Username"}
+                            value={this.state.username}
+                            type={"text"}
+                            style={style.email}
+                            disabled={true}
+                          />
                         </Form.Group>
                       </Col>
                     </Form.Row>
                   </Card>
-                  {this.state.editing && <>
-                    <h1 style={style.h1}>Update Password</h1>
-                    <Card body style={style.profile_detail}>
-                      <Form autocomplete={"off"} onSubmit={e => e.preventDefault()}>
-                        <Form.Row>
-                          <Col md={6} sm={12}>
-                            <Form.Group>
-                              <Form.Label>New Password</Form.Label>
-                              <Form.Control name={"password"} value={this.state.password} onBlur={this.handleChange}
-                                            onChange={this.handleChange} disabled={false}
-                                            type={"password"} style={style.email}
-                                            isInvalid={this.state.editing ? this.state.error_password : false}/>
-                              <Form.Control.Feedback
-                                type={"invalid"}>{this.state.error_password}</Form.Control.Feedback>
-                            </Form.Group>
-                          </Col>
-                          <Col md={6} sm={12}>
-                            <Form.Group>
-                              <Form.Label>Re-enter New Password</Form.Label>
-                              <Form.Control name={"password2"} value={this.state.password2} onBlur={this.handleChange}
-                                            onChange={this.handleChange} disabled={false}
-                                            type={"password"} style={style.email}
-                                            isInvalid={this.state.editing ? this.state.error_password2 : false}/>
-                              <Form.Control.Feedback
-                                type={"invalid"}>{this.state.error_password2}</Form.Control.Feedback>
-                            </Form.Group>
-                          </Col>
-                          <Col>
-                            <ProgressBar variant={["danger", "warning", "info", "success"][strength - 1]}
-                                         label={["very weak", "weak", "medium", "strong"][strength - 1]}
-                                         now={25 * strength} className={"password-strength"}/>
-                          </Col>
-                        </Form.Row>
-                      </Form>
-                    </Card>
-                  </>}
+                  {this.state.editing && (
+                    <>
+                      <h1 style={style.h1}>Update Password</h1>
+                      <Card body style={style.profile_detail}>
+                        <Form
+                          autocomplete={"off"}
+                          onSubmit={(e) => e.preventDefault()}
+                        >
+                          <Form.Row>
+                            <Col md={6} sm={12}>
+                              <Form.Group>
+                                <Form.Label>New Password</Form.Label>
+                                <Form.Control
+                                  name={"password"}
+                                  value={this.state.password}
+                                  onBlur={this.handleChange}
+                                  onChange={this.handleChange}
+                                  disabled={false}
+                                  type={"password"}
+                                  style={style.email}
+                                  isInvalid={
+                                    this.state.editing
+                                      ? this.state.error_password
+                                      : false
+                                  }
+                                />
+                                <Form.Control.Feedback type={"invalid"}>
+                                  {this.state.error_password}
+                                </Form.Control.Feedback>
+                              </Form.Group>
+                            </Col>
+                            <Col md={6} sm={12}>
+                              <Form.Group>
+                                <Form.Label>Re-enter New Password</Form.Label>
+                                <Form.Control
+                                  name={"password2"}
+                                  value={this.state.password2}
+                                  onBlur={this.handleChange}
+                                  onChange={this.handleChange}
+                                  disabled={false}
+                                  type={"password"}
+                                  style={style.email}
+                                  isInvalid={
+                                    this.state.editing
+                                      ? this.state.error_password2
+                                      : false
+                                  }
+                                />
+                                <Form.Control.Feedback type={"invalid"}>
+                                  {this.state.error_password2}
+                                </Form.Control.Feedback>
+                              </Form.Group>
+                            </Col>
+                            <Col>
+                              <ProgressBar
+                                variant={
+                                  ["danger", "warning", "info", "success"][
+                                    strength - 1
+                                  ]
+                                }
+                                label={
+                                  ["very weak", "weak", "medium", "strong"][
+                                    strength - 1
+                                  ]
+                                }
+                                now={25 * strength}
+                                className={"password-strength"}
+                              />
+                            </Col>
+                          </Form.Row>
+                        </Form>
+                      </Card>
+                    </>
+                  )}
                 </Col>
                 <Col xl={"auto"} xs={12}>
-                  <Button variant={"success"} block size={"sm"} style={style.button} onClick={this.pressEdit}
-                          disabled={(this.state.before && (this.state.name === this.state.before.name &&
-                            this.state.email === this.state.before.email && !this.state.new_profile &&
-                            (!this.state.password || this.state.password !== this.state.password2))) ||
-                          this.state.error_name || this.state.error_email || this.state.error_password ||
-                          this.state.error_password2 || this.state.error_profile}>
-                    {this.state.loading_edit ?
-                      <Spinner animation="grow" style={style.spinner}/> :
-                      <span className="material-icons">{this.state.editing ? "check" : "edit"}</span>
+                  <Button
+                    variant={"success"}
+                    block
+                    size={"sm"}
+                    style={style.button}
+                    onClick={this.pressEdit}
+                    disabled={
+                      (this.state.before &&
+                        this.state.name === this.state.before.name &&
+                        this.state.email === this.state.before.email &&
+                        !this.state.new_profile &&
+                        (!this.state.password ||
+                          this.state.password !== this.state.password2)) ||
+                      this.state.error_name ||
+                      this.state.error_email ||
+                      this.state.error_password ||
+                      this.state.error_password2 ||
+                      this.state.error_profile
                     }
+                  >
+                    {this.state.loading_edit ? (
+                      <Spinner animation="grow" style={style.spinner} />
+                    ) : (
+                      <span className="material-icons">
+                        {this.state.editing ? "check" : "edit"}
+                      </span>
+                    )}
                   </Button>
-                  {this.state.editing && <Button variant={this.state.editing ? "info" : "danger"} block size={"sm"}
-                                                 onClick={this.pressDelete} style={{...style.button, marginBottom: 32}}>
-                    <span className="material-icons">{this.state.editing ? "clear" : "delete"}</span></Button>}
+                  {this.state.editing && (
+                    <Button
+                      variant={this.state.editing ? "info" : "danger"}
+                      block
+                      size={"sm"}
+                      onClick={this.pressDelete}
+                      style={{ ...style.button, marginBottom: 32 }}
+                    >
+                      <span className="material-icons">
+                        {this.state.editing ? "clear" : "delete"}
+                      </span>
+                    </Button>
+                  )}
                 </Col>
               </Row>
             </Col>
           </Row>
         </Container>
       </>
-    )
+    );
   }
 }
 
@@ -445,7 +651,7 @@ let style = {
     lineHeight: 1.5,
     whiteSpace: "nowrap",
     textOverflow: "ellipsis",
-    overflow: "hidden"
+    overflow: "hidden",
   },
   profile_upload: {
     width: 128,
@@ -458,7 +664,7 @@ let style = {
   },
   profile_upload_modified: {
     background: "#f0f0f022",
-    border: ""
+    border: "",
   },
   profile_bar: {
     display: "flex",
@@ -468,30 +674,30 @@ let style = {
     overflow: "hidden",
     marginLeft: 16,
     alignSelf: "center",
-    width: "100%"
+    width: "100%",
   },
   sub_count: {
     color: "#DDD",
-    fontSize: 22
+    fontSize: 22,
   },
   profile_detail: {
     borderRadius: "8px 48px 8px 8px",
-    marginBottom: 32
+    marginBottom: 32,
   },
   email: {
-    fontSize: 18
+    fontSize: 18,
   },
   show_count: {
     textAlign: "center",
     fontSize: 28,
     fontWeight: 800,
-    marginBottom: 8
+    marginBottom: 8,
   },
   show_caption: {
     textAlign: "center",
     marginBottom: 0,
-    fontWeight: 600
-  }
+    fontWeight: 600,
+  },
 };
 
-export default Profile
+export default Profile;

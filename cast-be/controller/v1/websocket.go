@@ -4,12 +4,12 @@ import (
 	"log"
 	"net/http"
 
-	"gitlab.com/daystram/cast/cast-be/constants"
-	"gitlab.com/daystram/cast/cast-be/handlers"
-
 	"github.com/astaxie/beego"
-	"github.com/daystram/websocket"
+	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/daystram/cast/cast-be/constants"
+	"github.com/daystram/cast/cast-be/handlers"
 )
 
 // WebSocket Chat Controller
