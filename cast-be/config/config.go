@@ -19,16 +19,11 @@ type Config struct {
 	MongoDBURI  string
 	MongoDBName string
 
-	GoogleProjectID          string
-	JSONKey                  string
-	TopicNameTranscode       string
-	SubscriptionNameComplete string
+	RatifyIssuer       string
+	RatifyClientID     string
+	RatifyClientSecret string
 
 	UploadsDirectory string
-
-	MailgunDomain string
-	MailgunAPIKey string
-	Hostname      string
 }
 
 // Load configuration
@@ -51,6 +46,16 @@ func InitializeAppConfig() {
 	AppConfig.Debug = viper.GetBool("DEBUG")
 
 	AppConfig.RTMPPort = viper.GetInt("RTMP_PORT")
+
+	if AppConfig.RatifyIssuer = viper.GetString("RATIFY_ISSUER"); AppConfig.RatifyIssuer == "" {
+		log.Fatalln("[INIT] RATIFY_ISSUER is not set")
+	}
+	if AppConfig.RatifyClientID = viper.GetString("RATIFY_CLIENT_ID"); AppConfig.RatifyClientID == "" {
+		log.Fatalln("[INIT] RATIFY_CLIENT_ID is not set")
+	}
+	if AppConfig.RatifyClientSecret = viper.GetString("RATIFY_CLIENT_SECRET"); AppConfig.RatifyClientSecret == "" {
+		log.Fatalln("[INIT] RATIFY_CLIENT_SECRET is not set")
+	}
 
 	AppConfig.MongoDBURI = viper.GetString("MONGODB_URI")
 	AppConfig.MongoDBName = viper.GetString("MONGODB_NAME")
