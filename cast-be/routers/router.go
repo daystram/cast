@@ -5,14 +5,11 @@ import (
 	"fmt"
 	"log"
 
-	"cloud.google.com/go/pubsub"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/plugins/cors"
-	"github.com/mailgun/mailgun-go"
 	"github.com/nareix/joy4/format"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"google.golang.org/api/option"
 
 	conf "github.com/daystram/cast/cast-be/config"
 	"github.com/daystram/cast/cast-be/controller/middleware"
@@ -26,39 +23,43 @@ func init() {
 	// Init MongoDB
 	db, err := mongo.Connect(context.Background(), options.Client().ApplyURI(conf.AppConfig.MongoDBURI))
 	if err != nil {
-		log.Fatalf("Failed connecting to mongoDB at %s. %+v\n", conf.AppConfig.MongoDBURI, err)
+		log.Fatalf("[Initialization] Failed connecting to MongoDB at %s. %+v\n", conf.AppConfig.MongoDBURI, err)
 	}
-	fmt.Printf("[Initialization] MongoDB connected\n")
+	fmt.Printf("[Initialization] Successfully connected to MongoDB!\n")
 
-	// Init RTMP UpLink
+	// Init RTMP Formats
 	format.RegisterAll()
 
-	// Init Google PubSub
-	var pubsubClient *pubsub.Client
-	pubsubClient, err = pubsub.NewClient(context.Background(), conf.AppConfig.GoogleProjectID, option.WithCredentialsFile(conf.AppConfig.JSONKey))
-	if err != nil {
-		log.Fatalf("Failed connecting to Google PubSub. %+v\n", err)
-	}
-	fmt.Printf("[Initialization] Google PubSub connected\n")
+	// TODO: initialize S3
 
-	// Init mailgun Client
-	mailer := mailgun.NewMailgun(conf.AppConfig.MailgunDomain, conf.AppConfig.MailgunAPIKey)
-	fmt.Printf("[Initialization] mailgun connected\n")
+	// TODO: migrate to RabbitMQ
+	// // Init Google PubSub
+	// var pubsubClient *pubsub.Client
+	// pubsubClient, err = pubsub.NewClient(context.Background(), conf.AppConfig.GoogleProjectID, option.WithCredentialsFile(conf.AppConfig.JSONKey))
+	// if err != nil {
+	// 	log.Fatalf("Failed connecting to Google PubSub. %+v\n", err)
+	// }
+	// fmt.Printf("[Initialization] Google PubSub connected\n")
 
-	h := handlers.NewHandler(handlers.Component{DB: db, MQClient: pubsubClient, Mailer: mailer})
+	// TODO: migrate to generic SMTP
+	// // Init mailgun Client
+	// mailer := mailgun.NewMailgun(conf.AppConfig.MailgunDomain, conf.AppConfig.MailgunAPIKey)
+	// fmt.Printf("[Initialization] mailgun connected\n")
+
+	// Init Handler
+	h := handlers.NewHandler(handlers.Component{DB: db, MQClient: nil, Mailer: nil})
+
+	// Init RTMP Uplink
 	h.CreateRTMPUpLink()
-	go h.TranscodeListenerWorker()
-	fmt.Printf("[Initialization] Initialization completed\n")
 
-	nsPublic := beego.NewNamespace("api/v1",
+	// Init Transcoder Listener
+	//go h.TranscodeListenerWorker()
+	fmt.Printf("[Initialization] Initialization complete!\n")
+
+	apiV1 := beego.NewNamespace("api/v1",
 		beego.NSNamespace("/ping",
 			beego.NSInclude(
 				&v1.PingController{},
-			),
-		),
-		beego.NSNamespace("/auth",
-			beego.NSInclude(
-				&v1.AuthController{Handler: h},
 			),
 		),
 		beego.NSNamespace("/video",
@@ -77,7 +78,12 @@ func init() {
 			),
 		),
 		beego.NSNamespace("/p",
-			beego.NSBefore(middleware.AuthenticateJWT),
+			beego.NSBefore(middleware.AuthenticateAccessToken),
+			beego.NSNamespace("/auth",
+				beego.NSInclude(
+					&v1.AuthControllerAuth{Handler: h},
+				),
+			),
 			beego.NSNamespace("/user",
 				beego.NSInclude(
 					&v1.UserControllerAuth{Handler: h},
@@ -100,7 +106,7 @@ func init() {
 			),
 		),
 	)
-	beego.AddNamespace(nsPublic)
+	beego.AddNamespace(apiV1)
 	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
 		AllowOrigins:     []string{"http://localhost:3000", "https://dev.cast.daystram.com", "https://cast.daystram.com"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
