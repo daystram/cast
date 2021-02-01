@@ -13,10 +13,10 @@ import (
 )
 
 type LikeOrmer interface {
-	GetOneByUserIDHash(userID primitive.ObjectID, hash string) (like datatransfers.Like, err error)
+	GetOneByUserIDHash(userID string, hash string) (like datatransfers.Like, err error)
 	GetCountByHash(hash string) (count int, err error)
 	InsertLike(like datatransfers.Like) (ID primitive.ObjectID, err error)
-	RemoveLikeByUserIDHash(userID primitive.ObjectID, hash string) (err error)
+	RemoveLikeByUserIDHash(userID string, hash string) (err error)
 }
 
 type likeOrm struct {
@@ -27,7 +27,7 @@ func NewLikeOrmer(db *mongo.Client) LikeOrmer {
 	return &likeOrm{db.Database(config.AppConfig.MongoDBName).Collection(constants.DBCollectionLike)}
 }
 
-func (o *likeOrm) GetOneByUserIDHash(userID primitive.ObjectID, hash string) (like datatransfers.Like, err error) {
+func (o *likeOrm) GetOneByUserIDHash(userID string, hash string) (like datatransfers.Like, err error) {
 	err = o.collection.FindOne(context.Background(), bson.M{"author": userID, "hash": hash}).Decode(&like)
 	return
 }
@@ -48,7 +48,7 @@ func (o *likeOrm) InsertLike(like datatransfers.Like) (ID primitive.ObjectID, er
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-func (o *likeOrm) RemoveLikeByUserIDHash(userID primitive.ObjectID, hash string) (err error) {
+func (o *likeOrm) RemoveLikeByUserIDHash(userID string, hash string) (err error) {
 	_, err = o.collection.DeleteOne(context.Background(), bson.M{"author": userID, "hash": hash})
 	return
 }

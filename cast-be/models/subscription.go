@@ -13,11 +13,11 @@ import (
 )
 
 type SubscriptionOrmer interface {
-	GetSubscriptionsByAuthorID(authorID primitive.ObjectID) (subscribers []datatransfers.Subscription, err error)
-	GetCountByAuthorID(authorID primitive.ObjectID) (count int, err error)
-	GetOneByAuthorIDUserID(authorID, userID primitive.ObjectID) (subscription datatransfers.Subscription, err error)
+	GetSubscriptionsByAuthorID(authorID string) (subscribers []datatransfers.Subscription, err error)
+	GetCountByAuthorID(authorID string) (count int, err error)
+	GetOneByAuthorIDUserID(authorID, userID string) (subscription datatransfers.Subscription, err error)
 	InsertSubscription(subscription datatransfers.Subscription) (ID primitive.ObjectID, err error)
-	RemoveSubscriptionByAuthorIDUserID(authorID, userID primitive.ObjectID) (err error)
+	RemoveSubscriptionByAuthorIDUserID(authorID, userID string) (err error)
 }
 
 type subscriptionOrmer struct {
@@ -28,7 +28,7 @@ func NewSubscriptionOrmer(db *mongo.Client) SubscriptionOrmer {
 	return &subscriptionOrmer{db.Database(config.AppConfig.MongoDBName).Collection(constants.DBCollectionSubscription)}
 }
 
-func (o *subscriptionOrmer) GetSubscriptionsByAuthorID(authorID primitive.ObjectID) (result []datatransfers.Subscription, err error) {
+func (o *subscriptionOrmer) GetSubscriptionsByAuthorID(authorID string) (result []datatransfers.Subscription, err error) {
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"author", authorID}}}},
@@ -45,14 +45,14 @@ func (o *subscriptionOrmer) GetSubscriptionsByAuthorID(authorID primitive.Object
 	return
 }
 
-func (o *subscriptionOrmer) GetCountByAuthorID(authorID primitive.ObjectID) (count int, err error) {
+func (o *subscriptionOrmer) GetCountByAuthorID(authorID string) (count int, err error) {
 	var count64 int64
 	count64, err = o.collection.CountDocuments(context.Background(), bson.M{"author": authorID})
 	count = int(count64)
 	return
 }
 
-func (o *subscriptionOrmer) GetOneByAuthorIDUserID(authorID, userID primitive.ObjectID) (subscription datatransfers.Subscription, err error) {
+func (o *subscriptionOrmer) GetOneByAuthorIDUserID(authorID, userID string) (subscription datatransfers.Subscription, err error) {
 	err = o.collection.FindOne(context.Background(), bson.M{"author": authorID, "user": userID}).Decode(&subscription)
 	return
 }
@@ -66,7 +66,7 @@ func (o *subscriptionOrmer) InsertSubscription(subscription datatransfers.Subscr
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-func (o *subscriptionOrmer) RemoveSubscriptionByAuthorIDUserID(authorID, userID primitive.ObjectID) (err error) {
+func (o *subscriptionOrmer) RemoveSubscriptionByAuthorIDUserID(authorID, userID string) (err error) {
 	_, err = o.collection.DeleteOne(context.Background(), bson.M{"author": authorID, "user": userID})
 	return
 }
