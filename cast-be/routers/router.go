@@ -41,13 +41,8 @@ func init() {
 	// }
 	// fmt.Printf("[Initialization] Google PubSub connected\n")
 
-	// TODO: migrate to generic SMTP
-	// // Init mailgun Client
-	// mailer := mailgun.NewMailgun(conf.AppConfig.MailgunDomain, conf.AppConfig.MailgunAPIKey)
-	// fmt.Printf("[Initialization] mailgun connected\n")
-
 	// Init Handler
-	h := handlers.NewHandler(handlers.Component{DB: db, MQClient: nil, Mailer: nil})
+	h := handlers.NewHandler(handlers.Component{DB: db, MQClient: nil})
 
 	// Init RTMP Uplink
 	h.CreateRTMPUpLink()

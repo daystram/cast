@@ -7,7 +7,6 @@ import (
 	googlePS "cloud.google.com/go/pubsub"
 	"github.com/astaxie/beego/context"
 	"github.com/gorilla/websocket"
-	"github.com/mailgun/mailgun-go"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/rtmp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -22,7 +21,6 @@ type module struct {
 	mq           *MQ
 	chat         *Chat
 	notification *Notification
-	mailer       *mailgun.MailgunImpl
 	live         Live
 }
 
@@ -49,7 +47,6 @@ type Stream struct {
 type Component struct {
 	DB       *mongo.Client
 	MQClient *googlePS.Client
-	Mailer   *mailgun.MailgunImpl
 }
 
 type Entity struct {
@@ -71,8 +68,6 @@ type Handler interface {
 	StreamLive(username string, w http.ResponseWriter, r *http.Request) (err error)
 
 	Register(idToken data.UserRegister) (err error)
-
-	SendSingleEmail(subject, recipient, template string, variable map[string]string)
 
 	UserDetails(userID string) (detail data.UserDetail, err error)
 
@@ -123,6 +118,5 @@ func NewHandler(component Component) Handler {
 			sockets:  make(map[string]*websocket.Conn),
 			upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
 		},
-		mailer: component.Mailer,
 	}
 }
