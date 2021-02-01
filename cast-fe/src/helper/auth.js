@@ -1,5 +1,7 @@
-import { RatifyClient, ACCESS_TOKEN } from "@daystram/ratify-client";
+import { RatifyClient, ACCESS_TOKEN, ID_TOKEN } from "@daystram/ratify-client";
 import notification from "../helper/notification";
+import urls from "./url";
+import axios from "axios";
 
 const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
 const ISSUER = process.env.REACT_APP_OAUTH_ISSUER;
@@ -36,15 +38,26 @@ export default function auth() {
       authManager
         .redeemToken(code)
         .then(() => {
-          const lastRoute = sessionStorage.getItem("last_route");
-          if (lastRoute) {
-            sessionStorage.removeItem("last_route");
-            window.location.replace({
-              path: lastRoute?.toString(),
-            });
-          } else {
-            window.location.replace("/");
-          }
+          axios
+            .post(
+              urls().register(),
+              { id_token: authManager.getToken(ID_TOKEN) },
+              { headers: { Authorization: `Bearer ${auth().token()}` } }
+            )
+            .then(() => {
+              const lastRoute = sessionStorage.getItem("last_route");
+              if (lastRoute) {
+                sessionStorage.removeItem("last_route");
+                window.location.replace({
+                  path: lastRoute?.toString(),
+                });
+              } else {
+                window.location.replace("/");
+              }
+            })
+            .catch(() =>
+              authManager.logout().then(() => window.location.replace("/"))
+            );
         })
         .catch(() => {
           window.location.replace("/");
@@ -66,8 +79,10 @@ export default function auth() {
   };
 }
 
-export const refreshAuth = function (destinationPath) {
+const refreshAuth = function (destinationPath) {
   sessionStorage.setItem("last_route", destinationPath);
   authManager.reset();
   authManager.authorize(true);
 };
+
+export { authManager, refreshAuth };
