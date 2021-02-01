@@ -48,6 +48,8 @@ const (
 )
 
 func main() {
+	var err error
+
 	// Init Configuration
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
@@ -59,9 +61,12 @@ func main() {
 	_ = viper.ReadInConfig()
 
 	config := Config{
-		UploadsDir:       viper.GetString("UPLOADS_DIR"),
-		FFMpegExecutable: viper.GetString("FFMPEG_EXECUTABLE"),
-		MP4BoxExecutable: viper.GetString("MP4BOX_EXECUTABLE"),
+		UploadsDir:            viper.GetString("UPLOADS_DIR"),
+		RabbitMQURI:           viper.GetString("RABBITMQ_URI"),
+		RabbitMQQueueTask:     viper.GetString("RABBITMQ_QUEUE_TASK"),
+		RabbitMQQueueProgress: viper.GetString("RABBITMQ_QUEUE_PROGRESS"),
+		FFMpegExecutable:      viper.GetString("FFMPEG_EXECUTABLE"),
+		MP4BoxExecutable:      viper.GetString("MP4BOX_EXECUTABLE"),
 	}
 	resolutions := []Resolution{
 		{"Audio", FlagsAudio},
@@ -73,12 +78,22 @@ func main() {
 	}
 	fmt.Println("[Initialization] config loaded")
 
-	// Init Google PubSub
-	pubsubClient, err := pubsub.NewClient(context.Background(), config.ProjectID, option.WithCredentialsFile(config.APIKey))
-	if err != nil {
-		log.Fatalf("Failed connecting to Google PubSub. %+v\n", err)
+	// Init RabbitMQ
+	var mqConn *amqp.Connection
+	if mqConn, err = amqp.Dial(config.RabbitMQURI); err != nil {
+		log.Fatalf("[Initialization] Failed connecting to RabbitMQ at %s. %+v\n", config.RabbitMQURI, err)
 	}
-	fmt.Println("[Initialization] Google PubSub connected")
+	var mq *amqp.Channel
+	if mq, err = mqConn.Channel(); err != nil {
+		log.Fatalf("[Initialization] Failed opening RabbitMQ channel. %+v\n", err)
+	}
+	if _, err = mq.QueueDeclare(config.RabbitMQQueueTask, true, false, false, false, nil); err != nil {
+		log.Fatalf("[Initialization] Failed declaring RabbitMQ queue %s. %+v\n", config.RabbitMQQueueTask, err)
+	}
+	if _, err = mq.QueueDeclare(config.RabbitMQQueueProgress, true, false, false, false, nil); err != nil {
+		log.Fatalf("[Initialization] Failed declaring RabbitMQ queue %s. %+v\n", config.RabbitMQQueueProgress, err)
+	}
+	log.Printf("[Initialization] Successfully connected to RabbitMQ!\n")
 
 	// Listen to messages
 	var mu sync.Mutex
