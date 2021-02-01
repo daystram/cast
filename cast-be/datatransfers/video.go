@@ -31,7 +31,7 @@ type VideoInsert struct {
 	Hash        string             `bson:"hash"` // used for querying
 	Type        string             `bson:"type"` // "live" or "vod"
 	Title       string             `bson:"title"`
-	Author      primitive.ObjectID `bson:"author"`
+	Author      string             `bson:"author"`
 	Description string             `bson:"description"`
 	Tags        []string           `bson:"tags"`
 	Views       int                `json:"views" bson:"views"`
@@ -79,7 +79,7 @@ type CommentInsert struct {
 	ID        primitive.ObjectID `json:"_id" bson:"_id"`
 	Hash      string             `json:"hash" bson:"hash"`
 	Content   string             `json:"content" bson:"content"`
-	Author    primitive.ObjectID `json:"author" bson:"author"`
+	Author    string             `json:"author" bson:"author"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 }
 
@@ -91,14 +91,14 @@ type CommentBody struct {
 type Like struct {
 	ID        primitive.ObjectID `json:"_id" bson:"_id"`
 	Hash      string             `json:"hash" bson:"hash"`
-	Author    primitive.ObjectID `json:"author" bson:"author"`
+	Author    string             `json:"author" bson:"author"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 }
 
 type Subscription struct {
 	ID        primitive.ObjectID `json:"_id" bson:"_id"`
-	AuthorID  primitive.ObjectID `json:"author" bson:"author"`
-	UserID    primitive.ObjectID `json:"user" bson:"user"`
+	AuthorID  string             `json:"author" bson:"author"`
+	UserID    string             `json:"user" bson:"user"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 }
 
@@ -116,6 +116,6 @@ type ChatInsert struct {
 	ID        primitive.ObjectID `json:"_id" bson:"_id"`
 	Hash      string             `json:"hash" bson:"hash"`
 	Chat      string             `json:"chat" bson:"chat"`
-	Author    primitive.ObjectID `json:"author" bson:"author"`
+	Author    string             `json:"author" bson:"author"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 }

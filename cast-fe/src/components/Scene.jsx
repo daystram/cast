@@ -7,7 +7,6 @@ import {
   Col,
   Container,
   Form,
-  Image,
   InputGroup,
   Modal,
   OverlayTrigger,
@@ -400,16 +399,24 @@ class Scene extends Component {
                 </p>
                 <div style={style.author_bar}>
                   <div style={style.author_profile}>
-                    <Image
-                      src={
-                        this.state.video &&
-                        urls().profile(this.state.video.author.username)
-                      }
-                      width={42}
-                      height={42}
-                      style={style.profile_image}
-                      roundedCircle
-                    />
+                    <div
+                      className="text-center"
+                      style={{
+                        width: 42,
+                        height: 42,
+                        flexShrink: 0,
+                        borderRadius: 21,
+                        background: "gray",
+                        color: "white",
+                        fontSize: "21px",
+                        lineHeight: "42px",
+                        textAlign: "center",
+                        textTransform: "capitalize",
+                        ...style.profile_image,
+                      }}
+                    >
+                      {this.state.video.author.name[0]}
+                    </div>
                     <div style={style.cast_author_details}>
                       <p style={style.cast_author_name}>
                         {this.state.video && this.state.video.author.name}
@@ -488,16 +495,25 @@ class Scene extends Component {
                                 ...style.comment_item,
                               }}
                             >
-                              <Image
-                                src={urls().profile(comment.author.username)}
-                                height={42}
-                                width={42}
+                              <div
+                                className="text-center"
                                 style={{
+                                  width: 42,
+                                  height: 42,
+                                  flexShrink: 0,
+                                  borderRadius: 21,
+                                  background: "gray",
+                                  color: "white",
+                                  fontSize: "21px",
+                                  lineHeight: "42px",
+                                  textAlign: "center",
+                                  textTransform: "capitalize",
                                   ...style.profile_image,
                                   alignSelf: "end",
                                 }}
-                                roundedCircle
-                              />
+                              >
+                                {comment.author.name[0]}
+                              </div>
                               <div
                                 style={{
                                   ...style.cast_author_details,

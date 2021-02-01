@@ -7,17 +7,16 @@ import (
 
 	"github.com/astaxie/beego/context"
 	"github.com/gorilla/websocket"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/daystram/cast/cast-be/constants"
 	"github.com/daystram/cast/cast-be/datatransfers"
 )
 
-func (m *module) ConnectNotificationWS(ctx *context.Context, userID primitive.ObjectID) (err error) {
+func (m *module) ConnectNotificationWS(ctx *context.Context, userID string) (err error) {
 	var user datatransfers.User
 	user, err = m.db.userOrm.GetOneByID(userID)
 	if err != nil {
-		fmt.Printf("[ConnectNotificationWS] failed retrieving user info for %s. %+v\n", userID.Hex(), err)
+		fmt.Printf("[ConnectNotificationWS] failed retrieving user info for %s. %+v\n", userID, err)
 		return
 	}
 	var ws *websocket.Conn
@@ -26,12 +25,12 @@ func (m *module) ConnectNotificationWS(ctx *context.Context, userID primitive.Ob
 	if ws, err = m.notification.upgrader.Upgrade(ctx.ResponseWriter, ctx.Request, ctx.Request.Header); err != nil {
 		return err
 	}
-	m.notification.sockets[user.ID.Hex()] = ws
+	m.notification.sockets[user.ID] = ws
 	go m.NotificationPingWorker(ws)
 	return
 }
 
-func (m *module) ConnectChatWS(ctx *context.Context, hash string, userID ...primitive.ObjectID) (err error) {
+func (m *module) ConnectChatWS(ctx *context.Context, hash string, userID ...string) (err error) {
 	var video datatransfers.Video
 	if video, err = m.db.videoOrm.GetOneByHash(hash); err != nil {
 		fmt.Printf("[ConnectChatWS] unkown video with hash %s. %+v\n", hash, err)
@@ -48,7 +47,7 @@ func (m *module) ConnectChatWS(ctx *context.Context, hash string, userID ...prim
 	if len(userID) != 0 {
 		user, err = m.db.userOrm.GetOneByID(userID[0])
 		if err != nil {
-			fmt.Printf("[ConnectChatWS] failed retrieving user info for %s. %+v\n", userID[0].Hex(), err)
+			fmt.Printf("[ConnectChatWS] failed retrieving user info for %s. %+v\n", userID[0], err)
 			return
 		}
 	}
@@ -154,8 +153,8 @@ func (m *module) ChatReaderWorker(conn *websocket.Conn, hash string, user datatr
 	}
 }
 
-func (m *module) PushNotification(userID primitive.ObjectID, message datatransfers.NotificationOutgoing) {
-	if conn, exists := m.notification.sockets[userID.Hex()]; exists {
+func (m *module) PushNotification(userID string, message datatransfers.NotificationOutgoing) {
+	if conn, exists := m.notification.sockets[userID]; exists {
 		_ = conn.WriteJSON(datatransfers.WebSocketMessage{
 			Type: constants.MessageTypeNotification,
 			Data: message,
@@ -164,7 +163,7 @@ func (m *module) PushNotification(userID primitive.ObjectID, message datatransfe
 	}
 }
 
-func (m *module) BroadcastNotificationSubscriber(authorID primitive.ObjectID, message datatransfers.NotificationOutgoing) {
+func (m *module) BroadcastNotificationSubscriber(authorID string, message datatransfers.NotificationOutgoing) {
 	var err error
 	var subscriptions []datatransfers.Subscription
 	if subscriptions, err = m.db.subscriptionOrm.GetSubscriptionsByAuthorID(authorID); err != nil {

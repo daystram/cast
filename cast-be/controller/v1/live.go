@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/astaxie/beego"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/daystram/cast/cast-be/constants"
 	"github.com/daystram/cast/cast-be/datatransfers"
@@ -32,11 +31,11 @@ func (c *LiveController) PlayLive(username string) datatransfers.Response {
 type LiveControllerAuth struct {
 	beego.Controller
 	Handler handlers.Handler
-	userID  primitive.ObjectID
+	userID  string
 }
 
 func (c *LiveControllerAuth) Prepare() {
-	c.userID, _ = primitive.ObjectIDFromHex(c.Ctx.Input.Param(constants.ContextParamUserID))
+	c.userID = c.Ctx.Input.Param(constants.ContextParamUserID)
 }
 
 // @Title Get RTMP UpLink Status
@@ -47,7 +46,7 @@ func (c *LiveControllerAuth) GetWindow(_ string) datatransfers.Response {
 	var err error
 	var user datatransfers.UserDetail
 	if user, err = c.Handler.UserDetails(c.userID); err != nil {
-		fmt.Printf("[LiveControllerAuth::GetWindow] failed retrieving user %s info. %+v\n", c.userID.Hex(), err)
+		fmt.Printf("[LiveControllerAuth::GetWindow] failed retrieving user %s info. %+v\n", c.userID, err)
 		return datatransfers.Response{Error: "failed retrieving user info", Code: http.StatusInternalServerError}
 	}
 	var live datatransfers.Video
@@ -64,7 +63,7 @@ func (c *LiveControllerAuth) GetWindow(_ string) datatransfers.Response {
 // @router /window  [put]
 func (c *LiveControllerAuth) ControlWindow(open bool) datatransfers.Response {
 	if err := c.Handler.ControlUpLinkWindow(c.userID, open); err != nil {
-		fmt.Printf("[LiveControllerAuth::ControlWindow] failed setting stream window for %s. %+v\n", c.userID.Hex(), err)
+		fmt.Printf("[LiveControllerAuth::ControlWindow] failed setting stream window for %s. %+v\n", c.userID, err)
 		return datatransfers.Response{Error: "failed setting stream window", Code: http.StatusInternalServerError}
 	}
 	return datatransfers.Response{Code: 200}

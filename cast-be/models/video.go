@@ -18,15 +18,15 @@ import (
 type VideoOrmer interface {
 	GetRecent(variant string, count int, offset int) (videos []datatransfers.Video, err error)
 	GetTrending(count int, offset int) (videos []datatransfers.Video, err error)
-	GetLiked(userID primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error)
-	GetSubscribed(userID primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error)
-	GetAllVODByAuthor(author primitive.ObjectID) (videos []datatransfers.Video, err error)
-	GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error)
+	GetLiked(userID string, count int, offset int) (videos []datatransfers.Video, err error)
+	GetSubscribed(userID string, count int, offset int) (videos []datatransfers.Video, err error)
+	GetAllVODByAuthor(author string) (videos []datatransfers.Video, err error)
+	GetAllVODByAuthorPaginated(author string, count int, offset int) (videos []datatransfers.Video, err error)
 	Search(query string, count, offset int) (videos []datatransfers.Video, err error)
-	GetLiveByAuthor(userID primitive.ObjectID) (datatransfers.Video, error)
+	GetLiveByAuthor(userID string) (datatransfers.Video, error)
 	GetOneByHash(hash string) (datatransfers.Video, error)
 	IncrementViews(hash string, decrement ...bool) (err error)
-	SetLive(authorID primitive.ObjectID, pending, live bool) (err error)
+	SetLive(authorID string, pending, live bool) (err error)
 	SetResolution(hash string, resolution int) (err error)
 	InsertVideo(video datatransfers.VideoInsert) (ID primitive.ObjectID, err error)
 	EditVideo(video datatransfers.VideoInsert) (err error)
@@ -70,7 +70,7 @@ func (o *videoOrm) GetRecent(variant string, count int, offset int) (result []da
 	return
 }
 
-func (o *videoOrm) GetLiked(userID primitive.ObjectID, count int, offset int) (result []datatransfers.Video, err error) {
+func (o *videoOrm) GetLiked(userID string, count int, offset int) (result []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
@@ -106,7 +106,7 @@ func (o *videoOrm) GetLiked(userID primitive.ObjectID, count int, offset int) (r
 	return
 }
 
-func (o *videoOrm) GetSubscribed(userID primitive.ObjectID, count int, offset int) (result []datatransfers.Video, err error) {
+func (o *videoOrm) GetSubscribed(userID string, count int, offset int) (result []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
@@ -183,7 +183,7 @@ func (o *videoOrm) GetTrending(count int, offset int) (result []datatransfers.Vi
 	return
 }
 
-func (o *videoOrm) GetAllVODByAuthor(author primitive.ObjectID) (videos []datatransfers.Video, err error) {
+func (o *videoOrm) GetAllVODByAuthor(author string) (videos []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"author", author}}}},
@@ -208,7 +208,7 @@ func (o *videoOrm) GetAllVODByAuthor(author primitive.ObjectID) (videos []datatr
 	return
 }
 
-func (o *videoOrm) GetAllVODByAuthorPaginated(author primitive.ObjectID, count int, offset int) (videos []datatransfers.Video, err error) {
+func (o *videoOrm) GetAllVODByAuthorPaginated(author string, count int, offset int) (videos []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"author", author}}}},
@@ -273,7 +273,7 @@ func (o *videoOrm) Search(queryString string, count int, offset int) (result []d
 	return
 }
 
-func (o *videoOrm) GetLiveByAuthor(userID primitive.ObjectID) (video datatransfers.Video, err error) {
+func (o *videoOrm) GetLiveByAuthor(userID string) (video datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"author", userID}}}},
@@ -333,7 +333,7 @@ func (o *videoOrm) IncrementViews(hash string, decrement ...bool) error {
 	return o.collection.FindOneAndUpdate(context.Background(), bson.M{"hash": hash}, bson.M{"$inc": bson.M{"views": delta}}).Err()
 }
 
-func (o *videoOrm) SetLive(authorID primitive.ObjectID, pending, live bool) (err error) {
+func (o *videoOrm) SetLive(authorID string, pending, live bool) (err error) {
 	var stream datatransfers.VideoInsert
 	if err = o.collection.FindOneAndUpdate(context.Background(),
 		bson.M{"author": authorID, "type": constants.VideoTypeLive},

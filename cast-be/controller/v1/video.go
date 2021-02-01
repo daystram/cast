@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/astaxie/beego"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/daystram/cast/cast-be/config"
 	"github.com/daystram/cast/cast-be/constants"
 	"github.com/daystram/cast/cast-be/datatransfers"
 	"github.com/daystram/cast/cast-be/handlers"
@@ -83,11 +81,11 @@ func (c *VideoController) GetDetails(hash, username string) datatransfers.Respon
 type VideoControllerAuth struct {
 	beego.Controller
 	Handler handlers.Handler
-	userID  primitive.ObjectID
+	userID  string
 }
 
 func (c *VideoControllerAuth) Prepare() {
-	c.userID, _ = primitive.ObjectIDFromHex(c.Ctx.Input.Param(constants.ContextParamUserID))
+	c.userID = c.Ctx.Input.Param(constants.ContextParamUserID)
 }
 
 // @Title Get List
@@ -149,17 +147,18 @@ func (c *VideoControllerAuth) EditVideo(_ string) datatransfers.Response {
 			return datatransfers.Response{Error: "Failed retrieving profile image", Code: http.StatusInternalServerError}
 		}
 	}
-	// New thumbnail uploaded
-	err = c.SaveToFile("thumbnail", fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, video.Hash))
-	if err != nil {
-		fmt.Printf("[VideoControllerAuth::EditVideo] failed saving thumbnail. %+v\n", err)
-		return datatransfers.Response{Error: "Failed saving thumbnail", Code: http.StatusInternalServerError}
-	}
-	err = c.Handler.NormalizeThumbnail(video.Hash)
-	if err != nil {
-		fmt.Printf("[VideoControllerAuth::EditVideo] failed normalizing thumbnail. %+v\n", err)
-		return datatransfers.Response{Error: "Failed normalizing thumbnail", Code: http.StatusInternalServerError}
-	}
+	// TODO: use S3
+	//// New thumbnail uploaded
+	//err = c.SaveToFile("thumbnail", fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, video.Hash))
+	//if err != nil {
+	//	fmt.Printf("[VideoControllerAuth::EditVideo] failed saving thumbnail. %+v\n", err)
+	//	return datatransfers.Response{Error: "Failed saving thumbnail", Code: http.StatusInternalServerError}
+	//}
+	//err = c.Handler.NormalizeThumbnail(video.Hash)
+	//if err != nil {
+	//	fmt.Printf("[VideoControllerAuth::EditVideo] failed normalizing thumbnail. %+v\n", err)
+	//	return datatransfers.Response{Error: "Failed normalizing thumbnail", Code: http.StatusInternalServerError}
+	//}
 	return datatransfers.Response{Code: http.StatusOK}
 }
 
@@ -202,26 +201,27 @@ func (c *VideoControllerAuth) UploadVideo(_ string) datatransfers.Response {
 		fmt.Printf("[VideoControllerAuth::UploadVideo] failed creating video. %+v\n", err)
 		return datatransfers.Response{Error: "Failed creating video", Code: http.StatusInternalServerError}
 	}
-	// Retrieve video and thumbnail
-	_ = os.Mkdir(fmt.Sprintf("%s/%s", config.AppConfig.UploadsDirectory, videoID.Hex()), 755)
-	err = c.SaveToFile("video", fmt.Sprintf("%s/%s/video.mp4", config.AppConfig.UploadsDirectory, videoID.Hex()))
-	if err != nil {
-		_ = c.Handler.DeleteVideo(videoID, c.userID)
-		fmt.Printf("[VideoControllerAuth::UploadVideo] failed saving video file. %+v\n", err)
-		return datatransfers.Response{Error: "Failed saving video file", Code: http.StatusInternalServerError}
-	}
-	err = c.SaveToFile("thumbnail", fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, videoID.Hex()))
-	if err != nil {
-		_ = c.Handler.DeleteVideo(videoID, c.userID)
-		fmt.Printf("[VideoControllerAuth::UploadVideo] failed saving thumbnail file. %+v\n", err)
-		return datatransfers.Response{Error: "Failed saving thumbnail image", Code: http.StatusInternalServerError}
-	}
-	err = c.Handler.NormalizeThumbnail(videoID.Hex())
-	if err != nil {
-		_ = c.Handler.DeleteVideo(videoID, c.userID)
-		fmt.Printf("[VideoControllerAuth::UploadVideo] failed normalizing thumbnail image. %+v\n", err)
-		return datatransfers.Response{Error: "Failed normalizing thumbnail image", Code: http.StatusInternalServerError}
-	}
+	// TODO: use S3
+	//// Retrieve video and thumbnail
+	//_ = os.Mkdir(fmt.Sprintf("%s/%s", config.AppConfig.UploadsDirectory, videoID.Hex()), 755)
+	//err = c.SaveToFile("video", fmt.Sprintf("%s/%s/video.mp4", config.AppConfig.UploadsDirectory, videoID.Hex()))
+	//if err != nil {
+	//	_ = c.Handler.DeleteVideo(videoID, c.userID)
+	//	fmt.Printf("[VideoControllerAuth::UploadVideo] failed saving video file. %+v\n", err)
+	//	return datatransfers.Response{Error: "Failed saving video file", Code: http.StatusInternalServerError}
+	//}
+	//err = c.SaveToFile("thumbnail", fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, videoID.Hex()))
+	//if err != nil {
+	//	_ = c.Handler.DeleteVideo(videoID, c.userID)
+	//	fmt.Printf("[VideoControllerAuth::UploadVideo] failed saving thumbnail file. %+v\n", err)
+	//	return datatransfers.Response{Error: "Failed saving thumbnail image", Code: http.StatusInternalServerError}
+	//}
+	//err = c.Handler.NormalizeThumbnail(videoID.Hex())
+	//if err != nil {
+	//	_ = c.Handler.DeleteVideo(videoID, c.userID)
+	//	fmt.Printf("[VideoControllerAuth::UploadVideo] failed normalizing thumbnail image. %+v\n", err)
+	//	return datatransfers.Response{Error: "Failed normalizing thumbnail image", Code: http.StatusInternalServerError}
+	//}
 	// Trigger transcode sequence by cast-is
 	c.Handler.StartTranscode(videoID.Hex())
 	return datatransfers.Response{Code: http.StatusOK}

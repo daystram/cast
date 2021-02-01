@@ -47,7 +47,7 @@ func (m *module) TranscodeListenerWorker() {
 			}
 			if resolution == 1 {
 				m.BroadcastNotificationSubscriber(video.Author.ID, datatransfers.NotificationOutgoing{
-					Message:   fmt.Sprintf("%s just uploaded %s! Watch now!", video.Author.Name, video.Title),
+					Message:   fmt.Sprintf("%s just uploaded %s! Watch now!", video.Author.Username, video.Title),
 					Username:  video.Author.Username,
 					Hash:      video.Hash,
 					CreatedAt: time.Now(),

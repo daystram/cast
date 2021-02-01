@@ -6,5 +6,4 @@ const (
 	DBCollectionLike         = "like"
 	DBCollectionSubscription = "subscription"
 	DBCollectionComment      = "comment"
-	DBCollectionToken        = "token"
 )

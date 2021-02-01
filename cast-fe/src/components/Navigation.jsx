@@ -5,7 +5,6 @@ import {
   Col,
   Form,
   FormControl,
-  Image,
   InputGroup,
   Nav,
   Navbar,
@@ -13,8 +12,7 @@ import {
 } from "react-bootstrap";
 import MediaQuery from "react-responsive";
 import logo from "./logo.svg";
-import urls from "../helper/url";
-import auth from "../helper/auth";
+import auth, { refreshAuth } from "../helper/auth";
 import { MOBILE_BP } from "../constants/breakpoint";
 import Sidebar from "./Sidebar";
 import SidebarProfile from "./SidebarProfile";
@@ -27,46 +25,60 @@ function Navigation() {
   const [expanded, setExpanded] = useState(false);
   const inputRef = useRef();
   const history = useHistory();
+  const user = auth().user();
   axios.interceptors.response.use(
     (response) => response,
     (error) => {
       if (error.response.status === 403) {
-        auth().deauthenticate();
-        history.push("/login");
+        refreshAuth();
       }
     }
   );
-  let profileButton = auth().username() ? (
-    <Image
-      src={urls().profile(auth().username())}
-      height={38}
-      width={38}
-      style={style.profile_image}
+  let profileButton = auth().is_authenticated() ? (
+    <div
+      className="text-center"
+      style={{
+        width: 38,
+        height: 38,
+        flexShrink: 0,
+        borderRadius: 18,
+        background: "gray",
+        color: "white",
+        fontSize: "18px",
+        lineHeight: "38px",
+        textAlign: "center",
+        textTransform: "capitalize",
+        cursor: "pointer"
+      }}
       onClick={() => {
         history.push("/profile");
       }}
-      roundedCircle
-    />
+    >
+      {user.given_name[0] + user.family_name[0]}
+    </div>
   ) : (
     <>
       <Button
-        variant="outline-primary"
-        style={{ marginRight: 8 }}
+        variant="primary"
         onClick={() => {
           setExpanded(false);
           history.push("/login");
         }}
       >
-        Log In
-      </Button>
-      <Button
-        variant="primary"
-        onClick={() => {
-          setExpanded(false);
-          history.push("/signup");
-        }}
-      >
-        Sign Up
+        Login with{" "}
+        <span>
+          <i
+            className="material-icons"
+            style={{
+              fontSize: 16,
+              lineHeight: "22px",
+              verticalAlign: "text-top",
+            }}
+          >
+            lock
+          </i>
+          Ratify
+        </span>
       </Button>
     </>
   );
@@ -138,12 +150,7 @@ function Navigation() {
               style={{ border: "none", paddingRight: 0 }}
               onClick={() => setExpanded(!expanded)}
             >
-              <span
-                class="material-icons"
-                style={{ color: "#E84409", fontSize: 28, lineHeight: 1 }}
-              >
-                menu
-              </span>
+              blockl
             </Navbar.Toggle>
           </MediaQuery>
         </Col>
@@ -165,10 +172,7 @@ function Navigation() {
                 "/subscribed",
                 "/w/:hash",
                 "/s",
-                "/verify",
                 "/login",
-                "/signup",
-                "/forget",
               ]}
               exact
               render={(props) => (

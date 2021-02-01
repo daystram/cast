@@ -8,12 +8,11 @@ import (
 	"path"
 	"sync"
 	"time"
-
+	
 	"github.com/nareix/joy4/av/avutil"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/flv"
 	"github.com/nareix/joy4/format/rtmp"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/daystram/cast/cast-be/config"
 	"github.com/daystram/cast/cast-be/datatransfers"
@@ -65,7 +64,7 @@ func (m *module) CreateRTMPUpLink() {
 			}
 			fmt.Printf("[RTMPUpLink] UpLink for %s connected\n", username)
 			m.BroadcastNotificationSubscriber(video.Author.ID, datatransfers.NotificationOutgoing{
-				Message:   fmt.Sprintf("%s just went live! Watch now!", video.Author.Name),
+				Message:   fmt.Sprintf("%s just went live! Watch now!", video.Author.Username),
 				Username:  video.Author.Username,
 				Hash:      video.Hash,
 				CreatedAt: time.Now(),
@@ -90,10 +89,10 @@ func (m *module) CreateRTMPUpLink() {
 	fmt.Printf("[CreateRTMPUpLink] RTMP UpLink Window opened at port %d\n", config.AppConfig.RTMPPort)
 }
 
-func (m *module) ControlUpLinkWindow(userID primitive.ObjectID, open bool) (err error) {
+func (m *module) ControlUpLinkWindow(userID string, open bool) (err error) {
 	var stream datatransfers.Video
 	if stream, err = m.db.videoOrm.GetLiveByAuthor(userID); err != nil {
-		return errors.New(fmt.Sprintf("[ControlUpLinkWindow] failed retrieving video by %s. %+v", userID.Hex(), err))
+		return errors.New(fmt.Sprintf("[ControlUpLinkWindow] failed retrieving video by %s. %+v", userID, err))
 	}
 	if (stream.IsLive && open) || (!stream.IsLive && !stream.Pending && !open) {
 		return errors.New(fmt.Sprintf("[ControlUpLinkWindow] stream window already set for %s", stream.Hash))
