@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"sync"
 
-	googlePS "cloud.google.com/go/pubsub"
 	"github.com/astaxie/beego/context"
 	"github.com/gorilla/websocket"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/rtmp"
+	"github.com/streadway/amqp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
@@ -45,8 +45,8 @@ type Stream struct {
 }
 
 type Component struct {
-	DB       *mongo.Client
-	MQClient *googlePS.Client
+	DB *mongo.Client
+	MQ *amqp.Channel
 }
 
 type Entity struct {
@@ -58,8 +58,7 @@ type Entity struct {
 }
 
 type MQ struct {
-	transcodeTopic       *googlePS.Topic
-	completeSubscription *googlePS.Subscription
+	channel *amqp.Channel
 }
 
 type Handler interface {
@@ -107,8 +106,7 @@ func NewHandler(component Component) Handler {
 			commentOrm:      models.NewCommentOrmer(component.DB),
 		},
 		mq: &MQ{
-			transcodeTopic:       nil,
-			completeSubscription: nil,
+			channel: component.MQ,
 		},
 		chat: &Chat{
 			sockets:  make(map[string][]*websocket.Conn),

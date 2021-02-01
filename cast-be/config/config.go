@@ -19,6 +19,10 @@ type Config struct {
 	MongoDBURI  string
 	MongoDBName string
 
+	RabbitMQURI           string
+	RabbitMQQueueTask     string
+	RabbitMQQueueProgress string
+
 	RatifyIssuer       string
 	RatifyClientID     string
 	RatifyClientSecret string
@@ -57,8 +61,22 @@ func InitializeAppConfig() {
 		log.Fatalln("[INIT] RATIFY_CLIENT_SECRET is not set")
 	}
 
-	AppConfig.MongoDBURI = viper.GetString("MONGODB_URI")
-	AppConfig.MongoDBName = viper.GetString("MONGODB_NAME")
+	if AppConfig.MongoDBURI = viper.GetString("MONGODB_URI"); AppConfig.MongoDBURI == "" {
+		log.Fatalln("[INIT] MONGODB_URI is not set")
+	}
+	if AppConfig.MongoDBName = viper.GetString("MONGODB_NAME"); AppConfig.MongoDBName == "" {
+		log.Fatalln("[INIT] MONGODB_NAME is not set")
+	}
+
+	if AppConfig.RabbitMQURI = viper.GetString("RABBITMQ_URI"); AppConfig.RabbitMQURI == "" {
+		log.Fatalln("[INIT] RABBITMQ_URI is not set")
+	}
+	if AppConfig.RabbitMQQueueTask = viper.GetString("RABBITMQ_QUEUE_TASK"); AppConfig.RabbitMQQueueTask == "" {
+		log.Fatalln("[INIT] RABBITMQ_QUEUE_TASK is not set")
+	}
+	if AppConfig.RabbitMQQueueProgress = viper.GetString("RABBITMQ_QUEUE_PROGRESS"); AppConfig.RabbitMQQueueProgress == "" {
+		log.Fatalln("[INIT] RABBITMQ_QUEUE_PROGRESS is not set")
+	}
 
 	if AppConfig.UploadsDirectory = viper.GetString("UPLOADS_DIR"); AppConfig.UploadsDirectory == "" {
 		log.Fatalln("[INIT] UPLOADS_DIR is not set")

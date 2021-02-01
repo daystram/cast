@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.55.0 // indirect
 	cloud.google.com/go/pubsub v1.2.0
 	github.com/spf13/viper v1.7.1
+	github.com/streadway/amqp v1.0.0
 	golang.org/x/net v0.0.0-20200320220750-118fecf932d8 // indirect
 	golang.org/x/sys v0.0.0-20200320181252-af34d8274f85 // indirect
 	golang.org/x/tools v0.0.0-20200321014904-268ba720d32c // indirect

@@ -3,6 +3,7 @@
 
 cast-is
 .env
+/tmp
 
 ### Go ###
 # Binaries for programs and plugins

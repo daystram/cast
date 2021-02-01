@@ -8,6 +8,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/plugins/cors"
 	"github.com/nareix/joy4/format"
+	"github.com/streadway/amqp"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -20,35 +21,44 @@ import (
 func init() {
 	conf.InitializeAppConfig()
 
+	var err error
 	// Init MongoDB
-	db, err := mongo.Connect(context.Background(), options.Client().ApplyURI(conf.AppConfig.MongoDBURI))
-	if err != nil {
+	var db *mongo.Client
+	if db, err = mongo.Connect(context.Background(), options.Client().ApplyURI(conf.AppConfig.MongoDBURI)); err != nil {
 		log.Fatalf("[Initialization] Failed connecting to MongoDB at %s. %+v\n", conf.AppConfig.MongoDBURI, err)
 	}
-	fmt.Printf("[Initialization] Successfully connected to MongoDB!\n")
+	log.Printf("[Initialization] Successfully connected to MongoDB!\n")
 
 	// Init RTMP Formats
 	format.RegisterAll()
 
 	// TODO: initialize S3
 
-	// TODO: migrate to RabbitMQ
-	// // Init Google PubSub
-	// var pubsubClient *pubsub.Client
-	// pubsubClient, err = pubsub.NewClient(context.Background(), conf.AppConfig.GoogleProjectID, option.WithCredentialsFile(conf.AppConfig.JSONKey))
-	// if err != nil {
-	// 	log.Fatalf("Failed connecting to Google PubSub. %+v\n", err)
-	// }
-	// fmt.Printf("[Initialization] Google PubSub connected\n")
+	// Init RabbitMQ
+	var mqConn *amqp.Connection
+	if mqConn, err = amqp.Dial(conf.AppConfig.RabbitMQURI); err != nil {
+		log.Fatalf("[Initialization] Failed connecting to RabbitMQ at %s. %+v\n", conf.AppConfig.RabbitMQURI, err)
+	}
+	var mq *amqp.Channel
+	if mq, err = mqConn.Channel(); err != nil {
+		log.Fatalf("[Initialization] Failed opening RabbitMQ channel. %+v\n", err)
+	}
+	if _, err = mq.QueueDeclare(conf.AppConfig.RabbitMQQueueTask, true, false, false, false, nil); err != nil {
+		log.Fatalf("[Initialization] Failed declaring RabbitMQ queue %s. %+v\n", conf.AppConfig.RabbitMQQueueTask, err)
+	}
+	if _, err = mq.QueueDeclare(conf.AppConfig.RabbitMQQueueProgress, true, false, false, false, nil); err != nil {
+		log.Fatalf("[Initialization] Failed declaring RabbitMQ queue %s. %+v\n", conf.AppConfig.RabbitMQQueueProgress, err)
+	}
+	log.Printf("[Initialization] Successfully connected to RabbitMQ!\n")
 
 	// Init Handler
-	h := handlers.NewHandler(handlers.Component{DB: db, MQClient: nil})
+	h := handlers.NewHandler(handlers.Component{DB: db, MQ: mq})
 
 	// Init RTMP Uplink
 	h.CreateRTMPUpLink()
 
 	// Init Transcoder Listener
-	//go h.TranscodeListenerWorker()
+	go h.TranscodeListenerWorker()
 	fmt.Printf("[Initialization] Initialization complete!\n")
 
 	apiV1 := beego.NewNamespace("api/v1",
