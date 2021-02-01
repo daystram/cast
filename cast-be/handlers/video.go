@@ -3,19 +3,17 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/daystram/cast/cast-be/config"
 	"github.com/daystram/cast/cast-be/constants"
 	data "github.com/daystram/cast/cast-be/datatransfers"
 	"github.com/daystram/cast/cast-be/util"
 )
 
-func (m *module) CastList(variant string, count int, offset int, userID ...primitive.ObjectID) (videos []data.Video, err error) {
+func (m *module) CastList(variant string, count int, offset int, userID ...string) (videos []data.Video, err error) {
 	switch {
 	case variant == constants.VideoListTrending:
 		if videos, err = m.db.videoOrm.GetTrending(count, offset); err != nil {
@@ -80,7 +78,7 @@ func (m *module) VideoDetails(hash string) (video data.Video, err error) {
 	return
 }
 
-func (m *module) CreateVOD(upload data.VideoUpload, userID primitive.ObjectID) (ID primitive.ObjectID, err error) {
+func (m *module) CreateVOD(upload data.VideoUpload, userID string) (ID primitive.ObjectID, err error) {
 	if ID, err = m.db.videoOrm.InsertVideo(data.VideoInsert{
 		Type:        constants.VideoTypeVOD,
 		Title:       upload.Title,
@@ -98,14 +96,14 @@ func (m *module) CreateVOD(upload data.VideoUpload, userID primitive.ObjectID) (
 	return
 }
 
-func (m *module) DeleteVideo(ID, userID primitive.ObjectID) (err error) {
+func (m *module) DeleteVideo(ID primitive.ObjectID, userID string) (err error) {
 	var user data.User
 	var video data.Video
 	if user, err = m.db.userOrm.GetOneByID(userID); err != nil {
-		return errors.New(fmt.Sprintf("[DeleteVideo] failed retrieving user %s detail. %+v", userID.Hex(), err))
+		return errors.New(fmt.Sprintf("[DeleteVideo] failed retrieving user %s detail. %+v", userID, err))
 	}
 	if video, err = m.db.videoOrm.GetOneByHash(ID.Hex()); err != nil {
-		return errors.New(fmt.Sprintf("[DeleteVideo] failed retrieving video %s detail. %+v", userID.Hex(), err))
+		return errors.New(fmt.Sprintf("[DeleteVideo] failed retrieving video %s detail. %+v", userID, err))
 	}
 	if video.Type == constants.VideoTypeLive {
 		return errors.New(fmt.Sprintf("[DeleteVideo] live videos cannot be deleted."))
@@ -113,13 +111,14 @@ func (m *module) DeleteVideo(ID, userID primitive.ObjectID) (err error) {
 	if user.Username != video.Author.Username {
 		return errors.New(fmt.Sprintf("[DeleteVideo] cannot delete others' video."))
 	}
-	_ = os.RemoveAll(fmt.Sprintf(fmt.Sprintf("%s/%s", config.AppConfig.UploadsDirectory, ID.Hex())))
-	_ = os.Remove(fmt.Sprintf("%s/%s/%s.ori", config.AppConfig.UploadsDirectory, constants.ThumbnailRootDir, ID.Hex()))
-	_ = os.Remove(fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ThumbnailRootDir, ID.Hex()))
+	// TODO: use S3
+	//_ = os.RemoveAll(fmt.Sprintf(fmt.Sprintf("%s/%s", config.AppConfig.UploadsDirectory, ID)))
+	//_ = os.Remove(fmt.Sprintf("%s/%s/%s.ori", config.AppConfig.UploadsDirectory, constants.ThumbnailRootDir, ID))
+	//_ = os.Remove(fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ThumbnailRootDir, ID))
 	return m.db.videoOrm.DeleteOneByID(ID)
 }
 
-func (m *module) UpdateVideo(video data.VideoEdit, userID primitive.ObjectID) (err error) {
+func (m *module) UpdateVideo(video data.VideoEdit, userID string) (err error) {
 	if err = m.db.videoOrm.EditVideo(data.VideoInsert{
 		Hash:        video.Hash,
 		Title:       video.Title,
@@ -140,7 +139,7 @@ func (m *module) NormalizeThumbnail(hash string) (err error) {
 	return util.NormalizeImage(constants.ThumbnailRootDir, hash, constants.ThumbnailWidth, constants.ThumbnailHeight)
 }
 
-func (m *module) LikeVideo(userID primitive.ObjectID, hash string, like bool) (err error) {
+func (m *module) LikeVideo(userID string, hash string, like bool) (err error) {
 	if like {
 		_, err = m.db.likeOrm.InsertLike(data.Like{
 			Hash:      hash,
@@ -167,7 +166,7 @@ func (m *module) CheckUserLikes(hash, username string) (liked bool, err error) {
 	return true, nil
 }
 
-func (m *module) Subscribe(userID primitive.ObjectID, username string, subscribe bool) (err error) {
+func (m *module) Subscribe(userID string, username string, subscribe bool) (err error) {
 	var user data.User
 	var author data.User
 	if user, err = m.db.userOrm.GetOneByID(userID); err != nil {
@@ -183,7 +182,7 @@ func (m *module) Subscribe(userID primitive.ObjectID, username string, subscribe
 			CreatedAt: time.Now(),
 		})
 		m.PushNotification(author.ID, data.NotificationOutgoing{
-			Message:   fmt.Sprintf("%s just subscribed!", user.Name),
+			Message:   fmt.Sprintf("%s just subscribed!", user.Username),
 			Username:  user.Username,
 			CreatedAt: time.Now(),
 		})
@@ -193,7 +192,7 @@ func (m *module) Subscribe(userID primitive.ObjectID, username string, subscribe
 	return
 }
 
-func (m *module) CheckUserSubscribes(authorID primitive.ObjectID, username string) (subscribed bool, err error) {
+func (m *module) CheckUserSubscribes(authorID string, username string) (subscribed bool, err error) {
 	var user data.User
 	if user, err = m.db.userOrm.GetOneByUsername(username); err != nil {
 		return false, errors.New(fmt.Sprintf("[CheckUserSubscribes] failed to get user by username. %+v", err))
@@ -207,7 +206,7 @@ func (m *module) CheckUserSubscribes(authorID primitive.ObjectID, username strin
 	return true, nil
 }
 
-func (m *module) CommentVideo(userID primitive.ObjectID, hash, content string) (comment data.Comment, err error) {
+func (m *module) CommentVideo(userID string, hash, content string) (comment data.Comment, err error) {
 	var commentID primitive.ObjectID
 	var user data.User
 	now := time.Now()
@@ -227,7 +226,6 @@ func (m *module) CommentVideo(userID primitive.ObjectID, hash, content string) (
 		Hash:    hash,
 		Content: content,
 		Author: data.UserItem{
-			Name:     user.Name,
 			Username: user.Username,
 		},
 		CreatedAt: now,
