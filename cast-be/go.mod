@@ -14,6 +14,7 @@ require (
 	github.com/nareix/joy4 v0.0.0-20200507095837-05a4ffbb5369
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18 // indirect
 	github.com/spf13/viper v1.7.1
+	github.com/streadway/amqp v1.0.0
 	github.com/xdg/stringprep v1.0.1-0.20180714160509-73f8eece6fdc // indirect
 	go.mongodb.org/mongo-driver v1.4.5
 	go.opencensus.io v0.22.6 // indirect

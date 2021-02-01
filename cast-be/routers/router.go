@@ -58,7 +58,7 @@ func init() {
 	h.CreateRTMPUpLink()
 
 	// Init Transcoder Listener
-	//go h.TranscodeListenerWorker()
+	go h.TranscodeListenerWorker()
 	fmt.Printf("[Initialization] Initialization complete!\n")
 
 	apiV1 := beego.NewNamespace("api/v1",
