@@ -26,7 +26,9 @@ class Profile extends Component {
 
   fetchUser() {
     axios
-      .get(urls().user_info(), {})
+      .get(urls().user_info(), {
+        headers: { Authorization: `Bearer ${auth().token()}` },
+      })
       .then((response) => {
         this.setState({ loading_info: false });
         if (response.data.code === 200) {
