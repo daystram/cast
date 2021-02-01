@@ -4,15 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"golang.org/x/crypto/bcrypt"
-
-	"github.com/daystram/cast/cast-be/constants"
 	data "github.com/daystram/cast/cast-be/datatransfers"
-	"github.com/daystram/cast/cast-be/util"
 )
 
-func (m *module) UserDetails(userID primitive.ObjectID) (detail data.UserDetail, err error) {
+func (m *module) UserDetails(userID string) (detail data.UserDetail, err error) {
 	var user data.User
 	var videos []data.Video
 	var subscriberCount int
@@ -30,34 +25,11 @@ func (m *module) UserDetails(userID primitive.ObjectID) (detail data.UserDetail,
 		views += video.Views
 	}
 	detail = data.UserDetail{
-		Name:        user.Name,
+		ID:          user.ID,
 		Username:    user.Username,
-		Email:       user.Email,
 		Subscribers: subscriberCount,
 		Views:       views,
 		Uploads:     len(videos),
 	}
 	return
-}
-
-func (m *module) GetUserByEmail(email string) (user data.User, err error) {
-	return m.db.userOrm.GetOneByEmail(email)
-}
-
-func (m *module) UpdateUser(info data.UserEditForm, ID primitive.ObjectID) (err error) {
-	var user data.User
-	if user, err = m.db.userOrm.GetOneByID(ID); err != nil {
-		return
-	}
-	user.Name = info.Name
-	user.Email = info.Email
-	if info.Password != "" {
-		hashed, _ := bcrypt.GenerateFromPassword([]byte(info.Password), bcrypt.DefaultCost)
-		user.Password = string(hashed)
-	}
-	return m.db.userOrm.EditUser(user)
-}
-
-func (m *module) NormalizeProfile(username string) (err error) {
-	return util.NormalizeImage(constants.ProfileRootDir, username, constants.ProfileWidth, constants.ProfileHeight)
 }
