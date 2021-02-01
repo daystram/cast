@@ -52,7 +52,7 @@ func init() {
 	log.Printf("[Initialization] Successfully connected to RabbitMQ!\n")
 
 	// Init Handler
-	h := handlers.NewHandler(handlers.Component{DB: db, MQClient: nil})
+	h := handlers.NewHandler(handlers.Component{DB: db, MQ: mq})
 
 	// Init RTMP Uplink
 	h.CreateRTMPUpLink()
