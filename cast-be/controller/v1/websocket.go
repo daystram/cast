@@ -6,7 +6,6 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/daystram/cast/cast-be/constants"
 	"github.com/daystram/cast/cast-be/handlers"
@@ -38,11 +37,11 @@ func (c *WebSocketController) Connect(hash string, _ string) {
 type WebSocketControllerAuth struct {
 	beego.Controller
 	Handler handlers.Handler
-	userID  primitive.ObjectID
+	userID  string
 }
 
 func (c *WebSocketControllerAuth) Prepare() {
-	c.userID, _ = primitive.ObjectIDFromHex(c.Ctx.Input.Param(constants.ContextParamUserID))
+	c.userID = c.Ctx.Input.Param(constants.ContextParamUserID)
 }
 
 // @Title Connect Notification
