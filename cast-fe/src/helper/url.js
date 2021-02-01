@@ -1,5 +1,13 @@
 const cdn_base = "/cdn";
-const api_base = "/api/v1";
+const api_base = `${
+  process.env.NODE_ENV === "development"
+    ? process.env.REACT_APP_DEV_BASE_API
+    : ""
+}/api/v1`;
+const ws_base =
+  process.env.NODE_ENV === "development"
+    ? `${process.env.REACT_APP_DEV_BASE_WS}/api/v1`
+    : `wss://${window.location.hostname}/api/v1`;
 
 export default function urls() {
   return {
