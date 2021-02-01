@@ -1,30 +1,27 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
-	"cloud.google.com/go/pubsub"
 	"github.com/spf13/viper"
-	"google.golang.org/api/option"
+	"github.com/streadway/amqp"
 )
 
 type Config struct {
-	ProjectID             string
-	APIKey                string
-	TopicTranscode        string
-	TopicComplete         string
-	SubscriptionTranscode string
-	UploadsDir            string
-	FFMpegExecutable      string
-	MP4BoxExecutable      string
+	UploadsDir string
+
+	RabbitMQURI           string
+	RabbitMQQueueTask     string
+	RabbitMQQueueProgress string
+
+	FFMpegExecutable string
+	MP4BoxExecutable string
 }
 
 type Resolution struct {
@@ -96,52 +93,60 @@ func main() {
 	log.Printf("[Initialization] Successfully connected to RabbitMQ!\n")
 
 	// Listen to messages
-	var mu sync.Mutex
-	sub := pubsubClient.Subscription(config.SubscriptionTranscode)
-	topic := pubsubClient.Topic(config.TopicComplete)
-	fmt.Println("[cast-is] Ready to transcode")
-	for {
-		_ = sub.Receive(context.Background(), func(ctx context.Context, msg *pubsub.Message) {
-			msg.Ack()
-			mu.Lock()
-			defer mu.Unlock()
-			hash := string(msg.Data)
-			workDir := fmt.Sprintf("%s/%s", config.UploadsDir, hash)
-			outfile, _ := os.Create(fmt.Sprintf("%s/transcode.log", workDir))
-			defer outfile.Close()
+	var receiver <-chan amqp.Delivery
+	if receiver, err = mq.Consume(
+		config.RabbitMQQueueTask,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	); err != nil {
+		log.Printf("[TranscodeListenerWorker] Failed creating RabbitMQ consumer. %+v\n", err)
+	}
+	fmt.Println("[cast-is] Ready to transcode!")
+	for msg := range receiver {
+		hash := string(msg.Body)
+		workDir := fmt.Sprintf("%s/%s", config.UploadsDir, hash)
+		outfile, _ := os.Create(fmt.Sprintf("%s/transcode.log", workDir))
+		defer outfile.Close()
 
-			fmt.Printf("[cast-is] Start: %s\n", hash)
-			fmt.Fprintf(outfile, "\n[cast-is] ----------------------- Start: %s", hash)
-			for i, resolution := range resolutions {
-				fmt.Printf("[cast-is] %s -> %s\n", hash, resolution.Name)
-				fmt.Fprintf(outfile, "\n[cast-is] ----------------------- %s -> %s\n", hash, resolution.Name)
-				cmd := exec.Command(config.FFMpegExecutable, strings.Split(resolution.Flags, " ")...)
-				cmd.Stderr = outfile
-				cmd.Dir = workDir
-				if err := cmd.Run(); err != nil {
-					fmt.Printf("[cast-is] Stopped: %s\n", hash)
-					fmt.Fprintf(outfile, "[cast-is] ----------------------- Stopped: %s\n", hash)
-					return
-				}
-				if resolution.Name == "Audio" {
-					continue
-				}
-				time.Sleep(1 * time.Second)
-				_ = os.Remove(fmt.Sprintf("%s/manifest.mpd", workDir))
-				time.Sleep(2 * time.Second)
-				fmt.Fprintf(outfile, "[cast-is] ----------------------- %s -> %s DASH\n", hash, resolution.Name)
-				cmd = exec.Command(config.MP4BoxExecutable, append(strings.Split(FlagsDASH, " "), TempFileNames[5-i:]...)...)
-				cmd.Stderr = outfile
-				cmd.Dir = workDir
-				if err := cmd.Run(); err != nil {
-					fmt.Println(err)
-				}
-				topic.Publish(context.Background(), &pubsub.Message{Data: []byte(fmt.Sprintf("%s:%d", hash, i))})
+		fmt.Printf("[cast-is] Start: %s\n", hash)
+		fmt.Fprintf(outfile, "\n[cast-is] ----------------------- Start: %s", hash)
+		for i, resolution := range resolutions {
+			fmt.Printf("[cast-is] %s -> %s\n", hash, resolution.Name)
+			fmt.Fprintf(outfile, "\n[cast-is] ----------------------- %s -> %s\n", hash, resolution.Name)
+			cmd := exec.Command(config.FFMpegExecutable, strings.Split(resolution.Flags, " ")...)
+			cmd.Stderr = outfile
+			cmd.Dir = workDir
+			if err := cmd.Run(); err != nil {
+				fmt.Printf("[cast-is] Stopped: %s\n", hash)
+				fmt.Fprintf(outfile, "[cast-is] ----------------------- Stopped: %s\n", hash)
+				return
 			}
-			cleanUp(workDir)
-			fmt.Printf("[cast-is] Done: %s\n", hash)
-			fmt.Fprintf(outfile, "[cast-is] ----------------------- Done: %s\n", hash)
-		})
+			if resolution.Name == "Audio" {
+				continue
+			}
+			time.Sleep(1 * time.Second)
+			_ = os.Remove(fmt.Sprintf("%s/manifest.mpd", workDir))
+			time.Sleep(2 * time.Second)
+			fmt.Fprintf(outfile, "[cast-is] ----------------------- %s -> %s DASH\n", hash, resolution.Name)
+			cmd = exec.Command(config.MP4BoxExecutable, append(strings.Split(FlagsDASH, " "), TempFileNames[5-i:]...)...)
+			cmd.Stderr = outfile
+			cmd.Dir = workDir
+			if err := cmd.Run(); err != nil {
+				fmt.Println(err)
+			}
+			_ = mq.Publish("", config.RabbitMQQueueProgress, true, false,
+				amqp.Publishing{
+					ContentType: "text/plain",
+					Body:        []byte(fmt.Sprintf("%s:%d", hash, i)),
+				})
+		}
+		cleanUp(workDir)
+		fmt.Printf("[cast-is] Done: %s\n", hash)
+		fmt.Fprintf(outfile, "[cast-is] ----------------------- Done: %s\n", hash)
 	}
 }
 
