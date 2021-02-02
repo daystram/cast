@@ -9,19 +9,37 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/spf13/viper"
 	"github.com/streadway/amqp"
 )
 
+var config Config
+
 type Config struct {
-	UploadsDir string
+	TempDir string
 
 	RabbitMQURI           string
 	RabbitMQQueueTask     string
 	RabbitMQQueueProgress string
 
+	S3URI       string
+	S3Bucket    string
+	S3Region    string
+	S3AccessKey string
+	S3SecretKey string
+
 	FFMpegExecutable string
 	MP4BoxExecutable string
+}
+
+var module Module
+
+type Module struct {
+	mq *amqp.Channel
 }
 
 type Resolution struct {
@@ -44,7 +62,16 @@ const (
 	FlagsDASH  = "-dash 10000 -rap -frag-rap -bs-switching no -url-template -dash-profile onDemand -segment-name segment_$RepresentationID$ -out manifest.mpd"
 )
 
-func main() {
+var resolutions = []Resolution{
+	{"Audio", FlagsAudio},
+	{"240p", Flags240},
+	{"360p", Flags360},
+	{"480p", Flags480},
+	{"720p", Flags720},
+	{"1080p", Flags1080},
+}
+
+func init() {
 	var err error
 
 	// Init Configuration
@@ -57,23 +84,19 @@ func main() {
 	viper.AutomaticEnv()
 	_ = viper.ReadInConfig()
 
-	config := Config{
-		UploadsDir:            viper.GetString("UPLOADS_DIR"),
+	config = Config{
+		TempDir:               viper.GetString("TEMP_DIR"),
 		RabbitMQURI:           viper.GetString("RABBITMQ_URI"),
 		RabbitMQQueueTask:     viper.GetString("RABBITMQ_QUEUE_TASK"),
 		RabbitMQQueueProgress: viper.GetString("RABBITMQ_QUEUE_PROGRESS"),
+		S3URI:                 viper.GetString("S3_URI"),
+		S3Bucket:              viper.GetString("S3_BUCKET"),
+		S3Region:              viper.GetString("S3_REGION"),
+		S3AccessKey:           viper.GetString("S3_ACCESS_KEY"),
+		S3SecretKey:           viper.GetString("S3_SECRET_KEY"),
 		FFMpegExecutable:      viper.GetString("FFMPEG_EXECUTABLE"),
 		MP4BoxExecutable:      viper.GetString("MP4BOX_EXECUTABLE"),
 	}
-	resolutions := []Resolution{
-		{"Audio", FlagsAudio},
-		{"240p", Flags240},
-		{"360p", Flags360},
-		{"480p", Flags480},
-		{"720p", Flags720},
-		{"1080p", Flags1080},
-	}
-	fmt.Println("[Initialization] config loaded")
 
 	// Init RabbitMQ
 	var mqConn *amqp.Connection
@@ -92,9 +115,33 @@ func main() {
 	}
 	log.Printf("[Initialization] Successfully connected to RabbitMQ!\n")
 
+	// Init S3
+	var s3Session *session.Session
+	if s3Session, err = session.NewSession(&aws.Config{
+		Endpoint:         aws.String(config.S3URI),
+		Region:           aws.String(config.S3Region),
+		Credentials:      credentials.NewStaticCredentials(config.S3AccessKey, config.S3SecretKey, ""),
+		DisableSSL:       aws.Bool(false),
+		S3ForcePathStyle: aws.Bool(true),
+	}); err != nil {
+		log.Fatalf("[Initialization] Failed creating S3 session to %s. %+v\n", config.S3URI, err)
+	}
+	s3Client := s3.New(s3Session)
+	if _, err := s3Client.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: aws.String(config.S3Bucket),
+	}); err != nil {
+		log.Fatalf("[Initialization] Failed connecting to S3. %+v\n", err)
+	}
+	log.Printf("[Initialization] Successfully connected to S3!\n")
+
+	module = Module{mq: mq}
+}
+
+func main() {
 	// Listen to messages
+	var err error
 	var receiver <-chan amqp.Delivery
-	if receiver, err = mq.Consume(
+	if receiver, err = module.mq.Consume(
 		config.RabbitMQQueueTask,
 		"",
 		true,
@@ -103,14 +150,15 @@ func main() {
 		false,
 		nil,
 	); err != nil {
-		log.Printf("[TranscodeListenerWorker] Failed creating RabbitMQ consumer. %+v\n", err)
+		log.Printf("[cast-is] Failed creating RabbitMQ consumer. %+v\n", err)
 	}
 	fmt.Println("[cast-is] Ready to transcode!")
 	for msg := range receiver {
 		hash := string(msg.Body)
-		workDir := fmt.Sprintf("%s/%s", config.UploadsDir, hash)
+		workDir := fmt.Sprintf("%s/%s", config.TempDir, hash)
+		_ = os.MkdirAll(workDir, 0755)
 		outfile, _ := os.Create(fmt.Sprintf("%s/transcode.log", workDir))
-		defer outfile.Close()
+		// TODO: get raw from S3
 
 		fmt.Printf("[cast-is] Start: %s\n", hash)
 		fmt.Fprintf(outfile, "\n[cast-is] ----------------------- Start: %s", hash)
@@ -122,8 +170,8 @@ func main() {
 			cmd.Dir = workDir
 			if err := cmd.Run(); err != nil {
 				fmt.Printf("[cast-is] Stopped: %s\n", hash)
-				fmt.Fprintf(outfile, "[cast-is] ----------------------- Stopped: %s\n", hash)
-				return
+				fmt.Fprintf(outfile, "[cast-is] ----------------------- Cancelled\n")
+				continue
 			}
 			if resolution.Name == "Audio" {
 				continue
@@ -138,15 +186,18 @@ func main() {
 			if err := cmd.Run(); err != nil {
 				fmt.Println(err)
 			}
-			_ = mq.Publish("", config.RabbitMQQueueProgress, true, false,
+			_ = module.mq.Publish("", config.RabbitMQQueueProgress, true, false,
 				amqp.Publishing{
 					ContentType: "text/plain",
 					Body:        []byte(fmt.Sprintf("%s:%d", hash, i)),
 				})
+			// TODO: write into S3
+			fmt.Fprintf(outfile, "[cast-is] ----------------------- Completed\n")
 		}
 		cleanUp(workDir)
 		fmt.Printf("[cast-is] Done: %s\n", hash)
 		fmt.Fprintf(outfile, "[cast-is] ----------------------- Done: %s\n", hash)
+		outfile.Close()
 	}
 }
 
