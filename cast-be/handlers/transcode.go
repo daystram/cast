@@ -17,7 +17,7 @@ import (
 func (m *module) TranscodeListenerWorker() {
 	var err error
 	var receiver <-chan amqp.Delivery
-	if receiver, err = m.mq.channel.Consume(
+	if receiver, err = m.mq.Consume(
 		conf.AppConfig.RabbitMQQueueProgress,
 		"",
 		true,
@@ -66,7 +66,7 @@ func (m *module) TranscodeListenerWorker() {
 }
 
 func (m *module) StartTranscode(hash string) {
-	_ = m.mq.channel.Publish("", conf.AppConfig.RabbitMQQueueTask, true, false,
+	_ = m.mq.Publish("", conf.AppConfig.RabbitMQQueueTask, true, false,
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        []byte(hash),
