@@ -1,13 +1,18 @@
 package handlers
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/astaxie/beego"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
+	"github.com/daystram/cast/cast-be/config"
 	"github.com/daystram/cast/cast-be/constants"
 	data "github.com/daystram/cast/cast-be/datatransfers"
 	"github.com/daystram/cast/cast-be/util"
@@ -78,7 +83,7 @@ func (m *module) VideoDetails(hash string) (video data.Video, err error) {
 	return
 }
 
-func (m *module) CreateVOD(upload data.VideoUpload, userID string) (ID primitive.ObjectID, err error) {
+func (m *module) CreateVOD(upload data.VideoUpload, controller beego.Controller, userID string) (ID primitive.ObjectID, err error) {
 	if ID, err = m.db.videoOrm.InsertVideo(data.VideoInsert{
 		Type:        constants.VideoTypeVOD,
 		Title:       upload.Title,
@@ -92,6 +97,31 @@ func (m *module) CreateVOD(upload data.VideoUpload, userID string) (ID primitive
 		CreatedAt:   time.Now(),
 	}); err != nil {
 		return primitive.ObjectID{}, errors.New(fmt.Sprintf("[CreateVOD] error inserting video. %+v", err))
+	}
+	// Retrieve video and thumbnail
+	video, _, _ := controller.GetFile("video")
+	if _, err = m.s3.PutObject(&s3.PutObjectInput{
+		Bucket:      aws.String(config.AppConfig.S3Bucket),
+		Key:         aws.String(fmt.Sprintf("%s/%s/video.mp4", constants.VideoRootDir, ID.Hex())),
+		Body:        video,
+		ContentType: aws.String("video/mp4"),
+	}); err != nil {
+		_ = m.DeleteVideo(ID, userID)
+		return primitive.ObjectID{}, fmt.Errorf("[CreateVOD] Failed saving video file. %+v", err)
+	}
+	var result bytes.Buffer
+	thumbnail, _, _ := controller.GetFile("thumbnail")
+	if result, err = util.NormalizeImage(thumbnail, constants.ThumbnailWidth, constants.ThumbnailHeight); err != nil {
+		_ = m.DeleteVideo(ID, userID)
+		return primitive.ObjectID{}, fmt.Errorf("[CreateVOD] Failed normalizing thumbnail image. %+v", err)
+	}
+	if _, err = m.s3.PutObject(&s3.PutObjectInput{
+		Bucket: aws.String(config.AppConfig.S3Bucket),
+		Key:    aws.String(fmt.Sprintf("%s/%s.jpg", constants.ThumbnailRootDir, ID.Hex())),
+		Body:   bytes.NewReader(result.Bytes()),
+	}); err != nil {
+		_ = m.DeleteVideo(ID, userID)
+		return primitive.ObjectID{}, fmt.Errorf("[CreateVOD] Failed saving thumbnail image. %+v", err)
 	}
 	return
 }
@@ -111,10 +141,27 @@ func (m *module) DeleteVideo(ID primitive.ObjectID, userID string) (err error) {
 	if user.Username != video.Author.Username {
 		return errors.New(fmt.Sprintf("[DeleteVideo] cannot delete others' video."))
 	}
-	// TODO: use S3
-	//_ = os.RemoveAll(fmt.Sprintf(fmt.Sprintf("%s/%s", config.AppConfig.UploadsDirectory, ID)))
-	//_ = os.Remove(fmt.Sprintf("%s/%s/%s.ori", config.AppConfig.UploadsDirectory, constants.ThumbnailRootDir, ID))
-	//_ = os.Remove(fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ThumbnailRootDir, ID))
+	// Delete files
+	objects := []*s3.ObjectIdentifier{
+		{Key: aws.String(fmt.Sprintf("%s/%s.ori", constants.ThumbnailRootDir, ID.Hex()))},
+		{Key: aws.String(fmt.Sprintf("%s/%s.jpg", constants.ThumbnailRootDir, ID.Hex()))},
+	}
+	if list, err := m.s3.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: aws.String(config.AppConfig.S3Bucket),
+		Prefix: aws.String(fmt.Sprintf("%s/%s/", constants.VideoRootDir, ID.Hex())),
+	}); err == nil {
+		for _, item := range list.Contents {
+			objects = append(objects, &s3.ObjectIdentifier{
+				Key: item.Key,
+			})
+		}
+	}
+	_, _ = m.s3.DeleteObjects(&s3.DeleteObjectsInput{
+		Bucket: aws.String(config.AppConfig.S3Bucket),
+		Delete: &s3.Delete{
+			Objects: objects,
+		},
+	})
 	return m.db.videoOrm.DeleteOneByID(ID)
 }
 
@@ -133,10 +180,6 @@ func (m *module) UpdateVideo(video data.VideoEdit, userID string) (err error) {
 
 func (m *module) CheckUniqueVideoTitle(title string) (err error) {
 	return m.db.videoOrm.CheckUnique(title)
-}
-
-func (m *module) NormalizeThumbnail(hash string) (err error) {
-	return util.NormalizeImage(constants.ThumbnailRootDir, hash, constants.ThumbnailWidth, constants.ThumbnailHeight)
 }
 
 func (m *module) LikeVideo(userID string, hash string, like bool) (err error) {
