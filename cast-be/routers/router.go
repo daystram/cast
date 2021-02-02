@@ -7,6 +7,10 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/plugins/cors"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/nareix/joy4/format"
 	"github.com/streadway/amqp"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,8 +24,8 @@ import (
 
 func init() {
 	conf.InitializeAppConfig()
-
 	var err error
+
 	// Init MongoDB
 	var db *mongo.Client
 	if db, err = mongo.Connect(context.Background(), options.Client().ApplyURI(conf.AppConfig.MongoDBURI)); err != nil {
@@ -31,8 +35,6 @@ func init() {
 
 	// Init RTMP Formats
 	format.RegisterAll()
-
-	// TODO: initialize S3
 
 	// Init RabbitMQ
 	var mqConn *amqp.Connection
@@ -51,8 +53,27 @@ func init() {
 	}
 	log.Printf("[Initialization] Successfully connected to RabbitMQ!\n")
 
+	// Init S3
+	var s3Session *session.Session
+	if s3Session, err = session.NewSession(&aws.Config{
+		Endpoint:         aws.String(conf.AppConfig.S3URI),
+		Region:           aws.String(conf.AppConfig.S3Region),
+		Credentials:      credentials.NewStaticCredentials(conf.AppConfig.S3AccessKey, conf.AppConfig.S3SecretKey, ""),
+		DisableSSL:       aws.Bool(false),
+		S3ForcePathStyle: aws.Bool(true),
+	}); err != nil {
+		log.Fatalf("[Initialization] Failed creating S3 session to %s. %+v\n", conf.AppConfig.S3URI, err)
+	}
+	s3Client := s3.New(s3Session)
+	if _, err := s3Client.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: aws.String(conf.AppConfig.S3Bucket),
+	}); err != nil {
+		log.Fatalf("[Initialization] Failed connecting to S3. %+v\n", err)
+	}
+	log.Printf("[Initialization] Successfully connected to S3!\n")
+
 	// Init Handler
-	h := handlers.NewHandler(handlers.Component{DB: db, MQ: mq})
+	h := handlers.NewHandler(handlers.Component{DB: db, MQ: mq, S3: s3Client})
 
 	// Init RTMP Uplink
 	h.CreateRTMPUpLink()
