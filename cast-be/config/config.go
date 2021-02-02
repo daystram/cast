@@ -32,8 +32,6 @@ type Config struct {
 	RatifyIssuer       string
 	RatifyClientID     string
 	RatifyClientSecret string
-
-	UploadsDirectory string
 }
 
 // Load configuration
@@ -98,9 +96,5 @@ func InitializeAppConfig() {
 	}
 	if AppConfig.S3SecretKey = viper.GetString("S3_SECRET_KEY"); AppConfig.S3SecretKey == "" {
 		log.Fatalln("[INIT] S3_SECRET_KEY is not set")
-	}
-
-	if AppConfig.UploadsDirectory = viper.GetString("UPLOADS_DIR"); AppConfig.UploadsDirectory == "" {
-		log.Fatalln("[INIT] UPLOADS_DIR is not set")
 	}
 }
