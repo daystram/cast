@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/astaxie/beego/context"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/gorilla/websocket"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/rtmp"
@@ -18,7 +19,8 @@ import (
 
 type module struct {
 	db           *Entity
-	mq           *MQ
+	mq           *amqp.Channel
+	s3           *s3.S3
 	chat         *Chat
 	notification *Notification
 	live         Live
@@ -47,6 +49,7 @@ type Stream struct {
 type Component struct {
 	DB *mongo.Client
 	MQ *amqp.Channel
+	S3 *s3.S3
 }
 
 type Entity struct {
@@ -55,10 +58,6 @@ type Entity struct {
 	likeOrm         models.LikeOrmer
 	subscriptionOrm models.SubscriptionOrmer
 	commentOrm      models.CommentOrmer
-}
-
-type MQ struct {
-	channel *amqp.Channel
 }
 
 type Handler interface {
@@ -105,9 +104,8 @@ func NewHandler(component Component) Handler {
 			subscriptionOrm: models.NewSubscriptionOrmer(component.DB),
 			commentOrm:      models.NewCommentOrmer(component.DB),
 		},
-		mq: &MQ{
-			channel: component.MQ,
-		},
+		mq: component.MQ,
+		s3: component.S3,
 		chat: &Chat{
 			sockets:  make(map[string][]*websocket.Conn),
 			upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
