@@ -23,6 +23,12 @@ type Config struct {
 	RabbitMQQueueTask     string
 	RabbitMQQueueProgress string
 
+	S3URI       string
+	S3Bucket    string
+	S3Region    string
+	S3AccessKey string
+	S3SecretKey string
+
 	RatifyIssuer       string
 	RatifyClientID     string
 	RatifyClientSecret string
@@ -76,6 +82,22 @@ func InitializeAppConfig() {
 	}
 	if AppConfig.RabbitMQQueueProgress = viper.GetString("RABBITMQ_QUEUE_PROGRESS"); AppConfig.RabbitMQQueueProgress == "" {
 		log.Fatalln("[INIT] RABBITMQ_QUEUE_PROGRESS is not set")
+	}
+
+	if AppConfig.S3URI = viper.GetString("S3_URI"); AppConfig.S3URI == "" {
+		log.Fatalln("[INIT] S3_URI is not set")
+	}
+	if AppConfig.S3Bucket = viper.GetString("S3_BUCKET"); AppConfig.S3Bucket == "" {
+		log.Fatalln("[INIT] S3_BUCKET is not set")
+	}
+	if AppConfig.S3Region = viper.GetString("S3_REGION"); AppConfig.S3Region == "" {
+		log.Fatalln("[INIT] S3_REGION is not set")
+	}
+	if AppConfig.S3AccessKey = viper.GetString("S3_ACCESS_KEY"); AppConfig.S3AccessKey == "" {
+		log.Fatalln("[INIT] S3_ACCESS_KEY is not set")
+	}
+	if AppConfig.S3SecretKey = viper.GetString("S3_SECRET_KEY"); AppConfig.S3SecretKey == "" {
+		log.Fatalln("[INIT] S3_SECRET_KEY is not set")
 	}
 
 	if AppConfig.UploadsDirectory = viper.GetString("UPLOADS_DIR"); AppConfig.UploadsDirectory == "" {
