@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"github.com/daystram/cast/cast-be/config"
 	"github.com/daystram/cast/cast-be/constants"
 	"github.com/daystram/cast/cast-be/datatransfers"
 )
@@ -42,15 +45,11 @@ func (m *module) Register(idToken datatransfers.UserRegister) (err error) {
 		fmt.Printf("[Register] Failed adding %s live video entry. %+v\n", user.Username, err)
 		return
 	}
-	// TODO: use S3
-	//_ = util.Copy(
-	//    fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ProfileRootDir, constants.ProfileDefault),
-	//    fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ProfileRootDir, user.Username),
-	//)
-	//_ = util.Copy(
-	//    fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ThumbnailRootDir, constants.ThumbnailDefault),
-	//    fmt.Sprintf("%s/%s/%s.jpg", config.AppConfig.UploadsDirectory, constants.ThumbnailRootDir, user.Username),
-	//)
+	_, _ = m.s3.CopyObject(&s3.CopyObjectInput{
+		Bucket:     aws.String(config.AppConfig.S3Bucket),
+		CopySource: aws.String(fmt.Sprintf("%s/%s.jpg", config.AppConfig.S3Bucket, constants.ThumbnailDefault)),
+		Key:        aws.String(fmt.Sprintf("%s/%s.jpg", constants.ThumbnailRootDir, user.Username)),
+	})
 	return
 }
 
