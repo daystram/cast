@@ -39,7 +39,9 @@ type Config struct {
 var module Module
 
 type Module struct {
-	mq *amqp.Channel
+	mqPub *amqp.Channel
+	mqSub *amqp.Channel
+	s3    *s3.S3
 }
 
 type Resolution struct {
@@ -103,14 +105,14 @@ func init() {
 	if mqConn, err = amqp.Dial(config.RabbitMQURI); err != nil {
 		log.Fatalf("[Initialization] Failed connecting to RabbitMQ at %s. %+v\n", config.RabbitMQURI, err)
 	}
-	var mq *amqp.Channel
-	if mq, err = mqConn.Channel(); err != nil {
-		log.Fatalf("[Initialization] Failed opening RabbitMQ channel. %+v\n", err)
+	var mqInitCh *amqp.Channel
+	if mqInitCh, err = mqConn.Channel(); err != nil {
+		log.Fatalf("[Initialization] Failed opening RabbitMQ init channel. %+v\n", err)
 	}
-	if _, err = mq.QueueDeclare(config.RabbitMQQueueTask, true, false, false, false, nil); err != nil {
+	if _, err = mqInitCh.QueueDeclare(config.RabbitMQQueueTask, true, false, false, false, nil); err != nil {
 		log.Fatalf("[Initialization] Failed declaring RabbitMQ queue %s. %+v\n", config.RabbitMQQueueTask, err)
 	}
-	if _, err = mq.QueueDeclare(config.RabbitMQQueueProgress, true, false, false, false, nil); err != nil {
+	if _, err = mqInitCh.QueueDeclare(config.RabbitMQQueueProgress, true, false, false, false, nil); err != nil {
 		log.Fatalf("[Initialization] Failed declaring RabbitMQ queue %s. %+v\n", config.RabbitMQQueueProgress, err)
 	}
 	log.Printf("[Initialization] Successfully connected to RabbitMQ!\n")
@@ -135,6 +137,9 @@ func init() {
 	log.Printf("[Initialization] Successfully connected to S3!\n")
 
 	module = Module{mq: mq}
+}
+
+	module = Module{mqPub: mqPubCh, mqSub: mqSubCh, s3: s3Client}
 }
 
 func main() {
