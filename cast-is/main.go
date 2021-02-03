@@ -143,13 +143,13 @@ func init() {
 }
 
 func main() {
-	// Listen to messages
+	// Listen to transcode tasks
 	var err error
 	var receiver <-chan amqp.Delivery
-	if receiver, err = module.mq.Consume(
+	if receiver, err = module.mqSub.Consume(
 		config.RabbitMQQueueTask,
 		"",
-		true,
+		false,
 		false,
 		false,
 		false,
@@ -157,58 +157,133 @@ func main() {
 	); err != nil {
 		log.Printf("[cast-is] Failed creating RabbitMQ consumer. %+v\n", err)
 	}
-	fmt.Println("[cast-is] Ready to transcode!")
-	for msg := range receiver {
-		hash := string(msg.Body)
-		workDir := fmt.Sprintf("%s/%s", config.TempDir, hash)
-		_ = os.MkdirAll(workDir, 0755)
-		outfile, _ := os.Create(fmt.Sprintf("%s/transcode.log", workDir))
-		// TODO: get raw from S3
+	forever := make(chan bool)
+	go func() {
+		for msg := range receiver {
+			// Init working directory
+			hash := string(msg.Body)
+			workDir := fmt.Sprintf("%s/%s", config.TempDir, hash)
+			_ = os.MkdirAll(workDir, 0755)
+			logFile, _ := os.Create(fmt.Sprintf("%s/transcode.log", workDir))
+			log.Printf("[cast-is] Start: %s\n", hash)
+			fmt.Fprintf(logFile, "\n[cast-is] ----------------------- Start: %s", hash)
 
-		fmt.Printf("[cast-is] Start: %s\n", hash)
-		fmt.Fprintf(outfile, "\n[cast-is] ----------------------- Start: %s", hash)
-		for i, resolution := range resolutions {
-			fmt.Printf("[cast-is] %s -> %s\n", hash, resolution.Name)
-			fmt.Fprintf(outfile, "\n[cast-is] ----------------------- %s -> %s\n", hash, resolution.Name)
-			cmd := exec.Command(config.FFMpegExecutable, strings.Split(resolution.Flags, " ")...)
-			cmd.Stderr = outfile
-			cmd.Dir = workDir
-			if err := cmd.Run(); err != nil {
-				fmt.Printf("[cast-is] Stopped: %s\n", hash)
-				fmt.Fprintf(outfile, "[cast-is] ----------------------- Cancelled\n")
+			// Fetch assets
+			if object, err := module.s3.GetObject(&s3.GetObjectInput{
+				Bucket: aws.String(config.S3Bucket),
+				Key:    aws.String(fmt.Sprintf("video/%s/video.mp4", hash)),
+			}); err != nil {
+				log.Printf("[cast-is] Failed retrieving assets for %s. %v\n", hash, err)
+				fmt.Fprintf(logFile, "\n[cast-is] ----------------------- Failed retrieving assets!\n")
+				logFile.Close()
+				msg.Nack(false, false)
 				continue
+			} else {
+				video, _ := os.Create(fmt.Sprintf("%s/video.mp4", workDir))
+				_, _ = io.Copy(video, object.Body)
+				video.Close()
+				object.Body.Close()
+				fmt.Fprintf(logFile, "\n[cast-is] ----------------------- Sucessfully retrieved assets!\n")
 			}
-			if resolution.Name == "Audio" {
-				continue
+
+			// Begin transcoding
+			for i, resolution := range resolutions {
+				// Transcode to resolution
+				log.Printf("[cast-is] %s -> %s\n", hash, resolution.Name)
+				fmt.Fprintf(logFile, "\n[cast-is] ----------------------- %s -> %s\n", hash, resolution.Name)
+				flags := strings.Split(resolution.Flags, " ")
+				if config.UseCUDA {
+					flags = append(strings.Split(FlagsCUDA, " "), flags...) // prepend
+				}
+				cmd := exec.Command(config.FFMpegExecutable, flags...)
+				cmd.Stderr = logFile
+				cmd.Dir = workDir
+				if err := cmd.Run(); err != nil {
+					fmt.Println(err)
+					log.Printf("[cast-is] Cancelled: %s\n", hash)
+					fmt.Fprintf(logFile, "[cast-is] ----------------------- Cancelled\n")
+					continue
+				}
+				if resolution.Name == "Audio" {
+					// Upload audio
+					file, _ := os.Open(fmt.Sprintf("%s/audio.m4a", workDir))
+					_, _ = module.s3.PutObject(&s3.PutObjectInput{
+						Bucket:      aws.String(config.S3Bucket),
+						Key:         aws.String(fmt.Sprintf("video/%s/audio.m4a", hash)),
+						Body:        file,
+						ContentType: aws.String("audio/m4a"),
+					})
+					fmt.Fprintf(logFile, "[cast-is] ----------------------- Completed\n")
+					continue
+				}
+
+				// Generate DASH manifest
+				time.Sleep(2 * time.Second)
+				fmt.Fprintf(logFile, "[cast-is] ----------------------- %s -> %s DASH\n", hash, resolution.Name)
+				cmd = exec.Command(config.MP4BoxExecutable, append(strings.Split(FlagsDASH, " "), TempFileNames[5-i:]...)...)
+				cmd.Stderr = logFile
+				cmd.Dir = workDir
+				if err := cmd.Run(); err != nil {
+					fmt.Println(err)
+					log.Printf("[cast-is] Cancelled: %s\n", hash)
+					fmt.Fprintf(logFile, "[cast-is] ----------------------- Cancelled\n")
+					continue
+				}
+
+				// Notify cast-be
+				_ = module.mqPub.Publish("", config.RabbitMQQueueProgress, true, false,
+					amqp.Publishing{
+						ContentType: "text/plain",
+						Body:        []byte(fmt.Sprintf("%s:%d", hash, i)),
+					})
+
+				// Upload to S3
+				files, _ := filepath.Glob(fmt.Sprintf("%s/segment_*", workDir))
+				files = append(files, fmt.Sprintf("%s/manifest.mpd", workDir))
+				for _, path := range files {
+					file, _ := os.Open(path)
+					_, fileName := filepath.Split(path)
+					var mime string
+					if fileName == "manifest.mpd" {
+						mime = "application/dash+xml"
+					} else {
+						mime = "video/mp4"
+					}
+					_, _ = module.s3.PutObject(&s3.PutObjectInput{
+						Bucket:      aws.String(config.S3Bucket),
+						Key:         aws.String(fmt.Sprintf("video/%s/%s", hash, fileName)),
+						Body:        file,
+						ContentType: aws.String(mime),
+					})
+				}
+				fmt.Fprintf(logFile, "[cast-is] ----------------------- Completed\n")
 			}
-			time.Sleep(1 * time.Second)
-			_ = os.Remove(fmt.Sprintf("%s/manifest.mpd", workDir))
-			time.Sleep(2 * time.Second)
-			fmt.Fprintf(outfile, "[cast-is] ----------------------- %s -> %s DASH\n", hash, resolution.Name)
-			cmd = exec.Command(config.MP4BoxExecutable, append(strings.Split(FlagsDASH, " "), TempFileNames[5-i:]...)...)
-			cmd.Stderr = outfile
-			cmd.Dir = workDir
-			if err := cmd.Run(); err != nil {
-				fmt.Println(err)
-			}
-			_ = module.mq.Publish("", config.RabbitMQQueueProgress, true, false,
-				amqp.Publishing{
-					ContentType: "text/plain",
-					Body:        []byte(fmt.Sprintf("%s:%d", hash, i)),
-				})
-			// TODO: write into S3
-			fmt.Fprintf(outfile, "[cast-is] ----------------------- Completed\n")
+			// Upload log
+			logFile.Close()
+			logFile, _ = os.Open(logFile.Name())
+			fmt.Fprintf(logFile, "[cast-is] ----------------------- Done: %s\n", hash)
+			_, _ = module.s3.PutObject(&s3.PutObjectInput{
+				Bucket:      aws.String(config.S3Bucket),
+				Key:         aws.String(fmt.Sprintf("video/%s/transcode.log", hash)),
+				Body:        logFile,
+				ContentType: aws.String("text/plain"),
+			})
+			logFile.Close()
+			log.Printf("[cast-is] Done: %s\n", hash)
+
+			// Cleanup
+			cleanUp(workDir)
+			msg.Ack(false)
 		}
-		cleanUp(workDir)
-		fmt.Printf("[cast-is] Done: %s\n", hash)
-		fmt.Fprintf(outfile, "[cast-is] ----------------------- Done: %s\n", hash)
-		outfile.Close()
-	}
+	}()
+	log.Println("[cast-is] Ready to transcode!")
+	<-forever
 }
 
 func cleanUp(path string) {
-	files, _ := filepath.Glob(fmt.Sprintf("%s/temp*", path))
+	files, _ := filepath.Glob(fmt.Sprintf("%s/*", path))
 	for _, file := range files {
 		_ = os.Remove(file)
 	}
+	_ = os.Remove(path)
 }
