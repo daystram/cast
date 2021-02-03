@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -21,6 +22,7 @@ var config Config
 
 type Config struct {
 	TempDir string
+	UseCUDA bool
 
 	RabbitMQURI           string
 	RabbitMQQueueTask     string
@@ -55,6 +57,7 @@ var (
 
 const (
 	FlagsAudio = "-i video.mp4 -vn -acodec aac -ab 128k -dash 1 -y audio.m4a"
+	FlagsCUDA  = "-hwaccel cuda"
 	BaseVideo  = "-i video.mp4 -vsync passthrough -c:v libx264 -x264-params keyint=25:min-keyint=25:no-scenecut -movflags +faststart -y "
 	Flags240   = BaseVideo + "-an -vf scale=-2:240 -b:v 400k -preset faster temp_240.mp4"
 	Flags360   = BaseVideo + "-an -vf scale=-2:360 -b:v 800k -preset faster temp_360.mp4"
@@ -88,6 +91,7 @@ func init() {
 
 	config = Config{
 		TempDir:               viper.GetString("TEMP_DIR"),
+		UseCUDA:               viper.GetBool("USE_CUDA"),
 		RabbitMQURI:           viper.GetString("RABBITMQ_URI"),
 		RabbitMQQueueTask:     viper.GetString("RABBITMQ_QUEUE_TASK"),
 		RabbitMQQueueProgress: viper.GetString("RABBITMQ_QUEUE_PROGRESS"),
@@ -115,6 +119,14 @@ func init() {
 	if _, err = mqInitCh.QueueDeclare(config.RabbitMQQueueProgress, true, false, false, false, nil); err != nil {
 		log.Fatalf("[Initialization] Failed declaring RabbitMQ queue %s. %+v\n", config.RabbitMQQueueProgress, err)
 	}
+	var mqPubCh *amqp.Channel
+	var mqSubCh *amqp.Channel
+	if mqPubCh, err = mqConn.Channel(); err != nil {
+		log.Fatalf("[Initialization] Failed opening RabbitMQ publisher channel. %+v\n", err)
+	}
+	if mqSubCh, err = mqConn.Channel(); err != nil {
+		log.Fatalf("[Initialization] Failed opening RabbitMQ subscription channel. %+v\n", err)
+	}
 	log.Printf("[Initialization] Successfully connected to RabbitMQ!\n")
 
 	// Init S3
@@ -136,8 +148,15 @@ func init() {
 	}
 	log.Printf("[Initialization] Successfully connected to S3!\n")
 
-	module = Module{mq: mq}
-}
+	// Check CUDA
+	if config.UseCUDA {
+		log.Printf("[Initialization] Checking GPU availability...\n")
+		cmd := exec.Command("nvidia-smi")
+		if err = cmd.Run(); err != nil {
+			log.Fatalf("[Initialization] Failed checking GPU availability. %+v\n", err)
+		}
+		log.Printf("[Initialization] CUDA hardware acceleration enabled!\n")
+	}
 
 	module = Module{mqPub: mqPubCh, mqSub: mqSubCh, s3: s3Client}
 }
