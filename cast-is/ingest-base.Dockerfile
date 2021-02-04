@@ -1,5 +1,6 @@
 FROM nvidia/cuda:11.1.1-base-ubuntu20.04 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
+ENV NVIDIA_DRIVER_CAPABILITIES=video
 ENV FFMPEG_EXECUTABLE=/usr/bin/ffmpeg
 ENV MP4BOX_EXECUTABLE=/usr/local/bin/MP4Box
 ENV GPAC_EXECUTABLE=/usr/local/bin/gpac
