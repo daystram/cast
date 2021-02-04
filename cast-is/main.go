@@ -56,15 +56,15 @@ var (
 )
 
 const (
-	FlagsAudio = "-i video.mp4 -vn -acodec aac -ab 128k -dash 1 -y audio.m4a"
-	FlagsCUDA  = "-hwaccel cuda"
-	BaseVideo  = "-i video.mp4 -vsync passthrough -c:v libx264 -x264-params keyint=25:min-keyint=25:no-scenecut -movflags +faststart -y "
-	Flags240   = BaseVideo + "-an -vf scale=-2:240 -b:v 400k -preset faster temp_240.mp4"
-	Flags360   = BaseVideo + "-an -vf scale=-2:360 -b:v 800k -preset faster temp_360.mp4"
-	Flags480   = BaseVideo + "-an -vf scale=-2:480 -b:v 1200k -preset faster temp_480.mp4"
-	Flags720   = BaseVideo + "-an -vf scale=-2:720 -b:v 2400k -preset faster temp_720.mp4"
-	Flags1080  = BaseVideo + "-an -vf scale=-2:1080 -b:v 4800k -preset faster temp_1080.mp4"
-	FlagsDASH  = "-dash 10000 -rap -frag-rap -bs-switching no -url-template -dash-profile onDemand -segment-name segment_$RepresentationID$ -out manifest.mpd"
+	FlagsAudio   = "-i video.mp4 -vn -c:a aac -b 128k -dash 1 -y audio.m4a"
+	BaseVideoCPU = "-i video.mp4 -c:v libx264 -vsync passthrough -x264-params keyint=25:min-keyint=25:no-scenecut -movflags +faststart -y"
+	BaseVideoGPU = "-hwaccel cuvid -i video.mp4 -c:v h264_nvenc -vsync passthrough -x264-params keyint=25:min-keyint=25:no-scenecut -movflags +faststart -y"
+	Flags240     = "-an -vf scale=-2:240 -b:v 400k temp_240.mp4"
+	Flags360     = "-an -vf scale=-2:360 -b:v 800k temp_360.mp4"
+	Flags480     = "-an -vf scale=-2:480 -b:v 1200k temp_480.mp4"
+	Flags720     = "-an -vf scale=-2:720 -b:v 2400k temp_720.mp4"
+	Flags1080    = "-an -vf scale=-2:1080 -b:v 4800k temp_1080.mp4"
+	FlagsDASH    = "-dash 10000 -rap -frag-rap -bs-switching no -url-template -dash-profile onDemand -segment-name segment_$RepresentationID$ -out manifest.mpd"
 )
 
 var resolutions = []Resolution{
@@ -226,8 +226,12 @@ func main() {
 				log.Printf("[cast-is] %s -> %s\n", hash, resolution.Name)
 				fmt.Fprintf(logFile, "\n[cast-is] ----------------------- %s -> %s\n", hash, resolution.Name)
 				flags := strings.Split(resolution.Flags, " ")
-				if config.UseCUDA {
-					flags = append(strings.Split(FlagsCUDA, " "), flags...) // prepend
+				if resolution.Name != "Audio" {
+					if config.UseCUDA {
+						flags = append(strings.Split(BaseVideoGPU, " "), flags...) // prepend
+					} else {
+						flags = append(strings.Split(BaseVideoCPU, " "), flags...) // prepend
+					}
 				}
 				cmd := exec.Command(config.FFMpegExecutable, flags...)
 				cmd.Stderr = logFile
