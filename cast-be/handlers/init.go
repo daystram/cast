@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/gorilla/websocket"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/rtmp"
@@ -18,7 +20,8 @@ import (
 
 type module struct {
 	db           *Entity
-	mq           *MQ
+	mq           *amqp.Channel
+	s3           *s3.S3
 	chat         *Chat
 	notification *Notification
 	live         Live
@@ -47,6 +50,7 @@ type Stream struct {
 type Component struct {
 	DB *mongo.Client
 	MQ *amqp.Channel
+	S3 *s3.S3
 }
 
 type Entity struct {
@@ -55,10 +59,6 @@ type Entity struct {
 	likeOrm         models.LikeOrmer
 	subscriptionOrm models.SubscriptionOrmer
 	commentOrm      models.CommentOrmer
-}
-
-type MQ struct {
-	channel *amqp.Channel
 }
 
 type Handler interface {
@@ -74,11 +74,10 @@ type Handler interface {
 	AuthorList(author string, count, offset int) (videos []data.Video, err error)
 	SearchVideo(query string, tags []string, count, offset int) (videos []data.Video, err error)
 	VideoDetails(hash string) (video data.Video, err error)
-	CreateVOD(upload data.VideoUpload, userID string) (ID primitive.ObjectID, err error)
+	CreateVOD(upload data.VideoUpload, controller beego.Controller, userID string) (ID primitive.ObjectID, err error)
 	DeleteVideo(ID primitive.ObjectID, userID string) (err error)
 	UpdateVideo(video data.VideoEdit, userID string) (err error)
 	CheckUniqueVideoTitle(title string) (err error)
-	NormalizeThumbnail(hash string) (err error)
 	LikeVideo(userID string, hash string, like bool) (err error)
 	Subscribe(userID string, username string, subscribe bool) (err error)
 	CheckUserLikes(hash, username string) (liked bool, err error)
@@ -105,9 +104,8 @@ func NewHandler(component Component) Handler {
 			subscriptionOrm: models.NewSubscriptionOrmer(component.DB),
 			commentOrm:      models.NewCommentOrmer(component.DB),
 		},
-		mq: &MQ{
-			channel: component.MQ,
-		},
+		mq: component.MQ,
+		s3: component.S3,
 		chat: &Chat{
 			sockets:  make(map[string][]*websocket.Conn),
 			upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
