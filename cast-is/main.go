@@ -151,7 +151,7 @@ func init() {
 	// Check CUDA
 	if config.UseCUDA {
 		log.Printf("[Initialization] Checking GPU availability...\n")
-		cmd := exec.Command("nvidia-smi")
+		cmd := exec.Command("ldconfig", strings.Split("-p | grep cuvid", " ")...)
 		if err = cmd.Run(); err != nil {
 			log.Fatalf("[Initialization] Failed checking GPU availability. %+v\n", err)
 		}
