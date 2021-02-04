@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -107,27 +106,33 @@ func init() {
 	// Init RabbitMQ
 	var mqConn *amqp.Connection
 	if mqConn, err = amqp.Dial(config.RabbitMQURI); err != nil {
-		log.Fatalf("[Initialization] Failed connecting to RabbitMQ at %s. %+v\n", config.RabbitMQURI, err)
+		fmt.Printf("[Initialization] Failed connecting to RabbitMQ at %s. %+v\n", config.RabbitMQURI, err)
+		panic(err)
 	}
 	var mqInitCh *amqp.Channel
 	if mqInitCh, err = mqConn.Channel(); err != nil {
-		log.Fatalf("[Initialization] Failed opening RabbitMQ init channel. %+v\n", err)
+		fmt.Printf("[Initialization] Failed opening RabbitMQ init channel. %+v\n", err)
+		panic(err)
 	}
 	if _, err = mqInitCh.QueueDeclare(config.RabbitMQQueueTask, true, false, false, false, nil); err != nil {
-		log.Fatalf("[Initialization] Failed declaring RabbitMQ queue %s. %+v\n", config.RabbitMQQueueTask, err)
+		fmt.Printf("[Initialization] Failed declaring RabbitMQ queue %s. %+v\n", config.RabbitMQQueueTask, err)
+		panic(err)
 	}
 	if _, err = mqInitCh.QueueDeclare(config.RabbitMQQueueProgress, true, false, false, false, nil); err != nil {
-		log.Fatalf("[Initialization] Failed declaring RabbitMQ queue %s. %+v\n", config.RabbitMQQueueProgress, err)
+		fmt.Printf("[Initialization] Failed declaring RabbitMQ queue %s. %+v\n", config.RabbitMQQueueProgress, err)
+		panic(err)
 	}
 	var mqPubCh *amqp.Channel
 	var mqSubCh *amqp.Channel
 	if mqPubCh, err = mqConn.Channel(); err != nil {
-		log.Fatalf("[Initialization] Failed opening RabbitMQ publisher channel. %+v\n", err)
+		fmt.Printf("[Initialization] Failed opening RabbitMQ publisher channel. %+v\n", err)
+		panic(err)
 	}
 	if mqSubCh, err = mqConn.Channel(); err != nil {
-		log.Fatalf("[Initialization] Failed opening RabbitMQ subscription channel. %+v\n", err)
+		fmt.Printf("[Initialization] Failed opening RabbitMQ subscription channel. %+v\n", err)
+		panic(err)
 	}
-	log.Printf("[Initialization] Successfully connected to RabbitMQ!\n")
+	fmt.Printf("[Initialization] Successfully connected to RabbitMQ!\n")
 
 	// Init S3
 	var s3Session *session.Session
@@ -138,39 +143,45 @@ func init() {
 		DisableSSL:       aws.Bool(false),
 		S3ForcePathStyle: aws.Bool(true),
 	}); err != nil {
-		log.Fatalf("[Initialization] Failed creating S3 session to %s. %+v\n", config.S3URI, err)
+		fmt.Printf("[Initialization] Failed creating S3 session to %s. %+v\n", config.S3URI, err)
+		panic(err)
 	}
 	s3Client := s3.New(s3Session)
 	if _, err := s3Client.ListObjectsV2(&s3.ListObjectsV2Input{
 		Bucket: aws.String(config.S3Bucket),
 	}); err != nil {
-		log.Fatalf("[Initialization] Failed connecting to S3. %+v\n", err)
+		fmt.Printf("[Initialization] Failed connecting to S3. %+v\n", err)
+		panic(err)
 	}
-	log.Printf("[Initialization] Successfully connected to S3!\n")
+	fmt.Printf("[Initialization] Successfully connected to S3!\n")
 
 	// Check CUDA
 	if config.UseCUDA {
-		log.Printf("[Initialization] Checking CUDA driver availability...\n")
 		reader, writer := io.Pipe()
 		cmd1 := exec.Command("ldconfig", "-p")
 		cmd2 := exec.Command("grep", "nvcuvid")
 		cmd1.Stdout = writer
 		cmd2.Stdin = reader
+		fmt.Printf("[Initialization] Checking nvcuvid CUDA driver availability... ")
 		if err = cmd1.Start(); err != nil {
-			log.Fatalf("[Initialization] Failed checking availability. %+v\n", err)
+			fmt.Printf("ERROR: %+v\n", err)
+			panic(err)
 		}
 		if err = cmd2.Start(); err != nil {
-			log.Fatalf("[Initialization] Failed checking availability. %+v\n", err)
+			fmt.Printf("ERROR: %+v\n", err)
+			panic(err)
 		}
 		if err = cmd1.Wait(); err != nil {
-			log.Fatalf("[Initialization] Failed checking availability. %+v\n", err)
+			fmt.Printf("ERROR: %+v\n", err)
+			panic(err)
 		}
 		writer.Close()
 		if err = cmd2.Wait(); err != nil {
-			log.Fatalf("[Initialization] nvcuvid driver not found! %+v\n", err)
+			fmt.Printf("ERROR: nvcuvid driver not found! %+v\n", err)
+			panic(err)
 		}
 		reader.Close()
-		log.Printf("[Initialization] CUDA hardware acceleration enabled!\n")
+		fmt.Printf("OK\n")
 	}
 
 	module = Module{mqPub: mqPubCh, mqSub: mqSubCh, s3: s3Client}
@@ -189,26 +200,30 @@ func main() {
 		false,
 		nil,
 	); err != nil {
-		log.Printf("[cast-is] Failed creating RabbitMQ consumer. %+v\n", err)
+		fmt.Printf("[cast-is] Failed creating RabbitMQ consumer. %+v\n", err)
 	}
 	forever := make(chan bool)
 	go func() {
 		for msg := range receiver {
 			// Init working directory
+			startAll := time.Now().UnixNano()
 			hash := string(msg.Body)
 			workDir := fmt.Sprintf("%s/%s", config.TempDir, hash)
 			_ = os.MkdirAll(workDir, 0755)
 			logFile, _ := os.Create(fmt.Sprintf("%s/transcode.log", workDir))
-			log.Printf("[cast-is] Start: %s\n", hash)
+			fmt.Printf("[cast-is] Start: %s\n", hash)
 			fmt.Fprintf(logFile, "\n[cast-is] ----------------------- Start: %s", hash)
 
 			// Fetch assets
+			fmt.Printf("[cast-is] Retrieving assets... ")
+			fmt.Fprintf(logFile, "\n[cast-is] ----------------------- Retrieving assets... ")
+			start := time.Now().UnixNano()
 			if object, err := module.s3.GetObject(&s3.GetObjectInput{
 				Bucket: aws.String(config.S3Bucket),
 				Key:    aws.String(fmt.Sprintf("video/%s/video.mp4", hash)),
 			}); err != nil {
-				log.Printf("[cast-is] Failed retrieving assets for %s. %v\n", hash, err)
-				fmt.Fprintf(logFile, "\n[cast-is] ----------------------- Failed retrieving assets!\n")
+				fmt.Printf("ERROR: %v\n", err)
+				fmt.Fprintf(logFile, "ERROR\n")
 				logFile.Close()
 				msg.Nack(false, false)
 				continue
@@ -217,14 +232,15 @@ func main() {
 				_, _ = io.Copy(video, object.Body)
 				video.Close()
 				object.Body.Close()
-				fmt.Fprintf(logFile, "\n[cast-is] ----------------------- Sucessfully retrieved assets!\n")
+				fmt.Printf("OK (%.2fs)\n", float64(time.Now().UnixNano()-start)/1e9)
+				fmt.Fprintf(logFile, "OK (%.2fs)\n", float64(time.Now().UnixNano()-start)/1e9)
 			}
 
 			// Begin transcoding
 			for i, resolution := range resolutions {
 				// Transcode to resolution
-				log.Printf("[cast-is] %s -> %s\n", hash, resolution.Name)
-				fmt.Fprintf(logFile, "\n[cast-is] ----------------------- %s -> %s\n", hash, resolution.Name)
+				fmt.Printf("[cast-is] Transcode -> %s ", resolution.Name)
+				fmt.Fprintf(logFile, "\n[cast-is] ----------------------- Transcode -> %s\n", resolution.Name)
 				flags := strings.Split(resolution.Flags, " ")
 				if resolution.Name != "Audio" {
 					if config.UseCUDA {
@@ -236,14 +252,17 @@ func main() {
 				cmd := exec.Command(config.FFMpegExecutable, flags...)
 				cmd.Stderr = logFile
 				cmd.Dir = workDir
+				start = time.Now().UnixNano()
 				if err := cmd.Run(); err != nil {
-					fmt.Println(err)
-					log.Printf("[cast-is] Cancelled: %s\n", hash)
-					fmt.Fprintf(logFile, "[cast-is] ----------------------- Cancelled\n")
+					fmt.Printf("ERROR: %v\n", err)
+					fmt.Fprintf(logFile, "[cast-is] ----------------------- ERROR\n")
 					continue
 				}
+				fmt.Printf("DONE (%.2fs) ", float64(time.Now().UnixNano()-start)/1e9)
+				fmt.Fprintf(logFile, "[cast-is] ----------------------- DONE (%.2fs)\n", float64(time.Now().UnixNano()-start)/1e9)
 				if resolution.Name == "Audio" {
 					// Upload audio
+					start = time.Now().UnixNano()
 					file, _ := os.Open(fmt.Sprintf("%s/audio.m4a", workDir))
 					_, _ = module.s3.PutObject(&s3.PutObjectInput{
 						Bucket:      aws.String(config.S3Bucket),
@@ -251,22 +270,24 @@ func main() {
 						Body:        file,
 						ContentType: aws.String("audio/m4a"),
 					})
-					fmt.Fprintf(logFile, "[cast-is] ----------------------- Completed\n")
+					fmt.Printf("; UPLOADED (%.2fs)\n", float64(time.Now().UnixNano()-start)/1e9)
+					fmt.Fprintf(logFile, "[cast-is] ----------------------- UPLOADED (%.2fs)\n", float64(time.Now().UnixNano()-start)/1e9)
 					continue
 				}
 
 				// Generate DASH manifest
-				time.Sleep(2 * time.Second)
-				fmt.Fprintf(logFile, "[cast-is] ----------------------- %s -> %s DASH\n", hash, resolution.Name)
+				fmt.Fprintf(logFile, "[cast-is] ----------------------- DASH -> %s\n", resolution.Name)
 				cmd = exec.Command(config.MP4BoxExecutable, append(strings.Split(FlagsDASH, " "), TempFileNames[5-i:]...)...)
 				cmd.Stderr = logFile
 				cmd.Dir = workDir
+				start = time.Now().UnixNano()
 				if err := cmd.Run(); err != nil {
-					fmt.Println(err)
-					log.Printf("[cast-is] Cancelled: %s\n", hash)
-					fmt.Fprintf(logFile, "[cast-is] ----------------------- Cancelled\n")
+					fmt.Printf("; ERROR: %v\n", err)
+					fmt.Fprintf(logFile, "[cast-is] ----------------------- ERROR\n")
 					continue
 				}
+				fmt.Printf("; DASH (%.2fs) ", float64(time.Now().UnixNano()-start)/1e9)
+				fmt.Fprintf(logFile, "\n[cast-is] ----------------------- DONE (%.2fs)\n", float64(time.Now().UnixNano()-start)/1e9)
 
 				// Notify cast-be
 				_ = module.mqPub.Publish("", config.RabbitMQQueueProgress, true, false,
@@ -278,6 +299,7 @@ func main() {
 				// Upload to S3
 				files, _ := filepath.Glob(fmt.Sprintf("%s/segment_*", workDir))
 				files = append(files, fmt.Sprintf("%s/manifest.mpd", workDir))
+				start = time.Now().UnixNano()
 				for _, path := range files {
 					file, _ := os.Open(path)
 					_, fileName := filepath.Split(path)
@@ -294,12 +316,14 @@ func main() {
 						ContentType: aws.String(mime),
 					})
 				}
-				fmt.Fprintf(logFile, "[cast-is] ----------------------- Completed\n")
+				fmt.Printf("; UPLOADED (%.2fs)\n", float64(time.Now().UnixNano()-start)/1e9)
+				fmt.Fprintf(logFile, "[cast-is] ----------------------- UPLOADED (%.2fs)\n", float64(time.Now().UnixNano()-start)/1e9)
+				fmt.Fprintf(logFile, "[cast-is] ----------------------- Completed -> %s\n", resolution.Name)
 			}
 			// Upload log
 			logFile.Close()
 			logFile, _ = os.Open(logFile.Name())
-			fmt.Fprintf(logFile, "[cast-is] ----------------------- Done: %s\n", hash)
+			fmt.Fprintf(logFile, "[cast-is] ----------------------- Done: %s (%.2fs)\n", hash, float64(time.Now().UnixNano()-startAll)/1e9)
 			_, _ = module.s3.PutObject(&s3.PutObjectInput{
 				Bucket:      aws.String(config.S3Bucket),
 				Key:         aws.String(fmt.Sprintf("video/%s/transcode.log", hash)),
@@ -307,14 +331,15 @@ func main() {
 				ContentType: aws.String("text/plain"),
 			})
 			logFile.Close()
-			log.Printf("[cast-is] Done: %s\n", hash)
+			fmt.Printf("[cast-is] Done: %s (%.2fs)\n", hash, float64(time.Now().UnixNano()-startAll)/1e9)
+			fmt.Println("[cast-is] Ready!")
 
 			// Cleanup
 			cleanUp(workDir)
 			msg.Ack(false)
 		}
 	}()
-	log.Println("[cast-is] Ready to transcode!")
+	fmt.Println("[cast-is] Ready!")
 	<-forever
 }
 
