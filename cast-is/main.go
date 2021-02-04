@@ -150,11 +150,26 @@ func init() {
 
 	// Check CUDA
 	if config.UseCUDA {
-		log.Printf("[Initialization] Checking GPU availability...\n")
-		cmd := exec.Command("ldconfig", strings.Split("-p | grep cuvid", " ")...)
-		if err = cmd.Run(); err != nil {
-			log.Fatalf("[Initialization] Failed checking GPU availability. %+v\n", err)
+		log.Printf("[Initialization] Checking CUDA driver availability...\n")
+		reader, writer := io.Pipe()
+		cmd1 := exec.Command("ldconfig", "-p")
+		cmd2 := exec.Command("grep", "nvcuvid")
+		cmd1.Stdout = writer
+		cmd2.Stdin = reader
+		if err = cmd1.Start(); err != nil {
+			log.Fatalf("[Initialization] Failed checking availability. %+v\n", err)
 		}
+		if err = cmd2.Start(); err != nil {
+			log.Fatalf("[Initialization] Failed checking availability. %+v\n", err)
+		}
+		if err = cmd1.Wait(); err != nil {
+			log.Fatalf("[Initialization] Failed checking availability. %+v\n", err)
+		}
+		writer.Close()
+		if err = cmd2.Wait(); err != nil {
+			log.Fatalf("[Initialization] nvcuvid driver not found! %+v\n", err)
+		}
+		reader.Close()
 		log.Printf("[Initialization] CUDA hardware acceleration enabled!\n")
 	}
 
