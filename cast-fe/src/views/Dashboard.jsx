@@ -137,6 +137,10 @@ class Dashboard extends Component {
       });
   }
 
+  componentWillUnmount() {
+    clearInterval(interval);
+  }
+
   render() {
     return (
       <>
@@ -272,7 +276,7 @@ class Dashboard extends Component {
                 <Card body style={style.card_detail}>
                   <Row>
                     <Col md={6} sm={12}>
-                      <Form autocomplete="off">
+                      <Form autoComplete="off">
                         <Form.Group>
                           <Form.Label>Server Address</Form.Label>
                           <InputGroup>
@@ -280,6 +284,7 @@ class Dashboard extends Component {
                               type="text"
                               value={`rtmp://cast.daystram.com/live`}
                               ref={(ref) => (this.rtmpField = ref)}
+                              onChange={() => {}}
                             />
                             <InputGroup.Append>
                               <OverlayTrigger
@@ -308,13 +313,14 @@ class Dashboard extends Component {
                       </Form>
                     </Col>
                     <Col md={6} sm={12}>
-                      <Form autocomplete="off">
+                      <Form autoComplete="off">
                         <Form.Group>
                           <Form.Label>Stream Key</Form.Label>
                           <InputGroup>
                             <Form.Control
                               type={this.state.show_key ? "text" : "password"}
                               value={authManager.getUser().preferred_username}
+                              onChange={() => {}}
                             />
                             <InputGroup.Append>
                               <Button
@@ -363,7 +369,7 @@ class Dashboard extends Component {
                       </Form>
                     </Col>
                     <Col sm={12}>
-                      <Form autocomplete="off">
+                      <Form autoComplete="off">
                         <Form.Group>
                           <Form.Label>Chat Embed</Form.Label>
                           <InputGroup>
@@ -373,6 +379,7 @@ class Dashboard extends Component {
                                 authManager.getUser().preferred_username
                               }`}
                               ref={(ref) => (this.chatField = ref)}
+                              onChange={() => {}}
                             />
                             <InputGroup.Append>
                               <OverlayTrigger
