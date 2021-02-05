@@ -8,7 +8,7 @@ import (
 	"path"
 	"sync"
 	"time"
-	
+
 	"github.com/nareix/joy4/av/avutil"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/flv"
@@ -64,7 +64,8 @@ func (m *module) CreateRTMPUpLink() {
 			}
 			fmt.Printf("[RTMPUpLink] UpLink for %s connected\n", username)
 			m.BroadcastNotificationSubscriber(video.Author.ID, datatransfers.NotificationOutgoing{
-				Message:   fmt.Sprintf("%s just went live! Watch now!", video.Author.Username),
+				Message:   fmt.Sprintf("%s just went live! Watch now!", video.Author.Name),
+				Name:      video.Author.Name,
 				Username:  video.Author.Username,
 				Hash:      video.Hash,
 				CreatedAt: time.Now(),

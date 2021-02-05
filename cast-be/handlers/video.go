@@ -247,7 +247,8 @@ func (m *module) Subscribe(userID string, username string, subscribe bool) (err 
 			CreatedAt: time.Now(),
 		})
 		m.PushNotification(author.ID, data.NotificationOutgoing{
-			Message:   fmt.Sprintf("%s just subscribed!", user.Username),
+			Message:   fmt.Sprintf("%s just subscribed!", user.Name),
+			Name:      user.Name,
 			Username:  user.Username,
 			CreatedAt: time.Now(),
 		})
