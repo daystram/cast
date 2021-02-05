@@ -18,8 +18,6 @@ import Cast from "./Cast";
 import Sidebar from "./Sidebar";
 import { HybridPlayer } from "./player";
 import abbreviate from "../helper/abbreviate";
-import axios from "axios";
-import urls from "../helper/url";
 import format from "../helper/format";
 import { withRouter } from "react-router-dom";
 import auth from "../helper/auth";
@@ -164,6 +162,7 @@ class Scene extends Component {
     if (auth().is_authenticated()) {
       let link = document.createElement("a");
       link.href = api.cdn.download(this.state.video.hash);
+      link.download = `${this.state.video.title} by ${this.state.video.author.name} - cast`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -247,8 +246,8 @@ class Scene extends Component {
   handleSubscribe() {
     if (this.state.loading.current) return;
     if (auth().is_authenticated()) {
-      axios
-        .post(urls().subscribe(), {
+      api.user
+        .subscribe({
           author: this.state.video.author.username,
           subscribe: !this.state.subscribed,
         })
