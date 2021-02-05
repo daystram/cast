@@ -1,11 +1,10 @@
 import React, { Component } from "react";
 import { Card, Col, Container, Row } from "react-bootstrap";
 import SidebarProfile from "./SidebarProfile";
-import axios from "axios";
-import urls from "../helper/url";
 import auth from "../helper/auth";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
+import api from "../apis/api";
 
 class Profile extends Component {
   constructor(props) {
@@ -25,10 +24,8 @@ class Profile extends Component {
   }
 
   fetchUser() {
-    axios
-      .get(urls().user_info(), {
-        headers: { Authorization: `Bearer ${auth().token()}` },
-      })
+    api.user
+      .detail()
       .then((response) => {
         this.setState({ loading_info: false });
         if (response.data.code === 200) {

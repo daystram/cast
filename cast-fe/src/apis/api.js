@@ -123,6 +123,14 @@ export default {
       });
     },
   },
+  user: {
+    detail() {
+      return apiClient.get(`/p/user/info`, withAuth());
+    },
+    subscribe(data) {
+      return apiClient.post(`/p/video/subscribe`, data, withAuth());
+    },
+  },
   auth: {
     register(idToken) {
       return apiClient.post(`/p/auth/check`, { id_token: idToken }, withAuth());
