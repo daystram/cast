@@ -7,13 +7,13 @@ import {
   Home,
   Liked,
   Live,
+  Manage,
   Profile,
   Scene,
   Search,
   Subscribed,
   Trending,
 } from "./components";
-import Manage from "./components/Manage";
 import auth from "./helper/auth";
 
 const Routes = () => {
@@ -28,16 +28,12 @@ const Routes = () => {
       <Route path={"/w/:hash"} exact component={Scene} />
       <Route path={"/c/:hash"} exact component={Chat} />
       <Route path={"/s"} exact component={Search} />
-      {/* <Route path={"/logout"} component={LogOut} /> */}
       <PrivateRoute path={"/profile"} exact component={Profile} />
       <PrivateRoute path={"/dashboard"} exact component={Dashboard} />
       <PrivateRoute path={"/manage"} exact component={Manage} />
       <PublicRoute path={"/login"} exact component={auth().login} />
       <PrivateRoute path={"/logout"} exact component={auth().logout} />
       <Route path={"/callback"} exact component={auth().callback} />
-      {/* <PublicRoute path={"/verify"} exact component={Verify} /> */}
-      {/* <PublicRoute path={"/forget"} exact component={Forget} /> */}
-      {/* <PublicRoute path={"/signup"} exact component={SignUp} /> */}
       <Route>
         <Redirect to={"/"} />
       </Route>

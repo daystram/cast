@@ -1,6 +1,5 @@
 import Chat from "./Chat";
 import Dashboard from "./Dashboard";
-import Forget from "./Forget";
 import Fresh from "./Fresh";
 import Home from "./Home";
 import Scene from "./Scene";
@@ -15,15 +14,14 @@ import Profile from "./Profile";
 export {
   Chat,
   Dashboard,
-  Forget,
   Fresh,
   Home,
-  Scene,
-  Search,
-  Subscribed,
-  Trending,
   Liked,
   Live,
   Manage,
   Profile,
+  Scene,
+  Search,
+  Subscribed,
+  Trending,
 };
