@@ -5,6 +5,7 @@ import abbreviate from "../helper/abbreviate";
 import { currentHash } from "../helper/url";
 import TimeAgo from "react-timeago";
 import api from "../apis/api";
+import { ProfileImage } from "./index";
 
 function Cast(props) {
   const history = useHistory();
@@ -38,13 +39,11 @@ function Cast(props) {
         </Badge>
       </div>
       <div style={style.cast_detail}>
-        <Image
-          src={""}
-          height={42}
-          width={42}
+        <ProfileImage
+          size={42}
+          name={props.video.author.name}
           style={style.profile_image}
           onClick={viewAuthor}
-          roundedCircle
         />
         <div style={style.cast_author_details}>
           <p style={style.cast_title}>{props.video.title}</p>

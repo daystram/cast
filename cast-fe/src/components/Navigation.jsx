@@ -16,6 +16,7 @@ import { authManager } from "../helper/auth";
 import { MOBILE_BP } from "../constants/breakpoint";
 import Sidebar from "./Sidebar";
 import SidebarProfile from "./SidebarProfile";
+import { ProfileImage } from "./index";
 function Navigation() {
   const [query, setQuery] = useState(
     new URLSearchParams(useLocation().search).get("query") || ""
@@ -25,27 +26,14 @@ function Navigation() {
   const history = useHistory();
   const user = authManager.getUser();
   let profileButton = authManager.isAuthenticated() ? (
-    <div
-      className="text-center"
-      style={{
-        width: 38,
-        height: 38,
-        flexShrink: 0,
-        borderRadius: 18,
-        background: "gray",
-        color: "white",
-        fontSize: "18px",
-        lineHeight: "38px",
-        textAlign: "center",
-        textTransform: "capitalize",
-        cursor: "pointer",
-      }}
+    <ProfileImage
+      size={38}
+      name={`${user.given_name} ${user.family_name}`}
+      style={style.profile_image}
       onClick={() => {
         history.push("/profile");
       }}
-    >
-      {user.given_name[0] + user.family_name[0]}
-    </div>
+    />
   ) : (
     <>
       <Button
