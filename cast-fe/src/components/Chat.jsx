@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { Button, Card, Form, FormControl, InputGroup } from "react-bootstrap";
-import urls from "../helper/url";
 import auth from "../helper/auth";
 import { withRouter } from "react-router-dom";
 import { CHAT_CHAR_LIMIT } from "../constants/chat";
+import api from "../apis/api";
 
 class Chat extends Component {
   constructor(props) {
@@ -45,7 +45,7 @@ class Chat extends Component {
       console.log("WebSocket not supported!");
       return;
     }
-    const connection = new WebSocket(urls().chat(hash, auth().token()));
+    const connection = new WebSocket(api.ws.chat(hash));
     connection.onopen = () => {
       console.log("Live chat connected!");
       this.setState({ connection });

@@ -52,6 +52,19 @@ export default {
       return `${baseAPI}/live/stream/${username}`;
     },
   },
+  ws: {
+    chat(hash) {
+      const token = authManager.getToken(ACCESS_TOKEN);
+      return `${baseWS}${token && "/p"}/ws/chat/${hash}${
+        token && "?access_token=" + token
+      }`;
+    },
+    notification() {
+      return `${baseWS}/p/ws/notification?access_token=${authManager.getToken(
+        ACCESS_TOKEN
+      )}`;
+    },
+  },
   cast: {
     list(params) {
       return apiClient.get(`/video/list`, { params });
