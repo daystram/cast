@@ -315,24 +315,17 @@ class Scene extends Component {
               >
                 <HybridPlayer
                   url={
-                    this.state.video &&
-                    (this.state.video.type === VIDEO_TYPE_LIVE
-                      ? api.live.stream(this.state.video.hash)
-                      : api.cdn.vod(this.state.video.hash))
+                    this.state.video?.type === VIDEO_TYPE_LIVE
+                      ? api.live.stream(this.state.video?.hash)
+                      : api.cdn.vod(this.state.video?.hash)
                   }
-                  thumbnail={
-                    this.state.video && api.cdn.thumbnail(this.state.video.hash)
-                  }
-                  live={
-                    this.state.video &&
-                    this.state.video.type === VIDEO_TYPE_LIVE
-                  }
+                  thumbnail={api.cdn.thumbnail(this.state.video?.hash)}
+                  live={this.state.video?.type === VIDEO_TYPE_LIVE}
                 />
                 <Row noGutters style={style.cast_tag_bar}>
                   <Col md={true}>
-                    {this.state.video &&
-                      this.state.video.tags &&
-                      Object.values(this.state.video.tags).map((tag) => (
+                    {this.state.video?.tags &&
+                      Object.values(this.state.video?.tags).map((tag) => (
                         <Badge pill key={tag} style={style.cast_tag}>
                           {tag}
                         </Badge>
@@ -342,15 +335,14 @@ class Scene extends Component {
                     md={true}
                     style={{ display: "flex", justifyContent: "flex-end" }}
                   >
-                    {this.state.video &&
-                      this.state.video.type === VIDEO_TYPE_VOD && (
-                        <span
-                          style={{ ...style.cast_attrib, ...style.clickable }}
-                          onClick={this.handleDownload}
-                        >
-                          <i className="material-icons">get_app</i> download
-                        </span>
-                      )}
+                    {this.state.video?.type === VIDEO_TYPE_VOD && (
+                      <span
+                        style={{ ...style.cast_attrib, ...style.clickable }}
+                        onClick={this.handleDownload}
+                      >
+                        <i className="material-icons">get_app</i> download
+                      </span>
+                    )}
                     <span
                       style={{ ...style.cast_attrib, ...style.clickable }}
                       onClick={this.handleShare}
@@ -367,29 +359,20 @@ class Scene extends Component {
                       >
                         thumb_up
                       </i>{" "}
-                      {(this.state.video &&
-                        abbreviate().number(this.state.likes)) ||
-                        0}{" "}
-                      likes
+                      {abbreviate().number(this.state.likes) || 0} likes
                     </span>
                     <span style={style.cast_attrib}>
                       <i className="material-icons">remove_red_eye</i>{" "}
-                      {(this.state.video &&
-                        abbreviate().number(this.state.video.views)) ||
-                        0}{" "}
-                      {this.state.video &&
-                        (this.state.video.type === VIDEO_TYPE_LIVE
-                          ? "viewers"
-                          : "views")}
+                      {abbreviate().number(this.state.video?.views) || 0}{" "}
+                      {this.state.video?.type === VIDEO_TYPE_LIVE
+                        ? "viewers"
+                        : "views"}
                     </span>
                   </Col>
                 </Row>
-                <h1 style={style.title}>
-                  {this.state.video && this.state.video.title}
-                </h1>
+                <h1 style={style.title}>{this.state.video?.title}</h1>
                 <p style={{ marginTop: 4 }}>
-                  {this.state.video &&
-                    format().date(this.state.video.created_at)}
+                  {format().date(this.state.video?.created_at)}
                 </p>
                 <div style={style.author_bar}>
                   <div style={style.author_profile}>
@@ -409,22 +392,18 @@ class Scene extends Component {
                         ...style.profile_image,
                       }}
                     >
-                      {this.state.video.author.username[0]}
+                      {this.state.video?.author.username[0]}
                     </div>
                     <div style={style.cast_author_details}>
                       <p style={style.cast_author_name}>
-                        {this.state.video && this.state.video.author.name}
+                        {this.state.video?.author.name}
                       </p>
                       <p style={style.cast_author_sub}>
-                        {(this.state.video &&
-                          abbreviate().number(
-                            this.state.video.author.subscribers
-                          )) ||
-                          0}{" "}
+                        {abbreviate().number(
+                          this.state.video?.author.subscribers
+                        ) || 0}{" "}
                         subscriber
-                        {this.state.video &&
-                          this.state.video.author.subscribers !== 1 &&
-                          "s"}
+                        {this.state.video?.author.subscribers !== 1 && "s"}
                       </p>
                     </div>
                   </div>
@@ -443,7 +422,7 @@ class Scene extends Component {
                 <Row className="justify-content-center" noGutters>
                   <Col xl={10} xs={12}>
                     <div style={style.description}>
-                      {this.state.video && this.state.video.description}
+                      {this.state.video?.description}
                     </div>
                   </Col>
                 </Row>
@@ -547,14 +526,12 @@ class Scene extends Component {
                 sm={{ span: 6, order: 3 }}
                 xs={{ span: 12, order: 3 }}
               >
-                {this.state.video && (
-                  <Chat
-                    height={480}
-                    embedded={true}
-                    hash={this.state.video.hash}
-                    promptSignup={this.promptSignup}
-                  />
-                )}
+                <Chat
+                  height={480}
+                  embedded={true}
+                  hash={this.state.video?.hash}
+                  promptSignup={this.promptSignup}
+                />
                 <div style={style.cast_list}>
                   {this.state.vod &&
                     Object.values(this.state.vod).map((video) => (
@@ -690,10 +667,8 @@ class Scene extends Component {
                   window.open(
                     "https://twitter.com/intent/tweet?" +
                       queryString.stringify({
-                        text: `Watch ${
-                          this.state.video && this.state.video.title
-                        } by ${
-                          this.state.video && this.state.video.author.username
+                        text: `Watch ${this.state.video?.title} by ${
+                          this.state.video?.author.username
                         } at cast! ${window.location.href.split("?")[0]}`,
                       }),
                     "Share",
@@ -723,10 +698,8 @@ class Scene extends Component {
                 <span className={"fa fa-facebook"} /> Share
               </Button>
               <a
-                href={`mailto:?body=Watch ${
-                  this.state.video && this.state.video.title
-                } by ${
-                  this.state.video && this.state.video.author.name
+                href={`mailto:?body=Watch ${this.state.video?.title} by ${
+                  this.state.video?.author.name
                 } at cast! ${window.location.href.split("?")[0]}`}
               >
                 <Button>
