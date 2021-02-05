@@ -61,6 +61,7 @@ func parseIDToken(idToken string) (user datatransfers.User, err error) {
 	user = datatransfers.User{
 		ID:        claims["sub"].(string),
 		Username:  claims["preferred_username"].(string),
+		Name:      fmt.Sprintf("%s %s", claims["given_name"], claims["family_name"]),
 		CreatedAt: time.Now(),
 	}
 	return

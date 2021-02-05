@@ -270,6 +270,7 @@ func (m *module) CommentVideo(userID string, hash, content string) (comment data
 		Content: content,
 		Author: data.UserItem{
 			Username: user.Username,
+			Name:     user.Name,
 		},
 		CreatedAt: now,
 	}, nil

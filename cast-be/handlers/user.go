@@ -27,6 +27,7 @@ func (m *module) UserDetails(userID string) (detail data.UserDetail, err error) 
 	detail = data.UserDetail{
 		ID:          user.ID,
 		Username:    user.Username,
+		Name:        user.Name,
 		Subscribers: subscriberCount,
 		Views:       views,
 		Uploads:     len(videos),
