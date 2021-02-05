@@ -1,4 +1,3 @@
-const cdn_base = "/cdn";
 const api_base = `${
   process.env.NODE_ENV === "development"
     ? process.env.REACT_APP_DEV_BASE_API
@@ -11,10 +10,6 @@ const ws_base =
 
 export default function urls() {
   return {
-    thumbnail: (hash) => `${cdn_base}/thumbnail/${hash}.jpg`,
-    profile: (username) => `${cdn_base}/profile/${username}.jpg`,
-    vod: (hash) => `${cdn_base}/${hash}/manifest.mpd`,
-    download: (hash) => `${cdn_base}/${hash}/video.mp4`,
     live: (username) => `${api_base}/live/stream/${username}`,
     cast_details: () => `${api_base}/video/details`,
     like: () => `${api_base}/p/video/like`,

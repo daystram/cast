@@ -30,6 +30,7 @@ import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
 import { VIDEO_TYPE_LIVE, VIDEO_TYPE_VOD } from "../constants/video";
 import logo from "./logo.svg";
+import api from "../apis/api";
 
 class Scene extends Component {
   constructor(props) {
@@ -145,7 +146,7 @@ class Scene extends Component {
               album: "cast",
               artwork: [
                 {
-                  src: urls().thumbnail(this.state.video.hash),
+                  src: api.cdn.thumbnail(this.state.video.hash),
                   sizes: "512x512",
                   type: "image/jpg",
                 },
@@ -166,8 +167,7 @@ class Scene extends Component {
     if (this.state.loading.current) return;
     if (auth().is_authenticated()) {
       let link = document.createElement("a");
-      link.href = urls().download(this.state.video.hash);
-      link.download = `${this.state.video.title} by ${this.state.video.author.name} - cast`;
+      link.href = api.cdn.download(this.state.video.hash);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -275,6 +275,7 @@ class Scene extends Component {
   }
 
   render() {
+    if (this.state.loading.live) return <></>;
     return (
       <>
         {!this.state.not_found && !this.state.offline && (
@@ -324,10 +325,10 @@ class Scene extends Component {
                     this.state.video &&
                     (this.state.video.type === VIDEO_TYPE_LIVE
                       ? urls().live(this.state.video.hash)
-                      : urls().vod(this.state.video.hash))
+                      : api.cdn.vod(this.state.video.hash))
                   }
                   thumbnail={
-                    this.state.video && urls().thumbnail(this.state.video.hash)
+                    this.state.video && api.cdn.thumbnail(this.state.video.hash)
                   }
                   live={
                     this.state.video &&
@@ -415,7 +416,7 @@ class Scene extends Component {
                         ...style.profile_image,
                       }}
                     >
-                      {this.state.video.author.name[0]}
+                      {this.state.video.author.username[0]}
                     </div>
                     <div style={style.cast_author_details}>
                       <p style={style.cast_author_name}>
@@ -699,7 +700,7 @@ class Scene extends Component {
                         text: `Watch ${
                           this.state.video && this.state.video.title
                         } by ${
-                          this.state.video && this.state.video.author.name
+                          this.state.video && this.state.video.author.username
                         } at cast! ${window.location.href.split("?")[0]}`,
                       }),
                     "Share",

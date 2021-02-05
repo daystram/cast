@@ -25,6 +25,8 @@ import {
   VIDEO_TAG_COUNT,
   VIDEO_TITLE_CHAR_LIMIT,
 } from "../constants/video";
+import auth from "../helper/auth";
+import api from "../apis/api";
 
 const resolutions = ["Processing", "240p", "360p", "480p", "720p", "1080p"];
 let timeout = {};
@@ -40,7 +42,7 @@ class CastEditable extends Component {
           })
         : [],
       description: this.props.video.description,
-      thumbnail: urls().thumbnail(this.props.video.hash),
+      thumbnail: api.cdn.thumbnail(this.props.video.hash),
       error_title: "",
       error_tags: "",
       error_description: "",
@@ -306,6 +308,9 @@ class CastEditable extends Component {
       .delete(urls().delete(), {
         params: {
           hash: this.props.video.hash,
+        },
+        headers: {
+          Authorization: `Bearer ${auth().token()}`,
         },
       })
       .then((response) => {

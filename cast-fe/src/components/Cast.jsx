@@ -4,6 +4,7 @@ import { useHistory } from "react-router-dom";
 import abbreviate from "../helper/abbreviate";
 import urls from "../helper/url";
 import TimeAgo from "react-timeago";
+import api from "../apis/api";
 
 function Cast(props) {
   const history = useHistory();
@@ -22,7 +23,7 @@ function Cast(props) {
   return (
     <div style={style.cast_card} onClick={playVideo}>
       <Image
-        src={urls().thumbnail(props.video.hash)}
+        src={api.cdn.thumbnail(props.video.hash)}
         style={style.cast_thumbnail}
       />
       <div style={style.cast_tag_bar}>
@@ -38,7 +39,7 @@ function Cast(props) {
       </div>
       <div style={style.cast_detail}>
         <Image
-          src={urls().profile(props.video.author.username)}
+          src={""}
           height={42}
           width={42}
           style={style.profile_image}
