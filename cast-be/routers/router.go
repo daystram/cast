@@ -2,7 +2,6 @@ package routers
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/astaxie/beego"
@@ -80,7 +79,7 @@ func init() {
 
 	// Init Transcoder Listener
 	go h.TranscodeListenerWorker()
-	fmt.Printf("[Initialization] Initialization complete!\n")
+	log.Printf("[Initialization] Initialization complete!\n")
 
 	apiV1 := beego.NewNamespace("api/v1",
 		beego.NSNamespace("/ping",

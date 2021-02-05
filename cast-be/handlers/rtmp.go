@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"path"
 	"sync"
@@ -87,7 +88,7 @@ func (m *module) CreateRTMPUpLink() {
 	}
 	m.live.uplink.Addr = fmt.Sprintf(":%d", config.AppConfig.RTMPPort)
 	go m.live.uplink.ListenAndServe()
-	fmt.Printf("[CreateRTMPUpLink] RTMP UpLink Window opened at port %d\n", config.AppConfig.RTMPPort)
+	log.Printf("[CreateRTMPUpLink] RTMP UpLink Window opened at port %d\n", config.AppConfig.RTMPPort)
 }
 
 func (m *module) ControlUpLinkWindow(userID string, open bool) (err error) {
