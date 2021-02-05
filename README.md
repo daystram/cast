@@ -140,5 +140,14 @@ services:
 
 This image is built on top of [NVIDIA's CUDA images](https://hub.docker.com/r/nvidia/cuda/) to enable FFmpeg harware acceleration on supported hosts. MP4Box is built from source, as seen on the [Dockerfile](https://github.com/daystram/cast/blob/master/cast-is/ingest-base.Dockerfile).
 
+### MongoDB Indexes
+For features to work properly, some indexes needs to be created in the MongoDB instance. Use the following command in `mongo` CLI to create indexes for `video` collection:
+
+```
+use MONGODB_NAME;
+db.video.createIndex({title: "text", description: "text"}, {collation: {locale: "simple"}});
+db.video.createIndex({hash: "hashed"});
+```
+
 ## License
 This project is licensed under the [MIT License](https://github.com/daystram/cast/blob/master/LICENSE).
