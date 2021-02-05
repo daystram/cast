@@ -238,7 +238,9 @@ class Manage extends Component {
     form.append("thumbnail", this.state.thumbnail);
     form.append("video", this.state.video);
     api.cast
-      .upload(form)
+      .upload(form, (progress) => {
+        this.setState({ progress: (progress.loaded * 100) / progress.total });
+      })
       .then((response) => {
         console.log(response);
         this.setState({

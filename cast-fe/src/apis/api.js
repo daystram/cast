@@ -86,13 +86,14 @@ export default {
     detail(params) {
       return apiClient.get(`/video/details`, { params });
     },
-    upload(form) {
+    upload(form, onUploadProgress) {
       return apiClient.post(`/p/video/upload`, form, {
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Content-Type": "multipart/form-data",
           ...withAuth().headers,
         },
+        onUploadProgress,
       });
     },
     edit(form) {
