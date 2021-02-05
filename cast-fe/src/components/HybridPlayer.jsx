@@ -24,7 +24,7 @@ class HybridPlayer extends React.Component {
   componentWillUnmount() {
     if (this.player) {
       console.log("[HybridPlayer] Dismount");
-      this.player.dispose();
+      // this.player.dispose(); // causes SourceBufferSink errors
     }
   }
 
@@ -46,7 +46,7 @@ class HybridPlayer extends React.Component {
       flvjs: {
         mediaDataSource: {
           isLive: true,
-          cors: true, // TODO: NOTICE!
+          cors: true,
           withCredentials: false,
         },
       },
@@ -59,7 +59,6 @@ class HybridPlayer extends React.Component {
   }
 
   updatePlayer() {
-    console.log(this.props.url);
     if (!this.props.url) return;
     this.player.pause();
     this.player.src({
@@ -68,7 +67,6 @@ class HybridPlayer extends React.Component {
     });
     this.player.autoplay(this.props.live);
     if (this.props.live) this.player.play();
-    // else this.player.pause();
     this.player.load();
     this.player.poster(this.props.thumbnail);
   }
