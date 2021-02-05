@@ -2,7 +2,7 @@ import React from "react";
 import { Badge, Image } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import abbreviate from "../helper/abbreviate";
-import urls from "../helper/url";
+import { currentHash } from "../helper/url";
 import TimeAgo from "react-timeago";
 import api from "../apis/api";
 
@@ -11,7 +11,7 @@ function Cast(props) {
 
   function playVideo() {
     if (props.onClick) props.onClick(props.video.type, props.video.hash);
-    if (props.video.hash !== urls().current_hash())
+    if (props.video.hash !== currentHash())
       history.push(`/w/${props.video.hash}`);
   }
 

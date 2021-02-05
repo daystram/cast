@@ -12,7 +12,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import Dropzone from "react-dropzone";
-import urls from "../helper/url";
+import { currentHash } from "../helper/url";
 import format from "../helper/format";
 import { Prompt, withRouter } from "react-router-dom";
 import { WithContext as ReactTags } from "react-tag-input";
@@ -318,16 +318,13 @@ class CastEditable extends Component {
   openVideo() {
     switch (this.props.video.type) {
       case "live":
-        if (
-          this.props.video.is_live &&
-          this.props.video.hash !== urls().current_hash()
-        )
+        if (this.props.video.is_live && this.props.video.hash !== currentHash())
           this.props.history.push(`/w/${this.props.video.hash}`);
         break;
       case "vod":
         if (
           this.props.video.resolutions &&
-          this.props.video.hash !== urls().current_hash()
+          this.props.video.hash !== currentHash()
         )
           this.props.history.push(`/w/${this.props.video.hash}`);
         break;
