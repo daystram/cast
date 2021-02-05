@@ -1,5 +1,5 @@
 import React from "react";
-import auth from "./auth";
+import { authManager } from "./auth";
 import { toast } from "react-toastify";
 import Toast from "../components/Toast";
 import api from "../apis/api";
@@ -10,7 +10,7 @@ let ping = {};
 export default function notification() {
   return {
     init: () => {
-      if (!auth().is_authenticated()) return;
+      if (!authManager.isAuthenticated()) return;
       window.WebSocket = window.WebSocket || window.MozWebSocket;
       if (!window.WebSocket) {
         console.log("WebSocket not supported!");

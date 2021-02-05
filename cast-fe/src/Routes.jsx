@@ -14,7 +14,7 @@ import {
   Subscribed,
   Trending,
 } from "./views";
-import auth from "./helper/auth";
+import { login, logout, callback, authManager } from "./helper/auth";
 
 const Routes = () => {
   return (
@@ -31,9 +31,9 @@ const Routes = () => {
       <PrivateRoute path={"/profile"} exact component={Profile} />
       <PrivateRoute path={"/dashboard"} exact component={Dashboard} />
       <PrivateRoute path={"/manage"} exact component={Manage} />
-      <PublicRoute path={"/login"} exact component={auth().login} />
-      <PrivateRoute path={"/logout"} exact component={auth().logout} />
-      <Route path={"/callback"} exact component={auth().callback} />
+      <PublicRoute path={"/login"} exact component={login} />
+      <PrivateRoute path={"/logout"} exact component={logout} />
+      <Route path={"/callback"} exact component={callback} />
       <Route>
         <Redirect to={"/"} />
       </Route>
@@ -45,7 +45,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route
     {...rest}
     render={(props) =>
-      auth().is_authenticated() ? (
+      authManager.isAuthenticated() ? (
         <Component {...props} />
       ) : (
         <Redirect
@@ -60,7 +60,7 @@ const PublicRoute = ({ component: Component, ...rest }) => (
   <Route
     {...rest}
     render={(props) =>
-      auth().is_authenticated() ? (
+      authManager.isAuthenticated() ? (
         <Redirect to={{ pathname: "/", state: { from: props.location } }} />
       ) : (
         <Component {...props} />

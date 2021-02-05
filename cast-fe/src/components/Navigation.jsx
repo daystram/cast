@@ -12,7 +12,7 @@ import {
 } from "react-bootstrap";
 import MediaQuery from "react-responsive";
 import logo from "./logo.svg";
-import auth from "../helper/auth";
+import { authManager } from "../helper/auth";
 import { MOBILE_BP } from "../constants/breakpoint";
 import Sidebar from "./Sidebar";
 import SidebarProfile from "./SidebarProfile";
@@ -23,8 +23,8 @@ function Navigation() {
   const [expanded, setExpanded] = useState(false);
   const inputRef = useRef();
   const history = useHistory();
-  const user = auth().user();
-  let profileButton = auth().is_authenticated() ? (
+  const user = authManager.getUser();
+  let profileButton = authManager.isAuthenticated() ? (
     <div
       className="text-center"
       style={{

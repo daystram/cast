@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Card, Col, Container, Row } from "react-bootstrap";
 import { SidebarProfile } from "../components";
-import auth from "../helper/auth";
+import { authManager } from "../helper/auth";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
 import api from "../apis/api";
@@ -10,7 +10,7 @@ class Profile extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: auth().user(),
+      user: authManager.getUser(),
       subscribers: 0,
       views: 0,
       video_count: 0,

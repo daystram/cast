@@ -14,7 +14,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import Chat from "./Chat";
-import auth from "../helper/auth";
+import { authManager } from "../helper/auth";
 import { CastEditable, SidebarProfile } from "../components";
 import format from "../helper/format";
 import Clock from "react-live-clock";
@@ -36,14 +36,14 @@ class Dashboard extends Component {
     this.fetchDetail = this.fetchDetail.bind(this);
     this.setStreamWindow = this.setStreamWindow.bind(this);
     this.loadLive = this.loadLive.bind(this);
-    this.fetchDetail(auth().username());
+    this.fetchDetail(authManager.getUser().preferred_username);
   }
 
   fetchDetail(hash) {
     api.cast
       .detail({
         hash: hash,
-        username: auth().username(),
+        username: authManager.getUser().preferred_username,
       })
       .then((response) => {
         this.setState({ loading: false });
@@ -314,7 +314,7 @@ class Dashboard extends Component {
                           <InputGroup>
                             <Form.Control
                               type={this.state.show_key ? "text" : "password"}
-                              value={auth().username()}
+                              value={authManager.getUser().preferred_username}
                             />
                             <InputGroup.Append>
                               <Button
@@ -350,7 +350,7 @@ class Dashboard extends Component {
                                   variant="outline-primary"
                                   onClick={() => {
                                     navigator.clipboard.writeText(
-                                      auth().username()
+                                      authManager.getUser().preferred_username
                                     );
                                   }}
                                 >
@@ -369,7 +369,9 @@ class Dashboard extends Component {
                           <InputGroup>
                             <Form.Control
                               type="text"
-                              value={`https://cast.daystram.com/c/${auth().username()}`}
+                              value={`https://cast.daystram.com/c/${
+                                authManager.getUser().preferred_username
+                              }`}
                               ref={(ref) => (this.chatField = ref)}
                             />
                             <InputGroup.Append>
@@ -423,7 +425,11 @@ class Dashboard extends Component {
               style={{ paddingBottom: 16 }}
             >
               <h1 style={style.h1}>Chat</h1>
-              <Chat height={"85vh"} embedded={true} hash={auth().username()} />
+              <Chat
+                height={"85vh"}
+                embedded={true}
+                hash={authManager.getUser().preferred_username}
+              />
             </Col>
           </Row>
         </Container>

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Button, Card, Form, FormControl, InputGroup } from "react-bootstrap";
-import auth from "../helper/auth";
+import { authManager } from "../helper/auth";
 import { withRouter } from "react-router-dom";
 import { CHAT_CHAR_LIMIT } from "../constants/chat";
 import api from "../apis/api";
@@ -82,7 +82,7 @@ class Chat extends Component {
   handleSubmit(e) {
     e.preventDefault();
     if (!this.state.chat.trim()) return;
-    if (!auth().is_authenticated()) {
+    if (!authManager.isAuthenticated()) {
       this.props.promptSignup();
       return;
     }

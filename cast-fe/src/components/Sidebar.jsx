@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Nav } from "react-bootstrap";
 import { NavLink } from "react-router-dom";
-import auth from "../helper/auth";
+import { authManager } from "../helper/auth";
 
 class Sidebar extends Component {
   render() {
@@ -37,7 +37,7 @@ class Sidebar extends Component {
         >
           <i className="material-icons">whatshot</i> Fresh Casts
         </NavLink>
-        {auth().is_authenticated() && (
+        {authManager.isAuthenticated() && (
           <>
             <hr style={{ width: "100%", margin: "6px 0" }} />
             <NavLink

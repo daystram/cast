@@ -18,7 +18,7 @@ import { Cast, HybridPlayer, Sidebar } from "../components";
 import abbreviate from "../helper/abbreviate";
 import format from "../helper/format";
 import { withRouter } from "react-router-dom";
-import auth from "../helper/auth";
+import { authManager } from "../helper/auth";
 import TimeAgo from "react-timeago";
 import queryString from "query-string";
 import Chat from "./Chat";
@@ -113,7 +113,7 @@ class Scene extends Component {
     api.cast
       .detail({
         hash: hash,
-        username: auth().username(),
+        username: authManager.getUser().preferred_username,
       })
       .then((response) => {
         this.setState({ loading: { ...this.state.loading, current: false } });
@@ -157,7 +157,7 @@ class Scene extends Component {
 
   handleDownload() {
     if (this.state.loading.current) return;
-    if (auth().is_authenticated()) {
+    if (authManager.isAuthenticated()) {
       let link = document.createElement("a");
       link.href = api.cdn.download(this.state.video.hash);
       link.download = `${this.state.video.title} by ${this.state.video.author.name} - cast`;
@@ -176,7 +176,7 @@ class Scene extends Component {
 
   handleLike() {
     if (this.state.loading.current) return;
-    if (auth().is_authenticated()) {
+    if (authManager.isAuthenticated()) {
       api.cast
         .like({
           hash: this.state.video.hash,
@@ -207,7 +207,7 @@ class Scene extends Component {
   handleComment(e) {
     e.preventDefault();
     if (this.state.loading.current) return;
-    if (auth().is_authenticated()) {
+    if (authManager.isAuthenticated()) {
       if (!this.state.comment.trim() || this.state.error_comment) {
         this.setState({ error_comment: "Please enter your comment" });
         return;
@@ -243,7 +243,7 @@ class Scene extends Component {
 
   handleSubscribe() {
     if (this.state.loading.current) return;
-    if (auth().is_authenticated()) {
+    if (authManager.isAuthenticated()) {
       api.user
         .subscribe({
           author: this.state.video.author.username,

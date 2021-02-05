@@ -16,7 +16,7 @@ import { Prompt } from "react-router-dom";
 
 import "../styles/tags.css";
 import "../styles/file.css";
-import auth from "../helper/auth";
+import { authManager } from "../helper/auth";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
 import { THUMBNAIL_MAX_SIZE, VIDEO_MAX_SIZE } from "../constants/file";
@@ -68,7 +68,7 @@ class Manage extends Component {
   fetchVideos() {
     api.cast
       .list({
-        author: auth().username(),
+        author: authManager.getUser().preferred_username,
         count: 8,
         offset: 0,
       })
