@@ -68,13 +68,18 @@ func (m *module) SearchVideo(query string, _ []string, count, offset int) (video
 }
 
 func (m *module) VideoDetails(hash string) (video data.Video, err error) {
+	var author data.UserDetail
 	var comments []data.Comment
 	if video, err = m.db.videoOrm.GetOneByHash(hash); err != nil {
 		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] video with hash %s not found. %+v", hash, err))
 	}
+	if author, err = m.UserDetails(video.Author.ID); err != nil {
+		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] failed video author. %+v", err))
+	}
 	if comments, err = m.db.commentOrm.GetAllByHash(hash); err != nil {
 		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] failed getting comment list for %s. %+v", hash, err))
 	}
+	video.Author.Subscribers = author.Subscribers
 	video.Views++
 	video.Comments = comments
 	if video.Type == constants.VideoTypeVOD {
