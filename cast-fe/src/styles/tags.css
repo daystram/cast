@@ -116,8 +116,11 @@ div.ReactTags__selected span.ReactTags__tag {
   padding: 0.25em 0.6em;
 }
 
-div.ReactTags__selected a.ReactTags__remove {
+div.ReactTags__selected button.ReactTags__remove {
   color: #aaa;
   margin-left: 5px;
   cursor: pointer;
+  background-color: transparent;
+  border-color: transparent;
+  padding: 0;
 }

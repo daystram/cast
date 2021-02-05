@@ -129,36 +129,25 @@ func (c *VideoControllerAuth) EditVideo(_ string) datatransfers.Response {
 		fmt.Printf("[VideoControllerAuth::EditVideo] failed parsing video details. %+v\n", err)
 		return datatransfers.Response{Error: "Failed parsing video detail", Code: http.StatusInternalServerError}
 	}
+	if matchVideo, err := c.Handler.VideoDetails(video.Hash); err != nil {
+		log.Printf("[VideoControllerAuth::EditVideo] failed retrieving video. %+v\n", err)
+		return datatransfers.Response{Error: "Failed editing video", Code: http.StatusInternalServerError}
+	} else if matchVideo.Title != video.Title {
+		if err = c.Handler.CheckUniqueVideoTitle(video.Title); err != nil {
+			log.Printf("[VideoControllerAuth::EditVideo] title already used. %+v\n", err)
+			return datatransfers.Response{Error: "Title already used", Code: http.StatusConflict}
+		}
+	}
 	err = c.Handler.UpdateVideo(datatransfers.VideoEdit{
 		Hash:        video.Hash,
 		Title:       video.Title,
 		Description: video.Description,
 		Tags:        strings.Split(video.Tags, ","),
-	}, c.userID)
+	}, c.Controller, c.userID)
 	if err != nil {
 		fmt.Printf("[VideoControllerAuth::EditVideo] failed editing video. %+v\n", err)
 		return datatransfers.Response{Error: "Failed editing video", Code: http.StatusInternalServerError}
 	}
-	if _, _, err = c.GetFile("thumbnail"); err != nil {
-		if err == http.ErrMissingFile {
-			return datatransfers.Response{Code: http.StatusOK}
-		} else {
-			fmt.Printf("[VideoControllerAuth::EditVideo] failed retrieving profile image. %+v\n", err)
-			return datatransfers.Response{Error: "Failed retrieving profile image", Code: http.StatusInternalServerError}
-		}
-	}
-	// TODO: use S3
-	//// New thumbnail uploaded
-	//err = c.SaveToFile("thumbnail", fmt.Sprintf("%s/thumbnail/%s.ori", config.AppConfig.UploadsDirectory, video.Hash))
-	//if err != nil {
-	//	fmt.Printf("[VideoControllerAuth::EditVideo] failed saving thumbnail. %+v\n", err)
-	//	return datatransfers.Response{Error: "Failed saving thumbnail", Code: http.StatusInternalServerError}
-	//}
-	//err = c.Handler.NormalizeThumbnail(video.Hash)
-	//if err != nil {
-	//	fmt.Printf("[VideoControllerAuth::EditVideo] failed normalizing thumbnail. %+v\n", err)
-	//	return datatransfers.Response{Error: "Failed normalizing thumbnail", Code: http.StatusInternalServerError}
-	//}
 	return datatransfers.Response{Code: http.StatusOK}
 }
 
@@ -190,6 +179,11 @@ func (c *VideoControllerAuth) UploadVideo(_ string) datatransfers.Response {
 	if err != nil {
 		fmt.Printf("[VideoControllerAuth::UploadVideo] failed parsing video details. %+v\n", err)
 		return datatransfers.Response{Error: "Failed parsing video detail", Code: http.StatusInternalServerError}
+	}
+	err = c.Handler.CheckUniqueVideoTitle(upload.Title)
+	if err != nil {
+		log.Printf("[VideoControllerAuth::UploadVideo] title already used. %+v\n", err)
+		return datatransfers.Response{Error: "Title already used", Code: http.StatusConflict}
 	}
 	var videoID primitive.ObjectID
 	videoID, err = c.Handler.CreateVOD(datatransfers.VideoUpload{

@@ -1,7 +1,6 @@
 import React from "react";
 import { Button, Col, Image } from "react-bootstrap";
 import abbreviate from "../helper/abbreviate";
-import urls from "../helper/url";
 
 function Author(props) {
   function handleSubscribe(e) {
@@ -12,7 +11,7 @@ function Author(props) {
     <>
       <Col xs={"auto"} style={{ display: "flex" }}>
         <Image
-          src={urls().profile(props.author.username)}
+          src={""}
           width={128}
           height={128}
           style={style.profile_image}

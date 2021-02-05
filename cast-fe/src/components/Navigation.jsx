@@ -12,12 +12,11 @@ import {
 } from "react-bootstrap";
 import MediaQuery from "react-responsive";
 import logo from "./logo.svg";
-import auth, { refreshAuth } from "../helper/auth";
+import { authManager } from "../helper/auth";
 import { MOBILE_BP } from "../constants/breakpoint";
 import Sidebar from "./Sidebar";
 import SidebarProfile from "./SidebarProfile";
-import axios from "axios";
-
+import { ProfileImage } from "./index";
 function Navigation() {
   const [query, setQuery] = useState(
     new URLSearchParams(useLocation().search).get("query") || ""
@@ -25,37 +24,16 @@ function Navigation() {
   const [expanded, setExpanded] = useState(false);
   const inputRef = useRef();
   const history = useHistory();
-  const user = auth().user();
-  axios.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (error.response.status === 403) {
-        refreshAuth();
-      }
-    }
-  );
-  let profileButton = auth().is_authenticated() ? (
-    <div
-      className="text-center"
-      style={{
-        width: 38,
-        height: 38,
-        flexShrink: 0,
-        borderRadius: 18,
-        background: "gray",
-        color: "white",
-        fontSize: "18px",
-        lineHeight: "38px",
-        textAlign: "center",
-        textTransform: "capitalize",
-        cursor: "pointer"
-      }}
+  const user = authManager.getUser();
+  let profileButton = authManager.isAuthenticated() ? (
+    <ProfileImage
+      size={38}
+      name={`${user.given_name} ${user.family_name}`}
+      style={style.profile_image}
       onClick={() => {
         history.push("/profile");
       }}
-    >
-      {user.given_name[0] + user.family_name[0]}
-    </div>
+    />
   ) : (
     <>
       <Button
@@ -150,7 +128,12 @@ function Navigation() {
               style={{ border: "none", paddingRight: 0 }}
               onClick={() => setExpanded(!expanded)}
             >
-              blockl
+              <span
+                className="material-icons"
+                style={{ color: "#E84409", fontSize: 28, lineHeight: 1 }}
+              >
+                menu
+              </span>
             </Navbar.Toggle>
           </MediaQuery>
         </Col>

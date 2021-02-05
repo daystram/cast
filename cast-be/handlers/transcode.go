@@ -48,6 +48,7 @@ func (m *module) TranscodeListenerWorker() {
 		if resolution >= 1 {
 			m.PushNotification(video.Author.ID, datatransfers.NotificationOutgoing{
 				Message:   fmt.Sprintf("%s is now ready in %s!", video.Title, constants.VideoResolutions[resolution]),
+				Name:      video.Author.Name,
 				Username:  video.Author.Username,
 				Hash:      video.Hash,
 				CreatedAt: time.Now(),
@@ -55,7 +56,8 @@ func (m *module) TranscodeListenerWorker() {
 		}
 		if resolution == 1 {
 			m.BroadcastNotificationSubscriber(video.Author.ID, datatransfers.NotificationOutgoing{
-				Message:   fmt.Sprintf("%s just uploaded %s! Watch now!", video.Author.Username, video.Title),
+				Message:   fmt.Sprintf("%s just uploaded %s! Watch now!", video.Author.Name, video.Title),
+				Name:      video.Author.Name,
 				Username:  video.Author.Username,
 				Hash:      video.Hash,
 				CreatedAt: time.Now(),

@@ -2,15 +2,17 @@ import React from "react";
 import { Badge, Image } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import abbreviate from "../helper/abbreviate";
-import urls from "../helper/url";
+import { currentHash } from "../helper/url";
 import TimeAgo from "react-timeago";
+import api from "../apis/api";
+import { ProfileImage } from "./index";
 
 function Cast(props) {
   const history = useHistory();
 
   function playVideo() {
     if (props.onClick) props.onClick(props.video.type, props.video.hash);
-    if (props.video.hash !== urls().current_hash())
+    if (props.video.hash !== currentHash())
       history.push(`/w/${props.video.hash}`);
   }
 
@@ -22,7 +24,7 @@ function Cast(props) {
   return (
     <div style={style.cast_card} onClick={playVideo}>
       <Image
-        src={urls().thumbnail(props.video.hash)}
+        src={api.cdn.thumbnail(props.video.hash)}
         style={style.cast_thumbnail}
       />
       <div style={style.cast_tag_bar}>
@@ -37,13 +39,11 @@ function Cast(props) {
         </Badge>
       </div>
       <div style={style.cast_detail}>
-        <Image
-          src={urls().profile(props.video.author.username)}
-          height={42}
-          width={42}
+        <ProfileImage
+          size={42}
+          name={props.video.author.name}
           style={style.profile_image}
           onClick={viewAuthor}
-          roundedCircle
         />
         <div style={style.cast_author_details}>
           <p style={style.cast_title}>{props.video.title}</p>

@@ -2,13 +2,12 @@ import React, { Component } from "react";
 import { Col, Row, Spinner } from "react-bootstrap";
 import InfiniteScroll from "react-infinite-scroller";
 import Cast from "./Cast";
-import axios from "axios";
-import urls from "../helper/url";
 import {
   VIDEO_LIST_LIKED,
   VIDEO_LIST_PAGE_SIZE,
   VIDEO_LIST_SUBSCRIBED,
 } from "../constants/video";
+import api from "../apis/api";
 
 class List extends Component {
   constructor(props) {
@@ -28,38 +27,31 @@ class List extends Component {
   }
 
   fetchVideos() {
-    let target;
-    let config;
+    let request;
     if (this.props.search) {
-      target = urls().search();
-      config = {
-        params: {
-          query: this.props.query.trim(),
-          count: VIDEO_LIST_PAGE_SIZE,
-          offset: VIDEO_LIST_PAGE_SIZE * this.state.page,
-        },
-      };
+      request = api.cast.search({
+        query: this.props.query.trim(),
+        count: VIDEO_LIST_PAGE_SIZE,
+        offset: VIDEO_LIST_PAGE_SIZE * this.state.page,
+      });
     } else {
+      const params = {
+        variant: this.props.variant,
+        count: VIDEO_LIST_PAGE_SIZE,
+        offset: VIDEO_LIST_PAGE_SIZE * this.state.page,
+      };
       switch (this.props.variant) {
         case VIDEO_LIST_LIKED:
-          target = urls().list_authed();
+          request = api.cast.listCurated(params);
           break;
         case VIDEO_LIST_SUBSCRIBED:
-          target = urls().list_authed();
+          request = api.cast.listCurated(params);
           break;
         default:
-          target = urls().list();
+          request = api.cast.list(params);
       }
-      config = {
-        params: {
-          variant: this.props.variant,
-          count: VIDEO_LIST_PAGE_SIZE,
-          offset: VIDEO_LIST_PAGE_SIZE * this.state.page,
-        },
-      };
     }
-    axios
-      .get(target, config)
+    request
       .then((response) => {
         if (response.data.code === 200) {
           if (!response.data.data) {

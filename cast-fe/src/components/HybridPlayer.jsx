@@ -1,16 +1,18 @@
 import React from "react";
 import "dashjs";
 import videojs from "video.js";
+// import "videojs-contrib-dash" // must disable for quality selector to appear;
+import "videojs-flvjs-es6";
 import "videojs-contrib-quality-levels";
 import "videojs-http-source-selector";
-import "videojs-contrib-dash";
+
 import "video.js/dist/video-js.css";
-import "videojs-flvjs-es6";
-import "./player.css";
+import "../styles/player.css";
 
 class HybridPlayer extends React.Component {
   componentDidMount() {
     this.initPlayer();
+    this.updatePlayer();
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -23,7 +25,7 @@ class HybridPlayer extends React.Component {
   componentWillUnmount() {
     if (this.player) {
       console.log("[HybridPlayer] Dismount");
-      this.player.dispose();
+      // this.player.dispose(); // causes SourceBufferSink errors
     }
   }
 
@@ -33,10 +35,10 @@ class HybridPlayer extends React.Component {
       fluid: true,
       responsive: true,
       aspectRatio: "16:9",
-      // liveui: true,
-      preload: "true",
+      preload: "false",
       controls: true,
       userActions: { hotkeys: true },
+      // liveui: true,
       plugins: {
         httpSourceSelector: {
           default: "auto",
@@ -45,30 +47,28 @@ class HybridPlayer extends React.Component {
       flvjs: {
         mediaDataSource: {
           isLive: true,
-          cors: false, // TODO: NOTICE!
+          cors: true,
           withCredentials: false,
         },
       },
-      // autoplay: this.props.live,
-      // poster: this.props.thumbnail,
     };
     this.player = videojs(this.videoNode, options);
+    this.player.qualityLevels();
     this.player.httpSourceSelector();
   }
 
   updatePlayer() {
-    console.log(this.props.url);
     if (!this.props.url) return;
     this.player.pause();
+    this.player.reset();
     this.player.src({
       src: this.props.url,
       type: this.props.live ? "video/x-flv" : "application/dash+xml",
     });
     this.player.autoplay(this.props.live);
     if (this.props.live) this.player.play();
-    // else this.player.pause();
-    this.player.load();
     this.player.poster(this.props.thumbnail);
+    this.player.load();
   }
 
   render() {

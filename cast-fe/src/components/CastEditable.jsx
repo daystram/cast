@@ -12,12 +12,11 @@ import {
   Spinner,
 } from "react-bootstrap";
 import Dropzone from "react-dropzone";
-import urls from "../helper/url";
+import { currentHash } from "../helper/url";
 import format from "../helper/format";
-import axios from "axios";
 import { Prompt, withRouter } from "react-router-dom";
 import { WithContext as ReactTags } from "react-tag-input";
-import "./tags.css";
+import "../styles/tags.css";
 import { THUMBNAIL_MAX_SIZE } from "../constants/file";
 import {
   VIDEO_DESC_CHAR_LIMIT,
@@ -25,6 +24,7 @@ import {
   VIDEO_TAG_COUNT,
   VIDEO_TITLE_CHAR_LIMIT,
 } from "../constants/video";
+import api from "../apis/api";
 
 const resolutions = ["Processing", "240p", "360p", "480p", "720p", "1080p"];
 let timeout = {};
@@ -40,7 +40,7 @@ class CastEditable extends Component {
           })
         : [],
       description: this.props.video.description,
-      thumbnail: urls().thumbnail(this.props.video.hash),
+      thumbnail: api.cdn.thumbnail(this.props.video.hash),
       error_title: "",
       error_tags: "",
       error_description: "",
@@ -218,12 +218,8 @@ class CastEditable extends Component {
   checkAvailability(value) {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
-      axios
-        .get(urls().title_check(), {
-          params: {
-            title: value.trim(),
-          },
-        })
+      api.cast
+        .titleCheck(value.trim())
         .then((response) => {
           if (response.data.code !== 200 && this.state.editing) {
             this.setState({ error_title: response.data.error });
@@ -259,13 +255,8 @@ class CastEditable extends Component {
     form.append("tags", this.state.tags.map((tag) => tag.text).join(","));
     if (this.state.new_thumbnail)
       form.append("thumbnail", this.state.new_thumbnail);
-    axios
-      .put(urls().edit_video(), form, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "multipart/form-data",
-        },
-      })
+    api.cast
+      .edit(form)
       .then((response) => {
         clearTimeout(timeout);
         if (response.data.code === 200) {
@@ -302,12 +293,8 @@ class CastEditable extends Component {
 
   deleteVideo() {
     this.setState({ error_delete: "", loading_delete: true });
-    axios
-      .delete(urls().delete(), {
-        params: {
-          hash: this.props.video.hash,
-        },
-      })
+    api.cast
+      .remove(this.props.video.hash)
       .then((response) => {
         if (response.data.code === 200) {
           this.setState({ loading_delete: false, prompt: false });
@@ -331,16 +318,13 @@ class CastEditable extends Component {
   openVideo() {
     switch (this.props.video.type) {
       case "live":
-        if (
-          this.props.video.is_live &&
-          this.props.video.hash !== urls().current_hash()
-        )
+        if (this.props.video.is_live && this.props.video.hash !== currentHash())
           this.props.history.push(`/w/${this.props.video.hash}`);
         break;
       case "vod":
         if (
           this.props.video.resolutions &&
-          this.props.video.hash !== urls().current_hash()
+          this.props.video.hash !== currentHash()
         )
           this.props.history.push(`/w/${this.props.video.hash}`);
         break;
@@ -429,7 +413,7 @@ class CastEditable extends Component {
               <Alert variant={"danger"}>{this.state.error_edit}</Alert>
             )}
             {this.state.editing ? (
-              <Form autocomplete={"off"} onSubmit={(e) => e.preventDefault()}>
+              <Form autoComplete={"off"} onSubmit={(e) => e.preventDefault()}>
                 <Form.Group style={{ marginBottom: 4 }}>
                   <Form.Control
                     name={"title"}
@@ -515,7 +499,7 @@ class CastEditable extends Component {
                 <div>
                   {this.state.tags &&
                     Object.values(this.state.tags).map((tag) => (
-                      <Badge pill style={style.cast_tag}>
+                      <Badge pill style={style.cast_tag} key={tag.text}>
                         {tag.text}
                       </Badge>
                     ))}
@@ -523,7 +507,7 @@ class CastEditable extends Component {
               )}
             </div>
             {this.state.editing ? (
-              <Form autocomplete={"off"} onSubmit={(e) => e.preventDefault()}>
+              <Form autoComplete={"off"} onSubmit={(e) => e.preventDefault()}>
                 <Form.Group style={{ marginBottom: 4 }}>
                   <Form.Control
                     name={"description"}
@@ -713,9 +697,9 @@ let style = {
   },
   description: {
     fontSize: 16,
-    webkitLineClamp: "3",
+    WebkitLineClamp: "3",
     overflow: "hidden",
-    webkitBoxOrient: "vertical",
+    WebkitBoxOrient: "vertical",
     display: "-webkit-box",
   },
   spinner: {

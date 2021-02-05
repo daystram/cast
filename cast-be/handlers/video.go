@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"mime/multipart"
+	"net/http"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -66,13 +68,18 @@ func (m *module) SearchVideo(query string, _ []string, count, offset int) (video
 }
 
 func (m *module) VideoDetails(hash string) (video data.Video, err error) {
+	var author data.UserDetail
 	var comments []data.Comment
 	if video, err = m.db.videoOrm.GetOneByHash(hash); err != nil {
 		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] video with hash %s not found. %+v", hash, err))
 	}
+	if author, err = m.UserDetails(video.Author.ID); err != nil {
+		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] failed video author. %+v", err))
+	}
 	if comments, err = m.db.commentOrm.GetAllByHash(hash); err != nil {
 		return data.Video{}, errors.New(fmt.Sprintf("[VideoDetails] failed getting comment list for %s. %+v", hash, err))
 	}
+	video.Author.Subscribers = author.Subscribers
 	video.Views++
 	video.Comments = comments
 	if video.Type == constants.VideoTypeVOD {
@@ -165,7 +172,7 @@ func (m *module) DeleteVideo(ID primitive.ObjectID, userID string) (err error) {
 	return m.db.videoOrm.DeleteOneByID(ID)
 }
 
-func (m *module) UpdateVideo(video data.VideoEdit, userID string) (err error) {
+func (m *module) UpdateVideo(video data.VideoEdit, controller beego.Controller, userID string) (err error) {
 	if err = m.db.videoOrm.EditVideo(data.VideoInsert{
 		Hash:        video.Hash,
 		Title:       video.Title,
@@ -174,6 +181,26 @@ func (m *module) UpdateVideo(video data.VideoEdit, userID string) (err error) {
 		Tags:        video.Tags,
 	}); err != nil {
 		return errors.New(fmt.Sprintf("[UpdateVideo] error updating video. %+v", err))
+	}
+	// Retrieve thumbnail
+	var thumbnail multipart.File
+	if thumbnail, _, err = controller.GetFile("thumbnail"); err!= nil {
+		if err == http.ErrMissingFile {
+			return nil
+		} else {
+			return fmt.Errorf("[UpdateVideo] Failed retrieving thumbnail image. %+v\n", err)
+		}
+	}
+	var result bytes.Buffer
+	if result, err = util.NormalizeImage(thumbnail, constants.ThumbnailWidth, constants.ThumbnailHeight); err != nil {
+		return fmt.Errorf("[UpdateVideo] Failed normalizing thumbnail image. %+v", err)
+	}
+	if _, err = m.s3.PutObject(&s3.PutObjectInput{
+		Bucket: aws.String(config.AppConfig.S3Bucket),
+		Key:    aws.String(fmt.Sprintf("%s/%s.jpg", constants.ThumbnailRootDir, video.Hash)),
+		Body:   bytes.NewReader(result.Bytes()),
+	}); err != nil {
+		return fmt.Errorf("[UpdateVideo] Failed saving thumbnail image. %+v", err)
 	}
 	return
 }
@@ -225,7 +252,8 @@ func (m *module) Subscribe(userID string, username string, subscribe bool) (err 
 			CreatedAt: time.Now(),
 		})
 		m.PushNotification(author.ID, data.NotificationOutgoing{
-			Message:   fmt.Sprintf("%s just subscribed!", user.Username),
+			Message:   fmt.Sprintf("%s just subscribed!", user.Name),
+			Name:      user.Name,
 			Username:  user.Username,
 			CreatedAt: time.Now(),
 		})
@@ -270,6 +298,7 @@ func (m *module) CommentVideo(userID string, hash, content string) (comment data
 		Content: content,
 		Author: data.UserItem{
 			Username: user.Username,
+			Name:     user.Name,
 		},
 		CreatedAt: now,
 	}, nil

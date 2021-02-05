@@ -1,8 +1,8 @@
 import React from "react";
-import urls from "./url";
-import auth from "./auth";
+import { authManager } from "./auth";
 import { toast } from "react-toastify";
 import Toast from "../components/Toast";
+import api from "../apis/api";
 
 let connection;
 let ping = {};
@@ -10,13 +10,13 @@ let ping = {};
 export default function notification() {
   return {
     init: () => {
-      if (!auth().is_authenticated()) return;
+      if (!authManager.isAuthenticated()) return;
       window.WebSocket = window.WebSocket || window.MozWebSocket;
       if (!window.WebSocket) {
         console.log("WebSocket not supported!");
         return;
       }
-      connection = new WebSocket(urls().notification(auth().token()));
+      connection = new WebSocket(api.ws.notification());
       connection.onopen = () => {
         console.log("Notification connected!");
         ping = setInterval(

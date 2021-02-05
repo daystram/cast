@@ -14,22 +14,19 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
-import Cast from "./Cast";
-import Sidebar from "./Sidebar";
-import { HybridPlayer } from "./player";
+import { Cast, HybridPlayer, ProfileImage, Sidebar } from "../components";
 import abbreviate from "../helper/abbreviate";
-import axios from "axios";
-import urls from "../helper/url";
 import format from "../helper/format";
 import { withRouter } from "react-router-dom";
-import auth from "../helper/auth";
+import { authManager } from "../helper/auth";
 import TimeAgo from "react-timeago";
 import queryString from "query-string";
 import Chat from "./Chat";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
 import { VIDEO_TYPE_LIVE, VIDEO_TYPE_VOD } from "../constants/video";
-import logo from "./logo.svg";
+import logo from "../components/logo.svg";
+import api from "../apis/api";
 
 class Scene extends Component {
   constructor(props) {
@@ -89,17 +86,15 @@ class Scene extends Component {
   }
 
   fetchVideos(variant) {
-    axios
-      .get(urls().list(), {
-        params: {
-          variant: variant,
-          count: 8,
-          offset: 0,
-        },
+    api.cast
+      .list({
+        variant: variant,
+        count: 8,
+        offset: 0,
       })
       .then((response) => {
         this.setState({ loading: { ...this.state.loading, [variant]: false } });
-        if (response.data.code === 200) {
+        if (response.data.code === 200 && response.data.data) {
           this.setState({
             [variant]: response.data.data.reduce((map, obj) => {
               map[obj.hash] = obj;
@@ -115,12 +110,10 @@ class Scene extends Component {
   }
 
   fetchDetail(hash) {
-    axios
-      .get(urls().cast_details(), {
-        params: {
-          hash: hash,
-          username: auth().username(),
-        },
+    api.cast
+      .detail({
+        hash: hash,
+        username: authManager.getUser().preferred_username,
       })
       .then((response) => {
         this.setState({ loading: { ...this.state.loading, current: false } });
@@ -145,7 +138,7 @@ class Scene extends Component {
               album: "cast",
               artwork: [
                 {
-                  src: urls().thumbnail(this.state.video.hash),
+                  src: api.cdn.thumbnail(this.state.video?.hash),
                   sizes: "512x512",
                   type: "image/jpg",
                 },
@@ -164,9 +157,9 @@ class Scene extends Component {
 
   handleDownload() {
     if (this.state.loading.current) return;
-    if (auth().is_authenticated()) {
+    if (authManager.isAuthenticated()) {
       let link = document.createElement("a");
-      link.href = urls().download(this.state.video.hash);
+      link.href = api.cdn.download(this.state.video.hash);
       link.download = `${this.state.video.title} by ${this.state.video.author.name} - cast`;
       document.body.appendChild(link);
       link.click();
@@ -183,9 +176,9 @@ class Scene extends Component {
 
   handleLike() {
     if (this.state.loading.current) return;
-    if (auth().is_authenticated()) {
-      axios
-        .post(urls().like(), {
+    if (authManager.isAuthenticated()) {
+      api.cast
+        .like({
           hash: this.state.video.hash,
           like: !this.state.liked,
         })
@@ -214,7 +207,7 @@ class Scene extends Component {
   handleComment(e) {
     e.preventDefault();
     if (this.state.loading.current) return;
-    if (auth().is_authenticated()) {
+    if (authManager.isAuthenticated()) {
       if (!this.state.comment.trim() || this.state.error_comment) {
         this.setState({ error_comment: "Please enter your comment" });
         return;
@@ -222,8 +215,8 @@ class Scene extends Component {
       if (this.state.loading.comment) return;
       this.setState({ loading: { ...this.state.loading, comment: true } });
       this.setState({ error_submit: "" });
-      axios
-        .post(urls().comment(), {
+      api.cast
+        .comment({
           hash: this.state.video.hash,
           content: this.state.comment.trim(),
         })
@@ -250,9 +243,9 @@ class Scene extends Component {
 
   handleSubscribe() {
     if (this.state.loading.current) return;
-    if (auth().is_authenticated()) {
-      axios
-        .post(urls().subscribe(), {
+    if (authManager.isAuthenticated()) {
+      api.user
+        .subscribe({
           author: this.state.video.author.username,
           subscribe: !this.state.subscribed,
         })
@@ -275,6 +268,7 @@ class Scene extends Component {
   }
 
   render() {
+    if (this.state.loading.live) return <></>;
     return (
       <>
         {!this.state.not_found && !this.state.offline && (
@@ -321,24 +315,20 @@ class Scene extends Component {
               >
                 <HybridPlayer
                   url={
-                    this.state.video &&
-                    (this.state.video.type === VIDEO_TYPE_LIVE
-                      ? urls().live(this.state.video.hash)
-                      : urls().vod(this.state.video.hash))
+                    this.state.video?.type === VIDEO_TYPE_LIVE
+                      ? api.live.stream(this.state.video?.hash)
+                      : api.cdn.vod(this.state.video?.hash)
                   }
                   thumbnail={
-                    this.state.video && urls().thumbnail(this.state.video.hash)
-                  }
-                  live={
                     this.state.video &&
-                    this.state.video.type === VIDEO_TYPE_LIVE
+                    api.cdn.thumbnail(this.state.video?.hash)
                   }
+                  live={this.state.video?.type === VIDEO_TYPE_LIVE}
                 />
                 <Row noGutters style={style.cast_tag_bar}>
                   <Col md={true}>
-                    {this.state.video &&
-                      this.state.video.tags &&
-                      Object.values(this.state.video.tags).map((tag) => (
+                    {this.state.video?.tags &&
+                      Object.values(this.state.video?.tags).map((tag) => (
                         <Badge pill key={tag} style={style.cast_tag}>
                           {tag}
                         </Badge>
@@ -348,15 +338,14 @@ class Scene extends Component {
                     md={true}
                     style={{ display: "flex", justifyContent: "flex-end" }}
                   >
-                    {this.state.video &&
-                      this.state.video.type === VIDEO_TYPE_VOD && (
-                        <span
-                          style={{ ...style.cast_attrib, ...style.clickable }}
-                          onClick={this.handleDownload}
-                        >
-                          <i className="material-icons">get_app</i> download
-                        </span>
-                      )}
+                    {this.state.video?.type === VIDEO_TYPE_VOD && (
+                      <span
+                        style={{ ...style.cast_attrib, ...style.clickable }}
+                        onClick={this.handleDownload}
+                      >
+                        <i className="material-icons">get_app</i> download
+                      </span>
+                    )}
                     <span
                       style={{ ...style.cast_attrib, ...style.clickable }}
                       onClick={this.handleShare}
@@ -373,64 +362,38 @@ class Scene extends Component {
                       >
                         thumb_up
                       </i>{" "}
-                      {(this.state.video &&
-                        abbreviate().number(this.state.likes)) ||
-                        0}{" "}
-                      likes
+                      {abbreviate().number(this.state.likes) || 0} likes
                     </span>
                     <span style={style.cast_attrib}>
                       <i className="material-icons">remove_red_eye</i>{" "}
-                      {(this.state.video &&
-                        abbreviate().number(this.state.video.views)) ||
-                        0}{" "}
-                      {this.state.video &&
-                        (this.state.video.type === VIDEO_TYPE_LIVE
-                          ? "viewers"
-                          : "views")}
+                      {abbreviate().number(this.state.video?.views) || 0}{" "}
+                      {this.state.video?.type === VIDEO_TYPE_LIVE
+                        ? "viewers"
+                        : "views"}
                     </span>
                   </Col>
                 </Row>
-                <h1 style={style.title}>
-                  {this.state.video && this.state.video.title}
-                </h1>
+                <h1 style={style.title}>{this.state.video?.title}</h1>
                 <p style={{ marginTop: 4 }}>
-                  {this.state.video &&
-                    format().date(this.state.video.created_at)}
+                  {format().date(this.state.video?.created_at)}
                 </p>
                 <div style={style.author_bar}>
                   <div style={style.author_profile}>
-                    <div
-                      className="text-center"
-                      style={{
-                        width: 42,
-                        height: 42,
-                        flexShrink: 0,
-                        borderRadius: 21,
-                        background: "gray",
-                        color: "white",
-                        fontSize: "21px",
-                        lineHeight: "42px",
-                        textAlign: "center",
-                        textTransform: "capitalize",
-                        ...style.profile_image,
-                      }}
-                    >
-                      {this.state.video.author.name[0]}
-                    </div>
+                    <ProfileImage
+                      size={42}
+                      name={this.state.video?.author.name}
+                      style={style.profile_image}
+                    />
                     <div style={style.cast_author_details}>
                       <p style={style.cast_author_name}>
-                        {this.state.video && this.state.video.author.name}
+                        {this.state.video?.author.name}
                       </p>
                       <p style={style.cast_author_sub}>
-                        {(this.state.video &&
-                          abbreviate().number(
-                            this.state.video.author.subscribers
-                          )) ||
-                          0}{" "}
+                        {abbreviate().number(
+                          this.state.video?.author.subscribers
+                        ) || 0}{" "}
                         subscriber
-                        {this.state.video &&
-                          this.state.video.author.subscribers !== 1 &&
-                          "s"}
+                        {this.state.video?.author.subscribers !== 1 && "s"}
                       </p>
                     </div>
                   </div>
@@ -449,7 +412,7 @@ class Scene extends Component {
                 <Row className="justify-content-center" noGutters>
                   <Col xl={10} xs={12}>
                     <div style={style.description}>
-                      {this.state.video && this.state.video.description}
+                      {this.state.video?.description}
                     </div>
                   </Col>
                 </Row>
@@ -495,25 +458,11 @@ class Scene extends Component {
                                 ...style.comment_item,
                               }}
                             >
-                              <div
-                                className="text-center"
-                                style={{
-                                  width: 42,
-                                  height: 42,
-                                  flexShrink: 0,
-                                  borderRadius: 21,
-                                  background: "gray",
-                                  color: "white",
-                                  fontSize: "21px",
-                                  lineHeight: "42px",
-                                  textAlign: "center",
-                                  textTransform: "capitalize",
-                                  ...style.profile_image,
-                                  alignSelf: "end",
-                                }}
-                              >
-                                {comment.author.name[0]}
-                              </div>
+                              <ProfileImage
+                                size={42}
+                                name={comment.author.name}
+                                style={style.profile_image}
+                              />
                               <div
                                 style={{
                                   ...style.cast_author_details,
@@ -553,14 +502,12 @@ class Scene extends Component {
                 sm={{ span: 6, order: 3 }}
                 xs={{ span: 12, order: 3 }}
               >
-                {this.state.video && (
-                  <Chat
-                    height={480}
-                    embedded={true}
-                    hash={this.state.video.hash}
-                    promptSignup={this.promptSignup}
-                  />
-                )}
+                <Chat
+                  height={480}
+                  embedded={true}
+                  hash={this.state.video?.hash}
+                  promptSignup={this.promptSignup}
+                />
                 <div style={style.cast_list}>
                   {this.state.vod &&
                     Object.values(this.state.vod).map((video) => (
@@ -696,10 +643,8 @@ class Scene extends Component {
                   window.open(
                     "https://twitter.com/intent/tweet?" +
                       queryString.stringify({
-                        text: `Watch ${
-                          this.state.video && this.state.video.title
-                        } by ${
-                          this.state.video && this.state.video.author.name
+                        text: `Watch ${this.state.video?.title} by ${
+                          this.state.video?.author.username
                         } at cast! ${window.location.href.split("?")[0]}`,
                       }),
                     "Share",
@@ -729,10 +674,8 @@ class Scene extends Component {
                 <span className={"fa fa-facebook"} /> Share
               </Button>
               <a
-                href={`mailto:?body=Watch ${
-                  this.state.video && this.state.video.title
-                } by ${
-                  this.state.video && this.state.video.author.name
+                href={`mailto:?body=Watch ${this.state.video?.title} by ${
+                  this.state.video?.author.name
                 } at cast! ${window.location.href.split("?")[0]}`}
               >
                 <Button>

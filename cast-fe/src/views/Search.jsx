@@ -1,26 +1,21 @@
 import React, { Component } from "react";
 import { Card, Col, Container, Row } from "react-bootstrap";
-import Sidebar from "./Sidebar";
-import axios from "axios";
-import urls from "../helper/url";
+import { List, Sidebar } from "../components";
 import { Redirect } from "react-router-dom";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
-import List from "./List";
 
 class Search extends Component {
   constructor(props) {
     super(props);
     this.state = {
       query: new URLSearchParams(this.props.location.search).get("query"),
-      results: null,
       loading: false,
     };
   }
 
   componentDidMount() {
     document.title = this.state.query + " - cast";
-    // if (this.state.query) this.fetchResults(this.state.query);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -33,29 +28,7 @@ class Search extends Component {
     ) {
       document.title = this.state.query + " - cast";
       this.setState({ query: query });
-      // if (query) this.fetchResults(query);
     }
-  }
-
-  fetchResults(query) {
-    axios
-      .get(urls().search(), {
-        params: {
-          query: query.trim(),
-          count: 64,
-          offset: 0,
-        },
-      })
-      .then((response) => {
-        this.setState({ loading: false });
-        if (response.data.code === 200) {
-          this.setState({ results: response.data.data });
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-        this.setState({ loading: false });
-      });
   }
 
   render() {

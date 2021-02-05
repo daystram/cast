@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { Button, Card, Form, FormControl, InputGroup } from "react-bootstrap";
-import urls from "../helper/url";
-import auth from "../helper/auth";
+import { authManager } from "../helper/auth";
 import { withRouter } from "react-router-dom";
 import { CHAT_CHAR_LIMIT } from "../constants/chat";
+import api from "../apis/api";
 
 class Chat extends Component {
   constructor(props) {
@@ -40,12 +40,13 @@ class Chat extends Component {
   }
 
   connectChat(hash) {
+    if (!hash) return;
     window.WebSocket = window.WebSocket || window.MozWebSocket;
     if (!window.WebSocket) {
       console.log("WebSocket not supported!");
       return;
     }
-    const connection = new WebSocket(urls().chat(hash, auth().token()));
+    const connection = new WebSocket(api.ws.chat(hash));
     connection.onopen = () => {
       console.log("Live chat connected!");
       this.setState({ connection });
@@ -82,7 +83,7 @@ class Chat extends Component {
   handleSubmit(e) {
     e.preventDefault();
     if (!this.state.chat.trim()) return;
-    if (!auth().is_authenticated()) {
+    if (!authManager.isAuthenticated()) {
       this.props.promptSignup();
       return;
     }
@@ -115,7 +116,7 @@ class Chat extends Component {
           >
             {this.state.chats.length !== 0 &&
               this.state.chats.map((chat) => (
-                <p style={style.live_chat_item}>
+                <p style={style.live_chat_item} key={chat.chat}>
                   <b>{chat.author}</b>: {chat.chat}
                 </p>
               ))}

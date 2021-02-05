@@ -13,16 +13,14 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
-import SidebarProfile from "./SidebarProfile";
 import Chat from "./Chat";
-import auth from "../helper/auth";
-import CastEditable from "./CastEditable";
-import axios from "axios";
-import urls from "../helper/url";
+import { authManager } from "../helper/auth";
+import { CastEditable, SidebarProfile } from "../components";
 import format from "../helper/format";
 import Clock from "react-live-clock";
 import { MOBILE_BP } from "../constants/breakpoint";
 import MediaQuery from "react-responsive";
+import api from "../apis/api";
 
 let interval = null;
 
@@ -38,16 +36,14 @@ class Dashboard extends Component {
     this.fetchDetail = this.fetchDetail.bind(this);
     this.setStreamWindow = this.setStreamWindow.bind(this);
     this.loadLive = this.loadLive.bind(this);
-    this.fetchDetail(auth().username());
+    this.fetchDetail(authManager.getUser().preferred_username);
   }
 
   fetchDetail(hash) {
-    axios
-      .get(urls().cast_details(), {
-        params: {
-          hash: hash,
-          username: auth().username(),
-        },
+    api.cast
+      .detail({
+        hash: hash,
+        username: authManager.getUser().preferred_username,
       })
       .then((response) => {
         this.setState({ loading: false });
@@ -87,7 +83,7 @@ class Dashboard extends Component {
   loadLive() {
     clearInterval(interval);
     interval = setInterval(() => {
-      axios.get(urls().window()).then((response) => {
+      api.live.window.status().then((response) => {
         if (response.data.code === 200) {
           if (response.data.data && this.state.pending) {
             this.setState({ delta: 1, created_at: new Date().toISOString() });
@@ -106,8 +102,8 @@ class Dashboard extends Component {
 
   setStreamWindow(open) {
     this.setState({ loading_status: true });
-    axios
-      .put(urls().edit_window(open))
+    api.live.window
+      .set(open)
       .then((response) => {
         if (response.data.code === 200) {
           this.setState({ loading_status: false });
@@ -139,6 +135,10 @@ class Dashboard extends Component {
           loading_status: false,
         });
       });
+  }
+
+  componentWillUnmount() {
+    clearInterval(interval);
   }
 
   render() {
@@ -276,7 +276,7 @@ class Dashboard extends Component {
                 <Card body style={style.card_detail}>
                   <Row>
                     <Col md={6} sm={12}>
-                      <Form autocomplete="off">
+                      <Form autoComplete="off">
                         <Form.Group>
                           <Form.Label>Server Address</Form.Label>
                           <InputGroup>
@@ -284,6 +284,7 @@ class Dashboard extends Component {
                               type="text"
                               value={`rtmp://cast.daystram.com/live`}
                               ref={(ref) => (this.rtmpField = ref)}
+                              onChange={() => {}}
                             />
                             <InputGroup.Append>
                               <OverlayTrigger
@@ -312,13 +313,14 @@ class Dashboard extends Component {
                       </Form>
                     </Col>
                     <Col md={6} sm={12}>
-                      <Form autocomplete="off">
+                      <Form autoComplete="off">
                         <Form.Group>
                           <Form.Label>Stream Key</Form.Label>
                           <InputGroup>
                             <Form.Control
                               type={this.state.show_key ? "text" : "password"}
-                              value={auth().username()}
+                              value={authManager.getUser().preferred_username}
+                              onChange={() => {}}
                             />
                             <InputGroup.Append>
                               <Button
@@ -354,7 +356,7 @@ class Dashboard extends Component {
                                   variant="outline-primary"
                                   onClick={() => {
                                     navigator.clipboard.writeText(
-                                      auth().username()
+                                      authManager.getUser().preferred_username
                                     );
                                   }}
                                 >
@@ -367,14 +369,17 @@ class Dashboard extends Component {
                       </Form>
                     </Col>
                     <Col sm={12}>
-                      <Form autocomplete="off">
+                      <Form autoComplete="off">
                         <Form.Group>
                           <Form.Label>Chat Embed</Form.Label>
                           <InputGroup>
                             <Form.Control
                               type="text"
-                              value={`https://cast.daystram.com/c/${auth().username()}`}
+                              value={`https://cast.daystram.com/c/${
+                                authManager.getUser().preferred_username
+                              }`}
                               ref={(ref) => (this.chatField = ref)}
+                              onChange={() => {}}
                             />
                             <InputGroup.Append>
                               <OverlayTrigger
@@ -427,7 +432,11 @@ class Dashboard extends Component {
               style={{ paddingBottom: 16 }}
             >
               <h1 style={style.h1}>Chat</h1>
-              <Chat height={"85vh"} embedded={true} hash={auth().username()} />
+              <Chat
+                height={"85vh"}
+                embedded={true}
+                hash={authManager.getUser().preferred_username}
+              />
             </Col>
           </Row>
         </Container>

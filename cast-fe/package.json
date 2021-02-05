@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@daystram/ratify-client": "^1.3.0",
+    "@daystram/ratify-client": "^1.4.0",
     "axios": ">=0.21.1",
     "bootstrap": "^4.4.1",
     "bs-custom-file-input": "^1.3.4",

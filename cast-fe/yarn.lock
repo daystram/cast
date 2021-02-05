@@ -1174,10 +1174,10 @@
   resolved "https://registry.yarnpkg.com/@csstools/normalize.css/-/normalize.css-10.1.0.tgz#f0950bba18819512d42f7197e56c518aa491cf18"
   integrity sha512-ij4wRiunFfaJxjB0BdrYHIH8FxBJpOwNPhhAcunlmPdXudL1WQV1qoP9un6JsEBAgQH+7UXyyjh0g7jTxXK6tg==
 
-"@daystram/ratify-client@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@daystram/ratify-client/-/ratify-client-1.3.0.tgz#0c07962f30b5a524947bc4e9b1724109935d0ad7"
-  integrity sha512-nh6TbpVuWRJWXI6xZzGQzYvRfjKKN/o8aM5+v7xHRX5rOwPl2PTQLp1lPus4ulyEOOHHtqAjjniJkxlO2jWKdQ==
+"@daystram/ratify-client@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@daystram/ratify-client/-/ratify-client-1.4.0.tgz#15d4adf0b7280903fe5e22e6f8a88ef1c9511ffa"
+  integrity sha512-LCewX0fgV2N5YqOGzJjSL811oW6nuDlKosKUsQ/sy11Cy6fK0vJchDCBh5A5SV6t6UllIsqor8e1iuv2hqpgOw==
   dependencies:
     axios "^0.21.1"
     jwt-decode "^3.1.2"

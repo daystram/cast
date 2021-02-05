@@ -1,17 +1,16 @@
 import React, { Component } from "react";
 import { Card, Col, Container, Row } from "react-bootstrap";
-import SidebarProfile from "./SidebarProfile";
-import axios from "axios";
-import urls from "../helper/url";
-import auth from "../helper/auth";
+import { ProfileImage, SidebarProfile } from "../components";
+import { authManager } from "../helper/auth";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
+import api from "../apis/api";
 
 class Profile extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: auth().user(),
+      user: authManager.getUser(),
       subscribers: 0,
       views: 0,
       video_count: 0,
@@ -25,10 +24,8 @@ class Profile extends Component {
   }
 
   fetchUser() {
-    axios
-      .get(urls().user_info(), {
-        headers: { Authorization: `Bearer ${auth().token()}` },
-      })
+    api.user
+      .detail()
       .then((response) => {
         this.setState({ loading_info: false });
         if (response.data.code === 200) {
@@ -62,24 +59,10 @@ class Profile extends Component {
               <Row>
                 <Col xl xs={12} className={"responsive-fold"}>
                   <div style={style.profile_bar}>
-                    <div
-                      className="text-center"
-                      style={{
-                        width: 128,
-                        height: 128,
-                        flexShrink: 0,
-                        borderRadius: 64,
-                        background: "gray",
-                        color: "white",
-                        fontSize: "64px",
-                        lineHeight: "128px",
-                        textAlign: "center",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {this.state.user.given_name[0] +
-                        this.state.user.family_name[0]}
-                    </div>
+                    <ProfileImage
+                      size={128}
+                      name={`${this.state.user.given_name} ${this.state.user.family_name}`}
+                    />
                     <div style={style.profile_name}>
                       <h1 style={style.name}>
                         {this.state.user.given_name}{" "}

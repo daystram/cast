@@ -69,22 +69,23 @@ For ease of deployment, the following `docker-compose.yml` file can be used to o
 ```yaml
 version: "3"
 services:
-  cast-fe:
-    image: daystram/cast:fe
+  cast-be:
+    image: daystram/cast:be
     ports:
-      - "80:80"
+      - "8080:8080"
+      - "1935:1935"
+    env_file:
+      - /path_to_env_file/.env
     restart: unless-stopped
   cast-is:  # no attached GPU
     image: daystram/cast:is
     env_file:
      - /path_to_env_file/.env
     restart: unless-stopped
-  cast-be:
-    image: daystram/cast:be
+  cast-fe:
+    image: daystram/cast:fe
     ports:
-      - "8080:8080"
-    env_file:
-      - /path_to_env_file/.env
+      - "80:80"
     restart: unless-stopped
   mongodb:
     image: mongo:4.4-bionic
@@ -139,6 +140,15 @@ services:
 - [MP4Box + gpac](https://github.com/gpac/gpac)
 
 This image is built on top of [NVIDIA's CUDA images](https://hub.docker.com/r/nvidia/cuda/) to enable FFmpeg harware acceleration on supported hosts. MP4Box is built from source, as seen on the [Dockerfile](https://github.com/daystram/cast/blob/master/cast-is/ingest-base.Dockerfile).
+
+### MongoDB Indexes
+For features to work properly, some indexes needs to be created in the MongoDB instance. Use the following command in `mongo` CLI to create indexes for `video` collection:
+
+```
+use MONGODB_NAME;
+db.video.createIndex({title: "text", description: "text"}, {collation: {locale: "simple"}});
+db.video.createIndex({hash: "hashed"});
+```
 
 ## License
 This project is licensed under the [MIT License](https://github.com/daystram/cast/blob/master/LICENSE).

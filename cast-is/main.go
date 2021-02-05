@@ -289,13 +289,6 @@ func main() {
 				fmt.Printf("; DASH (%.2fs) ", float64(time.Now().UnixNano()-start)/1e9)
 				fmt.Fprintf(logFile, "\n[cast-is] ----------------------- DONE (%.2fs)\n", float64(time.Now().UnixNano()-start)/1e9)
 
-				// Notify cast-be
-				_ = module.mqPub.Publish("", config.RabbitMQQueueProgress, true, false,
-					amqp.Publishing{
-						ContentType: "text/plain",
-						Body:        []byte(fmt.Sprintf("%s:%d", hash, i)),
-					})
-
 				// Upload to S3
 				files, _ := filepath.Glob(fmt.Sprintf("%s/segment_*", workDir))
 				files = append(files, fmt.Sprintf("%s/manifest.mpd", workDir))
@@ -318,6 +311,13 @@ func main() {
 				}
 				fmt.Printf("; UPLOADED (%.2fs)\n", float64(time.Now().UnixNano()-start)/1e9)
 				fmt.Fprintf(logFile, "[cast-is] ----------------------- UPLOADED (%.2fs)\n", float64(time.Now().UnixNano()-start)/1e9)
+
+				// Notify cast-be
+				_ = module.mqPub.Publish("", config.RabbitMQQueueProgress, true, false,
+					amqp.Publishing{
+						ContentType: "text/plain",
+						Body:        []byte(fmt.Sprintf("%s:%d", hash, i)),
+					})
 				fmt.Fprintf(logFile, "[cast-is] ----------------------- Completed -> %s\n", resolution.Name)
 			}
 			// Upload log

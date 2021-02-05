@@ -272,6 +272,12 @@ h5,
   border-color: #00ff3a;
 }
 
+.alert-banner {
+  color: hsl(7, 61%, 50%);
+  background-color: #9e320044;
+  border-color: #ff4800;
+}
+
 a.inline {
   background: linear-gradient(to bottom, #e84409 0%, #e84409 100%) repeat-x 0
     100%;

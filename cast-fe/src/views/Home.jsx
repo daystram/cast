@@ -1,13 +1,20 @@
 import React, { Component } from "react";
-import { Card, Col, Container, Row, Spinner } from "react-bootstrap";
-import Cast from "./Cast";
-import Sidebar from "./Sidebar";
-import axios from "axios";
-import urls from "../helper/url";
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Container,
+  Row,
+  Spinner,
+} from "react-bootstrap";
 import { MOBILE_BP } from "../constants/breakpoint";
 import MediaQuery from "react-responsive";
 import { Link } from "react-router-dom";
 import { VIDEO_LIST_PAGE_SIZE } from "../constants/video";
+import api from "../apis/api";
+import { Cast, Sidebar } from "../components";
+import logo from "../components/logo.svg";
 
 class Home extends Component {
   constructor(props) {
@@ -32,13 +39,11 @@ class Home extends Component {
   }
 
   fetchVideos(variant) {
-    axios
-      .get(urls().list(), {
-        params: {
-          variant: variant,
-          count: VIDEO_LIST_PAGE_SIZE,
-          offset: 0,
-        },
+    api.cast
+      .list({
+        variant: variant,
+        count: VIDEO_LIST_PAGE_SIZE,
+        offset: 0,
       })
       .then((response) => {
         this.setState({ loading: { ...this.state.loading, [variant]: false } });
@@ -93,6 +98,56 @@ class Home extends Component {
             </Col>
           </MediaQuery>
           <Col xl={10} xs={12} className={"mid-container-right"}>
+            <Alert variant="banner">
+              <Alert.Heading>
+                <img
+                  src={logo}
+                  height="30"
+                  className="d-inline-block align-top cast-logo"
+                  alt="cast"
+                />
+              </Alert.Heading>
+              <p>
+                cast is a DASH video-streaming and RTMP live-streaming platform.
+              </p>
+              <p>
+                It uses <b>DASH (Dynamic Adaptive Streaming over HTTP)</b> to
+                smoothly stream videos with ranging qualities to the clients.{" "}
+                <b>RTMP (Real-Time Messaging Protocol)</b> is the method used to
+                stream live content from the client (e.g. OBS Studio) to cast's
+                servers.
+              </p>
+              <p>
+                Uploaded videos are ingested by cast's <b>transcoding nodes</b>{" "}
+                powered with <b>NVIDIA CUDA GPU hardware acceleration</b>. These
+                transcoders are <b>highly scalable</b> and can be deployed with
+                a high number of replica either on- or off-premise.
+              </p>
+              <p>
+                User and authentication is managed by{" "}
+                <b>
+                  <a
+                    className={"inline"}
+                    href={"https://ratify.daystram.com"}
+                    target={"_blank"}
+                    rel="noopener noreferrer"
+                  >
+                    Ratify
+                  </a>
+                </b>
+                .
+              </p>
+              <hr />
+              <div className="d-flex justify-content-end">
+                <Button
+                  href={"https://github.com/daystram/cast"}
+                  target={"_blank"}
+                  variant="outline-primary"
+                >
+                  View on GitHub <i className="fab fa-github" />
+                </Button>
+              </div>
+            </Alert>
             <h1 style={style.h1}>Trending Casts</h1>
             <Row noGutters>
               {!this.state.loading.trending &&
