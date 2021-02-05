@@ -2,12 +2,11 @@ import React, { Component } from "react";
 import { Card, Col, Container, Row, Spinner } from "react-bootstrap";
 import Cast from "./Cast";
 import Sidebar from "./Sidebar";
-import axios from "axios";
-import urls from "../helper/url";
 import { MOBILE_BP } from "../constants/breakpoint";
 import MediaQuery from "react-responsive";
 import { Link } from "react-router-dom";
 import { VIDEO_LIST_PAGE_SIZE } from "../constants/video";
+import api from "../apis/api";
 
 class Home extends Component {
   constructor(props) {
@@ -32,13 +31,11 @@ class Home extends Component {
   }
 
   fetchVideos(variant) {
-    axios
-      .get(urls().list(), {
-        params: {
-          variant: variant,
-          count: VIDEO_LIST_PAGE_SIZE,
-          offset: 0,
-        },
+    api.cast
+      .list({
+        variant: variant,
+        count: VIDEO_LIST_PAGE_SIZE,
+        offset: 0,
       })
       .then((response) => {
         this.setState({ loading: { ...this.state.loading, [variant]: false } });

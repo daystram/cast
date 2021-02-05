@@ -30,7 +30,7 @@ function Navigation() {
     (response) => response,
     (error) => {
       if (error.response.status === 403) {
-        refreshAuth();
+        refreshAuth(window.location.href);
       }
     }
   );
@@ -48,7 +48,7 @@ function Navigation() {
         lineHeight: "38px",
         textAlign: "center",
         textTransform: "capitalize",
-        cursor: "pointer"
+        cursor: "pointer",
       }}
       onClick={() => {
         history.push("/profile");
@@ -150,7 +150,12 @@ function Navigation() {
               style={{ border: "none", paddingRight: 0 }}
               onClick={() => setExpanded(!expanded)}
             >
-              blockl
+              <span
+                className="material-icons"
+                style={{ color: "#E84409", fontSize: 28, lineHeight: 1 }}
+              >
+                menu
+              </span>
             </Navbar.Toggle>
           </MediaQuery>
         </Col>

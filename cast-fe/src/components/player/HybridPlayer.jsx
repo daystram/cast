@@ -11,6 +11,7 @@ import "./player.css";
 class HybridPlayer extends React.Component {
   componentDidMount() {
     this.initPlayer();
+    this.updatePlayer();
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -45,7 +46,7 @@ class HybridPlayer extends React.Component {
       flvjs: {
         mediaDataSource: {
           isLive: true,
-          cors: false, // TODO: NOTICE!
+          cors: true, // TODO: NOTICE!
           withCredentials: false,
         },
       },
@@ -54,6 +55,7 @@ class HybridPlayer extends React.Component {
     };
     this.player = videojs(this.videoNode, options);
     this.player.httpSourceSelector();
+    this.player.load();
   }
 
   updatePlayer() {

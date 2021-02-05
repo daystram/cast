@@ -14,7 +14,6 @@ import {
 import Dropzone from "react-dropzone";
 import urls from "../helper/url";
 import format from "../helper/format";
-import axios from "axios";
 import { Prompt, withRouter } from "react-router-dom";
 import { WithContext as ReactTags } from "react-tag-input";
 import "./tags.css";
@@ -25,7 +24,6 @@ import {
   VIDEO_TAG_COUNT,
   VIDEO_TITLE_CHAR_LIMIT,
 } from "../constants/video";
-import auth from "../helper/auth";
 import api from "../apis/api";
 
 const resolutions = ["Processing", "240p", "360p", "480p", "720p", "1080p"];
@@ -220,12 +218,8 @@ class CastEditable extends Component {
   checkAvailability(value) {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
-      axios
-        .get(urls().title_check(), {
-          params: {
-            title: value.trim(),
-          },
-        })
+      api.cast
+        .titleCheck(value.trim())
         .then((response) => {
           if (response.data.code !== 200 && this.state.editing) {
             this.setState({ error_title: response.data.error });
@@ -261,13 +255,8 @@ class CastEditable extends Component {
     form.append("tags", this.state.tags.map((tag) => tag.text).join(","));
     if (this.state.new_thumbnail)
       form.append("thumbnail", this.state.new_thumbnail);
-    axios
-      .put(urls().edit_video(), form, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "multipart/form-data",
-        },
-      })
+    api.cast
+      .edit(form)
       .then((response) => {
         clearTimeout(timeout);
         if (response.data.code === 200) {
@@ -304,15 +293,8 @@ class CastEditable extends Component {
 
   deleteVideo() {
     this.setState({ error_delete: "", loading_delete: true });
-    axios
-      .delete(urls().delete(), {
-        params: {
-          hash: this.props.video.hash,
-        },
-        headers: {
-          Authorization: `Bearer ${auth().token()}`,
-        },
-      })
+    api.cast
+      .remove(this.props.video.hash)
       .then((response) => {
         if (response.data.code === 200) {
           this.setState({ loading_delete: false, prompt: false });

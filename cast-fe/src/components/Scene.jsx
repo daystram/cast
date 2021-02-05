@@ -90,13 +90,11 @@ class Scene extends Component {
   }
 
   fetchVideos(variant) {
-    axios
-      .get(urls().list(), {
-        params: {
-          variant: variant,
-          count: 8,
-          offset: 0,
-        },
+    api.cast
+      .list({
+        variant: variant,
+        count: 8,
+        offset: 0,
       })
       .then((response) => {
         this.setState({ loading: { ...this.state.loading, [variant]: false } });
@@ -116,12 +114,10 @@ class Scene extends Component {
   }
 
   fetchDetail(hash) {
-    axios
-      .get(urls().cast_details(), {
-        params: {
-          hash: hash,
-          username: auth().username(),
-        },
+    api.cast
+      .detail({
+        hash: hash,
+        username: auth().username(),
       })
       .then((response) => {
         this.setState({ loading: { ...this.state.loading, current: false } });
@@ -184,8 +180,8 @@ class Scene extends Component {
   handleLike() {
     if (this.state.loading.current) return;
     if (auth().is_authenticated()) {
-      axios
-        .post(urls().like(), {
+      api.cast
+        .like({
           hash: this.state.video.hash,
           like: !this.state.liked,
         })
@@ -222,8 +218,8 @@ class Scene extends Component {
       if (this.state.loading.comment) return;
       this.setState({ loading: { ...this.state.loading, comment: true } });
       this.setState({ error_submit: "" });
-      axios
-        .post(urls().comment(), {
+      api.cast
+        .comment({
           hash: this.state.video.hash,
           content: this.state.comment.trim(),
         })
@@ -324,7 +320,7 @@ class Scene extends Component {
                   url={
                     this.state.video &&
                     (this.state.video.type === VIDEO_TYPE_LIVE
-                      ? urls().live(this.state.video.hash)
+                      ? api.live.stream(this.state.video.hash)
                       : api.cdn.vod(this.state.video.hash))
                   }
                   thumbnail={

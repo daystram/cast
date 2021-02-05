@@ -10,11 +10,9 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
-import axios from "axios";
 import bsCustomFileInput from "bs-custom-file-input";
 import { WithContext as ReactTags } from "react-tag-input";
 import SidebarProfile from "./SidebarProfile";
-import urls from "../helper/url";
 import CastEditable from "./CastEditable";
 import { Prompt } from "react-router-dom";
 
@@ -30,6 +28,7 @@ import {
   VIDEO_TAG_COUNT,
   VIDEO_TITLE_CHAR_LIMIT,
 } from "../constants/video";
+import api from "../apis/api";
 
 let timeout = {};
 
@@ -68,13 +67,11 @@ class Manage extends Component {
   }
 
   fetchVideos() {
-    axios
-      .get(urls().list(), {
-        params: {
-          author: auth().username(),
-          count: 8,
-          offset: 0,
-        },
+    api.cast
+      .list({
+        author: auth().username(),
+        count: 8,
+        offset: 0,
       })
       .then((response) => {
         this.setState({ loading: false });
@@ -199,12 +196,8 @@ class Manage extends Component {
   checkAvailability(value) {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
-      axios
-        .get(urls().title_check(), {
-          params: {
-            title: value.trim(),
-          },
-        })
+      api.cast
+        .titleCheck(value.trim())
         .then((response) => {
           if (response.data.code !== 200) {
             this.setState({ error_title: response.data.error });
@@ -245,16 +238,8 @@ class Manage extends Component {
     form.append("tags", this.state.tags.map((tag) => tag.text).join(","));
     form.append("thumbnail", this.state.thumbnail);
     form.append("video", this.state.video);
-    axios
-      .post(urls().upload(), form, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progress) => {
-          this.setState({ progress: (progress.loaded * 100) / progress.total });
-        },
-      })
+    api.cast
+      .upload(form)
       .then((response) => {
         console.log(response);
         this.setState({

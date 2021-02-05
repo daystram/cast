@@ -23,6 +23,7 @@ import format from "../helper/format";
 import Clock from "react-live-clock";
 import { MOBILE_BP } from "../constants/breakpoint";
 import MediaQuery from "react-responsive";
+import api from "../apis/api";
 
 let interval = null;
 
@@ -42,12 +43,10 @@ class Dashboard extends Component {
   }
 
   fetchDetail(hash) {
-    axios
-      .get(urls().cast_details(), {
-        params: {
-          hash: hash,
-          username: auth().username(),
-        },
+    api.cast
+      .detail({
+        hash: hash,
+        username: auth().username(),
       })
       .then((response) => {
         this.setState({ loading: false });
@@ -87,27 +86,37 @@ class Dashboard extends Component {
   loadLive() {
     clearInterval(interval);
     interval = setInterval(() => {
-      axios.get(urls().window()).then((response) => {
-        if (response.data.code === 200) {
-          if (response.data.data && this.state.pending) {
-            this.setState({ delta: 1, created_at: new Date().toISOString() });
+      axios
+        .get(urls().window(), {
+          headers: { Authorization: `Bearer ${auth().token()}` },
+        })
+        .then((response) => {
+          if (response.data.code === 200) {
+            if (response.data.data && this.state.pending) {
+              this.setState({ delta: 1, created_at: new Date().toISOString() });
+            }
+            if (!response.data.data && !this.state.pending)
+              clearInterval(interval);
+            this.setState({
+              live: response.data.data,
+              stream: { ...this.state.stream, is_live: response.data.data },
+              pending: this.state.pending && !response.data.data,
+            });
           }
-          if (!response.data.data && !this.state.pending)
-            clearInterval(interval);
-          this.setState({
-            live: response.data.data,
-            stream: { ...this.state.stream, is_live: response.data.data },
-            pending: this.state.pending && !response.data.data,
-          });
-        }
-      });
+        });
     }, 3000);
   }
 
   setStreamWindow(open) {
     this.setState({ loading_status: true });
     axios
-      .put(urls().edit_window(open))
+      .put(
+        urls().edit_window(open),
+        {},
+        {
+          headers: { Authorization: `Bearer ${auth().token()}` },
+        }
+      )
       .then((response) => {
         if (response.data.code === 200) {
           this.setState({ loading_status: false });
