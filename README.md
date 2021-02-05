@@ -69,22 +69,23 @@ For ease of deployment, the following `docker-compose.yml` file can be used to o
 ```yaml
 version: "3"
 services:
-  cast-fe:
-    image: daystram/cast:fe
+  cast-be:
+    image: daystram/cast:be
     ports:
-      - "80:80"
+      - "8080:8080"
+      - "1935:1935"
+    env_file:
+      - /path_to_env_file/.env
     restart: unless-stopped
   cast-is:  # no attached GPU
     image: daystram/cast:is
     env_file:
      - /path_to_env_file/.env
     restart: unless-stopped
-  cast-be:
-    image: daystram/cast:be
+  cast-fe:
+    image: daystram/cast:fe
     ports:
-      - "8080:8080"
-    env_file:
-      - /path_to_env_file/.env
+      - "80:80"
     restart: unless-stopped
   mongodb:
     image: mongo:4.4-bionic
