@@ -48,9 +48,7 @@ export default function auth() {
               const lastRoute = sessionStorage.getItem("last_route");
               if (lastRoute) {
                 sessionStorage.removeItem("last_route");
-                window.location.replace({
-                  path: lastRoute?.toString(),
-                });
+                window.location.replace(lastRoute);
               } else {
                 window.location.replace("/");
               }
