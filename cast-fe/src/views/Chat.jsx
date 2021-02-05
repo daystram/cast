@@ -40,6 +40,7 @@ class Chat extends Component {
   }
 
   connectChat(hash) {
+    if (!hash) return;
     window.WebSocket = window.WebSocket || window.MozWebSocket;
     if (!window.WebSocket) {
       console.log("WebSocket not supported!");
@@ -115,7 +116,7 @@ class Chat extends Component {
           >
             {this.state.chats.length !== 0 &&
               this.state.chats.map((chat) => (
-                <p style={style.live_chat_item}>
+                <p style={style.live_chat_item} key={chat.chat}>
                   <b>{chat.author}</b>: {chat.chat}
                 </p>
               ))}
