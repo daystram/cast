@@ -17,8 +17,6 @@ import SidebarProfile from "./SidebarProfile";
 import Chat from "./Chat";
 import auth from "../helper/auth";
 import CastEditable from "./CastEditable";
-import axios from "axios";
-import urls from "../helper/url";
 import format from "../helper/format";
 import Clock from "react-live-clock";
 import { MOBILE_BP } from "../constants/breakpoint";
@@ -86,37 +84,27 @@ class Dashboard extends Component {
   loadLive() {
     clearInterval(interval);
     interval = setInterval(() => {
-      axios
-        .get(urls().window(), {
-          headers: { Authorization: `Bearer ${auth().token()}` },
-        })
-        .then((response) => {
-          if (response.data.code === 200) {
-            if (response.data.data && this.state.pending) {
-              this.setState({ delta: 1, created_at: new Date().toISOString() });
-            }
-            if (!response.data.data && !this.state.pending)
-              clearInterval(interval);
-            this.setState({
-              live: response.data.data,
-              stream: { ...this.state.stream, is_live: response.data.data },
-              pending: this.state.pending && !response.data.data,
-            });
+      api.live.window.status().then((response) => {
+        if (response.data.code === 200) {
+          if (response.data.data && this.state.pending) {
+            this.setState({ delta: 1, created_at: new Date().toISOString() });
           }
-        });
+          if (!response.data.data && !this.state.pending)
+            clearInterval(interval);
+          this.setState({
+            live: response.data.data,
+            stream: { ...this.state.stream, is_live: response.data.data },
+            pending: this.state.pending && !response.data.data,
+          });
+        }
+      });
     }, 3000);
   }
 
   setStreamWindow(open) {
     this.setState({ loading_status: true });
-    axios
-      .put(
-        urls().edit_window(open),
-        {},
-        {
-          headers: { Authorization: `Bearer ${auth().token()}` },
-        }
-      )
+    api.live.window
+      .set(open)
       .then((response) => {
         if (response.data.code === 200) {
           this.setState({ loading_status: false });

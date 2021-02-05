@@ -6,9 +6,6 @@ const api_base = `${
 
 export default function urls() {
   return {
-    edit_window: (open) => `${api_base}/p/live/window?open=${open}`,
-    window: () => `${api_base}/p/live/window`,
-
     register: () => `${api_base}/p/auth/check`,
 
     user_info: () => `${api_base}/p/user/info`,

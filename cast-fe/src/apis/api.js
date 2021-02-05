@@ -51,6 +51,14 @@ export default {
     stream(username) {
       return `${baseAPI}/live/stream/${username}`;
     },
+    window: {
+      status() {
+        return apiClient.get(`/p/live/window`, withAuth());
+      },
+      set(open) {
+        return apiClient.put(`/p/live/window?open=${open}`, {}, withAuth());
+      },
+    },
   },
   ws: {
     chat(hash) {
