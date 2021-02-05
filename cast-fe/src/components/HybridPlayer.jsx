@@ -6,7 +6,7 @@ import "videojs-http-source-selector";
 import "videojs-contrib-dash";
 import "video.js/dist/video-js.css";
 import "videojs-flvjs-es6";
-import "./player.css";
+import "../styles/player.css";
 
 class HybridPlayer extends React.Component {
   componentDidMount() {

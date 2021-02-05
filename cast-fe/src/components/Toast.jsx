@@ -3,7 +3,7 @@ import { useHistory } from "react-router-dom";
 import { Button, ButtonGroup, Image } from "react-bootstrap";
 
 import "react-toastify/dist/ReactToastify.min.css";
-import "./toast.css";
+import "../styles/toast.css";
 
 function Toast(props) {
   let history = useHistory();

@@ -13,10 +13,9 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
-import SidebarProfile from "./SidebarProfile";
 import Chat from "./Chat";
 import auth from "../helper/auth";
-import CastEditable from "./CastEditable";
+import { CastEditable, SidebarProfile } from "../components";
 import format from "../helper/format";
 import Clock from "react-live-clock";
 import { MOBILE_BP } from "../constants/breakpoint";

@@ -1,10 +1,9 @@
 import React, { Component } from "react";
 import { Card, Col, Container, Row } from "react-bootstrap";
-import Sidebar from "./Sidebar";
+import { List, Sidebar } from "../components";
 import { Redirect } from "react-router-dom";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
-import List from "./List";
 
 class Search extends Component {
   constructor(props) {

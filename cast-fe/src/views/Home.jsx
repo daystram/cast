@@ -1,12 +1,11 @@
 import React, { Component } from "react";
 import { Card, Col, Container, Row, Spinner } from "react-bootstrap";
-import Cast from "./Cast";
-import Sidebar from "./Sidebar";
 import { MOBILE_BP } from "../constants/breakpoint";
 import MediaQuery from "react-responsive";
 import { Link } from "react-router-dom";
 import { VIDEO_LIST_PAGE_SIZE } from "../constants/video";
 import api from "../apis/api";
+import { Cast, Sidebar } from "../components";
 
 class Home extends Component {
   constructor(props) {

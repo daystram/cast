@@ -12,12 +12,10 @@ import {
 } from "react-bootstrap";
 import MediaQuery from "react-responsive";
 import logo from "./logo.svg";
-import auth, { refreshAuth } from "../helper/auth";
+import auth from "../helper/auth";
 import { MOBILE_BP } from "../constants/breakpoint";
 import Sidebar from "./Sidebar";
 import SidebarProfile from "./SidebarProfile";
-import axios from "axios";
-
 function Navigation() {
   const [query, setQuery] = useState(
     new URLSearchParams(useLocation().search).get("query") || ""
@@ -26,14 +24,6 @@ function Navigation() {
   const inputRef = useRef();
   const history = useHistory();
   const user = auth().user();
-  axios.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (error.response.status === 403) {
-        refreshAuth(window.location.href);
-      }
-    }
-  );
   let profileButton = auth().is_authenticated() ? (
     <div
       className="text-center"

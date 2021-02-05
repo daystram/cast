@@ -1,14 +1,13 @@
 import React, { Component } from "react";
 import { Card, Col, Container, Row } from "react-bootstrap";
-import Sidebar from "./Sidebar";
+import { List, Sidebar } from "../components";
 import { MOBILE_BP } from "../constants/breakpoint";
 import MediaQuery from "react-responsive";
-import List from "./List";
-import { VIDEO_LIST_TRENDING } from "../constants/video";
+import { VIDEO_LIST_SUBSCRIBED } from "../constants/video";
 
-class Trending extends Component {
+class Subscribed extends Component {
   componentDidMount() {
-    document.title = "Trending Casts | cast";
+    document.title = "Subscribed | cast";
   }
 
   render() {
@@ -24,8 +23,11 @@ class Trending extends Component {
               </Col>
             </MediaQuery>
             <Col xl={10} xs={12} className={"mid-container-right"}>
-              <h1 style={style.h1}>Trending Casts</h1>
-              <List variant={VIDEO_LIST_TRENDING} />
+              <h1 style={style.h1}>Subscribed</h1>
+              <List
+                variant={VIDEO_LIST_SUBSCRIBED}
+                emptyMessage={"You have not subscribed anyone!"}
+              />
             </Col>
           </Row>
         </Container>
@@ -49,4 +51,4 @@ let style = {
   },
 };
 
-export default Trending;
+export default Subscribed;

@@ -13,7 +13,7 @@ import {
   Search,
   Subscribed,
   Trending,
-} from "./components";
+} from "./views";
 import auth from "./helper/auth";
 
 const Routes = () => {

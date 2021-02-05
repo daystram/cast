@@ -12,12 +12,10 @@ import {
 } from "react-bootstrap";
 import bsCustomFileInput from "bs-custom-file-input";
 import { WithContext as ReactTags } from "react-tag-input";
-import SidebarProfile from "./SidebarProfile";
-import CastEditable from "./CastEditable";
 import { Prompt } from "react-router-dom";
 
-import "./tags.css";
-import "./file.css";
+import "../styles/tags.css";
+import "../styles/file.css";
 import auth from "../helper/auth";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
@@ -29,6 +27,7 @@ import {
   VIDEO_TITLE_CHAR_LIMIT,
 } from "../constants/video";
 import api from "../apis/api";
+import { SidebarProfile, CastEditable } from "../components";
 
 let timeout = {};
 

@@ -16,7 +16,7 @@ import { currentHash } from "../helper/url";
 import format from "../helper/format";
 import { Prompt, withRouter } from "react-router-dom";
 import { WithContext as ReactTags } from "react-tag-input";
-import "./tags.css";
+import "../styles/tags.css";
 import { THUMBNAIL_MAX_SIZE } from "../constants/file";
 import {
   VIDEO_DESC_CHAR_LIMIT,

@@ -1,14 +1,13 @@
 import React, { Component } from "react";
 import { Card, Col, Container, Row } from "react-bootstrap";
-import Sidebar from "./Sidebar";
 import { MOBILE_BP } from "../constants/breakpoint";
 import MediaQuery from "react-responsive";
-import List from "./List";
-import { VIDEO_LIST_LIKED } from "../constants/video";
+import { VIDEO_TYPE_LIVE } from "../constants/video";
+import { List, Sidebar } from "../components";
 
-class Liked extends Component {
+class Live extends Component {
   componentDidMount() {
-    document.title = "Liked Casts | cast";
+    document.title = "Live Casts | cast";
   }
 
   render() {
@@ -24,10 +23,10 @@ class Liked extends Component {
               </Col>
             </MediaQuery>
             <Col xl={10} xs={12} className={"mid-container-right"}>
-              <h1 style={style.h1}>Liked Casts</h1>
+              <h1 style={style.h1}>Live Casts</h1>
               <List
-                variant={VIDEO_LIST_LIKED}
-                emptyMessage={"You have not liked any casts!"}
+                variant={VIDEO_TYPE_LIVE}
+                emptyMessage={"No creators are live now!"}
               />
             </Col>
           </Row>
@@ -52,4 +51,4 @@ let style = {
   },
 };
 
-export default Liked;
+export default Live;

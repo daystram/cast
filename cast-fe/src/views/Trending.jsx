@@ -1,14 +1,13 @@
 import React, { Component } from "react";
 import { Card, Col, Container, Row } from "react-bootstrap";
-import Sidebar from "./Sidebar";
+import { List, Sidebar } from "../components";
 import { MOBILE_BP } from "../constants/breakpoint";
 import MediaQuery from "react-responsive";
-import List from "./List";
-import { VIDEO_TYPE_LIVE } from "../constants/video";
+import { VIDEO_LIST_TRENDING } from "../constants/video";
 
-class Live extends Component {
+class Trending extends Component {
   componentDidMount() {
-    document.title = "Live Casts | cast";
+    document.title = "Trending Casts | cast";
   }
 
   render() {
@@ -24,11 +23,8 @@ class Live extends Component {
               </Col>
             </MediaQuery>
             <Col xl={10} xs={12} className={"mid-container-right"}>
-              <h1 style={style.h1}>Live Casts</h1>
-              <List
-                variant={VIDEO_TYPE_LIVE}
-                emptyMessage={"No creators are live now!"}
-              />
+              <h1 style={style.h1}>Trending Casts</h1>
+              <List variant={VIDEO_LIST_TRENDING} />
             </Col>
           </Row>
         </Container>
@@ -52,4 +48,4 @@ let style = {
   },
 };
 
-export default Live;
+export default Trending;

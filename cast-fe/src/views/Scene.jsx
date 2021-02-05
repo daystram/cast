@@ -14,9 +14,7 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
-import Cast from "./Cast";
-import Sidebar from "./Sidebar";
-import { HybridPlayer } from "./player";
+import { Cast, HybridPlayer, Sidebar } from "../components";
 import abbreviate from "../helper/abbreviate";
 import format from "../helper/format";
 import { withRouter } from "react-router-dom";
@@ -27,7 +25,7 @@ import Chat from "./Chat";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
 import { VIDEO_TYPE_LIVE, VIDEO_TYPE_VOD } from "../constants/video";
-import logo from "./logo.svg";
+import logo from "../components/logo.svg";
 import api from "../apis/api";
 
 class Scene extends Component {
