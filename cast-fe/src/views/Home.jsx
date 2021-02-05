@@ -129,7 +129,7 @@ class Home extends Component {
                   <a
                     className={"inline"}
                     href={"https://ratify.daystram.com"}
-                    rel={"noopener"}
+                    rel={"noopener noreferrer"}
                     target={"_blank"}
                   >
                     Ratify
