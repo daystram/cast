@@ -413,7 +413,7 @@ class CastEditable extends Component {
               <Alert variant={"danger"}>{this.state.error_edit}</Alert>
             )}
             {this.state.editing ? (
-              <Form autocomplete={"off"} onSubmit={(e) => e.preventDefault()}>
+              <Form autoComplete={"off"} onSubmit={(e) => e.preventDefault()}>
                 <Form.Group style={{ marginBottom: 4 }}>
                   <Form.Control
                     name={"title"}
@@ -499,7 +499,7 @@ class CastEditable extends Component {
                 <div>
                   {this.state.tags &&
                     Object.values(this.state.tags).map((tag) => (
-                      <Badge pill style={style.cast_tag}>
+                      <Badge pill style={style.cast_tag} key={tag.text}>
                         {tag.text}
                       </Badge>
                     ))}
@@ -507,7 +507,7 @@ class CastEditable extends Component {
               )}
             </div>
             {this.state.editing ? (
-              <Form autocomplete={"off"} onSubmit={(e) => e.preventDefault()}>
+              <Form autoComplete={"off"} onSubmit={(e) => e.preventDefault()}>
                 <Form.Group style={{ marginBottom: 4 }}>
                   <Form.Control
                     name={"description"}
@@ -697,9 +697,9 @@ let style = {
   },
   description: {
     fontSize: 16,
-    webkitLineClamp: "3",
+    WebkitLineClamp: "3",
     overflow: "hidden",
-    webkitBoxOrient: "vertical",
+    WebkitBoxOrient: "vertical",
     display: "-webkit-box",
   },
   spinner: {

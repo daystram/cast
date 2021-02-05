@@ -14,7 +14,7 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
-import { Cast, HybridPlayer, Sidebar } from "../components";
+import { Cast, HybridPlayer, ProfileImage, Sidebar } from "../components";
 import abbreviate from "../helper/abbreviate";
 import format from "../helper/format";
 import { withRouter } from "react-router-dom";
@@ -94,7 +94,7 @@ class Scene extends Component {
       })
       .then((response) => {
         this.setState({ loading: { ...this.state.loading, [variant]: false } });
-        if (response.data.code === 200) {
+        if (response.data.code === 200 && response.data.data) {
           this.setState({
             [variant]: response.data.data.reduce((map, obj) => {
               map[obj.hash] = obj;
@@ -138,7 +138,7 @@ class Scene extends Component {
               album: "cast",
               artwork: [
                 {
-                  src: api.cdn.thumbnail(this.state.video.hash),
+                  src: api.cdn.thumbnail(this.state.video?.hash),
                   sizes: "512x512",
                   type: "image/jpg",
                 },
@@ -319,7 +319,10 @@ class Scene extends Component {
                       ? api.live.stream(this.state.video?.hash)
                       : api.cdn.vod(this.state.video?.hash)
                   }
-                  thumbnail={api.cdn.thumbnail(this.state.video?.hash)}
+                  thumbnail={
+                    this.state.video &&
+                    api.cdn.thumbnail(this.state.video?.hash)
+                  }
                   live={this.state.video?.type === VIDEO_TYPE_LIVE}
                 />
                 <Row noGutters style={style.cast_tag_bar}>
@@ -376,24 +379,11 @@ class Scene extends Component {
                 </p>
                 <div style={style.author_bar}>
                   <div style={style.author_profile}>
-                    <div
-                      className="text-center"
-                      style={{
-                        width: 42,
-                        height: 42,
-                        flexShrink: 0,
-                        borderRadius: 21,
-                        background: "gray",
-                        color: "white",
-                        fontSize: "21px",
-                        lineHeight: "42px",
-                        textAlign: "center",
-                        textTransform: "capitalize",
-                        ...style.profile_image,
-                      }}
-                    >
-                      {this.state.video?.author.username[0]}
-                    </div>
+                    <ProfileImage
+                      size={42}
+                      name={this.state.video?.author.name}
+                      style={style.profile_image}
+                    />
                     <div style={style.cast_author_details}>
                       <p style={style.cast_author_name}>
                         {this.state.video?.author.name}
@@ -468,25 +458,11 @@ class Scene extends Component {
                                 ...style.comment_item,
                               }}
                             >
-                              <div
-                                className="text-center"
-                                style={{
-                                  width: 42,
-                                  height: 42,
-                                  flexShrink: 0,
-                                  borderRadius: 21,
-                                  background: "gray",
-                                  color: "white",
-                                  fontSize: "21px",
-                                  lineHeight: "42px",
-                                  textAlign: "center",
-                                  textTransform: "capitalize",
-                                  ...style.profile_image,
-                                  alignSelf: "end",
-                                }}
-                              >
-                                {comment.author.name[0]}
-                              </div>
+                              <ProfileImage
+                                size={42}
+                                name={comment.author.name}
+                                style={style.profile_image}
+                              />
                               <div
                                 style={{
                                   ...style.cast_author_details,

@@ -294,7 +294,7 @@ class Manage extends Component {
                   </p>
                 </Alert>
               )}
-              <Form noValidate autocomplete={"off"} onSubmit={this.submitForm}>
+              <Form noValidate autoComplete={"off"} onSubmit={this.submitForm}>
                 <Form.Row>
                   <Col md={6} sm={12}>
                     <Form.Group>
