@@ -6,8 +6,6 @@ const api_base = `${
 
 export default function urls() {
   return {
-    register: () => `${api_base}/p/auth/check`,
-
     user_info: () => `${api_base}/p/user/info`,
     subscribe: () => `${api_base}/p/video/subscribe`,
 

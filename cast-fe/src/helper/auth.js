@@ -1,7 +1,6 @@
 import { RatifyClient, ACCESS_TOKEN, ID_TOKEN } from "@daystram/ratify-client";
 import notification from "../helper/notification";
-import urls from "./url";
-import axios from "axios";
+import api from "../apis/api";
 
 const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
 const ISSUER = process.env.REACT_APP_OAUTH_ISSUER;
@@ -38,12 +37,8 @@ export default function auth() {
       authManager
         .redeemToken(code)
         .then(() => {
-          axios
-            .post(
-              urls().register(),
-              { id_token: authManager.getToken(ID_TOKEN) },
-              { headers: { Authorization: `Bearer ${auth().token()}` } }
-            )
+          api.auth
+            .register(authManager.getToken(ID_TOKEN))
             .then(() => {
               const lastRoute = sessionStorage.getItem("last_route");
               if (lastRoute) {

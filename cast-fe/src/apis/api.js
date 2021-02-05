@@ -123,4 +123,9 @@ export default {
       });
     },
   },
+  auth: {
+    register(idToken) {
+      return apiClient.post(`/p/auth/check`, { id_token: idToken }, withAuth());
+    },
+  },
 };
