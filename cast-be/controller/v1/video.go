@@ -129,10 +129,14 @@ func (c *VideoControllerAuth) EditVideo(_ string) datatransfers.Response {
 		fmt.Printf("[VideoControllerAuth::EditVideo] failed parsing video details. %+v\n", err)
 		return datatransfers.Response{Error: "Failed parsing video detail", Code: http.StatusInternalServerError}
 	}
-	err = c.Handler.CheckUniqueVideoTitle(video.Title)
-	if err != nil {
-		log.Printf("[VideoControllerAuth::EditVideo] title already used. %+v\n", err)
-		return datatransfers.Response{Error: "Title already used", Code: http.StatusConflict}
+	if matchVideo, err := c.Handler.VideoDetails(video.Hash); err != nil {
+		log.Printf("[VideoControllerAuth::EditVideo] failed retrieving video. %+v\n", err)
+		return datatransfers.Response{Error: "Failed editing video", Code: http.StatusInternalServerError}
+	} else if matchVideo.Title != video.Title {
+		if err = c.Handler.CheckUniqueVideoTitle(video.Title); err != nil {
+			log.Printf("[VideoControllerAuth::EditVideo] title already used. %+v\n", err)
+			return datatransfers.Response{Error: "Title already used", Code: http.StatusConflict}
+		}
 	}
 	err = c.Handler.UpdateVideo(datatransfers.VideoEdit{
 		Hash:        video.Hash,
