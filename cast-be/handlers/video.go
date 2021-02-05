@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"mime/multipart"
+	"net/http"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -165,7 +167,7 @@ func (m *module) DeleteVideo(ID primitive.ObjectID, userID string) (err error) {
 	return m.db.videoOrm.DeleteOneByID(ID)
 }
 
-func (m *module) UpdateVideo(video data.VideoEdit, userID string) (err error) {
+func (m *module) UpdateVideo(video data.VideoEdit, controller beego.Controller, userID string) (err error) {
 	if err = m.db.videoOrm.EditVideo(data.VideoInsert{
 		Hash:        video.Hash,
 		Title:       video.Title,
@@ -174,6 +176,26 @@ func (m *module) UpdateVideo(video data.VideoEdit, userID string) (err error) {
 		Tags:        video.Tags,
 	}); err != nil {
 		return errors.New(fmt.Sprintf("[UpdateVideo] error updating video. %+v", err))
+	}
+	// Retrieve thumbnail
+	var thumbnail multipart.File
+	if thumbnail, _, err = controller.GetFile("thumbnail"); err!= nil {
+		if err == http.ErrMissingFile {
+			return nil
+		} else {
+			return fmt.Errorf("[UpdateVideo] Failed retrieving thumbnail image. %+v\n", err)
+		}
+	}
+	var result bytes.Buffer
+	if result, err = util.NormalizeImage(thumbnail, constants.ThumbnailWidth, constants.ThumbnailHeight); err != nil {
+		return fmt.Errorf("[UpdateVideo] Failed normalizing thumbnail image. %+v", err)
+	}
+	if _, err = m.s3.PutObject(&s3.PutObjectInput{
+		Bucket: aws.String(config.AppConfig.S3Bucket),
+		Key:    aws.String(fmt.Sprintf("%s/%s.jpg", constants.ThumbnailRootDir, video.Hash)),
+		Body:   bytes.NewReader(result.Bytes()),
+	}); err != nil {
+		return fmt.Errorf("[UpdateVideo] Failed saving thumbnail image. %+v", err)
 	}
 	return
 }

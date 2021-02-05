@@ -76,7 +76,7 @@ type Handler interface {
 	VideoDetails(hash string) (video data.Video, err error)
 	CreateVOD(upload data.VideoUpload, controller beego.Controller, userID string) (ID primitive.ObjectID, err error)
 	DeleteVideo(ID primitive.ObjectID, userID string) (err error)
-	UpdateVideo(video data.VideoEdit, userID string) (err error)
+	UpdateVideo(video data.VideoEdit, controller beego.Controller, userID string) (err error)
 	CheckUniqueVideoTitle(title string) (err error)
 	LikeVideo(userID string, hash string, like bool) (err error)
 	Subscribe(userID string, username string, subscribe bool) (err error)
