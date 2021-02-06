@@ -481,7 +481,10 @@ class Scene extends Component {
                               <ProfileImage
                                 size={42}
                                 name={comment.author.name}
-                                style={style.profile_image}
+                                style={{
+                                  ...style.profile_image,
+                                  alignSelf: "flex-start",
+                                }}
                               />
                               <div
                                 style={{
