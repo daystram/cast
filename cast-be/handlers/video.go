@@ -97,9 +97,9 @@ func (m *module) CreateVOD(upload data.VideoUpload, controller beego.Controller,
 		Author:      userID,
 		Description: upload.Description,
 		Tags:        upload.Tags,
+		IsLive:      true, // must be set to true for VODs
+		Unlisted:    upload.Unlisted,
 		Views:       0,
-		Duration:    0,
-		IsLive:      true,
 		Resolutions: 0,
 		CreatedAt:   time.Now(),
 	}); err != nil {
@@ -179,12 +179,13 @@ func (m *module) UpdateVideo(video data.VideoEdit, controller beego.Controller, 
 		Author:      userID,
 		Description: video.Description,
 		Tags:        video.Tags,
+		Unlisted:    video.Unlisted,
 	}); err != nil {
 		return errors.New(fmt.Sprintf("[UpdateVideo] error updating video. %+v", err))
 	}
 	// Retrieve thumbnail
 	var thumbnail multipart.File
-	if thumbnail, _, err = controller.GetFile("thumbnail"); err!= nil {
+	if thumbnail, _, err = controller.GetFile("thumbnail"); err != nil {
 		if err == http.ErrMissingFile {
 			return nil
 		} else {

@@ -35,30 +35,28 @@ function Navigation() {
       }}
     />
   ) : (
-    <>
-      <Button
-        variant="primary"
-        onClick={() => {
-          setExpanded(false);
-          history.push("/login");
-        }}
-      >
-        Login with{" "}
-        <span>
-          <i
-            className="material-icons"
-            style={{
-              fontSize: 16,
-              lineHeight: "22px",
-              verticalAlign: "text-top",
-            }}
-          >
-            lock
-          </i>
-          Ratify
-        </span>
-      </Button>
-    </>
+    <Button
+      variant="primary"
+      onClick={() => {
+        setExpanded(false);
+        history.push("/login");
+      }}
+    >
+      Login with{" "}
+      <span>
+        <i
+          className="material-icons"
+          style={{
+            fontSize: 16,
+            lineHeight: "22px",
+            verticalAlign: "text-top",
+          }}
+        >
+          lock
+        </i>
+        Ratify
+      </span>
+    </Button>
   );
   let searchBar = (
     <Form

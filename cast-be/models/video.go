@@ -48,6 +48,7 @@ func (o *videoOrm) GetRecent(variant string, count int, offset int) (result []da
 		{{"$match", bson.D{{"type", variant}}}},
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
 		{{"$match", bson.D{{"is_live", true}}}},
+		{{"$match", bson.D{{"unlisted", false}}}},
 		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
 		{{"$skip", offset}},
 		{{"$limit", count}},
@@ -75,6 +76,7 @@ func (o *videoOrm) GetLiked(userID string, count int, offset int) (result []data
 	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
 		{{"$match", bson.D{{"is_live", true}}}},
+		{{"$match", bson.D{{"unlisted", false}}}},
 		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
 		{{"$lookup", bson.D{
 			{"from", constants.DBCollectionLike},
@@ -111,6 +113,7 @@ func (o *videoOrm) GetSubscribed(userID string, count int, offset int) (result [
 	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
 		{{"$match", bson.D{{"is_live", true}}}},
+		{{"$match", bson.D{{"unlisted", false}}}},
 		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
 		{{"$lookup", bson.D{
 			{"from", constants.DBCollectionSubscription},
@@ -147,6 +150,7 @@ func (o *videoOrm) GetTrending(count int, offset int) (result []datatransfers.Vi
 	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
 		{{"$match", bson.D{{"is_live", true}}}},
+		{{"$match", bson.D{{"unlisted", false}}}},
 		{{"$lookup", bson.D{
 			{"from", constants.DBCollectionLike},
 			{"localField", "hash"},
@@ -185,7 +189,7 @@ func (o *videoOrm) GetTrending(count int, offset int) (result []datatransfers.Vi
 
 func (o *videoOrm) GetAllVODByAuthor(author string) (videos []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
-	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
+	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{ // unlisted VODs included
 		{{"$match", bson.D{{"author", author}}}},
 		{{"$match", bson.D{{"type", constants.VideoTypeVOD}}}},
 		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
@@ -210,7 +214,7 @@ func (o *videoOrm) GetAllVODByAuthor(author string) (videos []datatransfers.Vide
 
 func (o *videoOrm) GetAllVODByAuthorPaginated(author string, count int, offset int) (videos []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
-	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{
+	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{ // unlisted VODs included
 		{{"$match", bson.D{{"author", author}}}},
 		{{"$match", bson.D{{"type", constants.VideoTypeVOD}}}},
 		{{"$sort", bson.D{{"created_at", -1}, {"_id", 1}}}},
@@ -251,6 +255,7 @@ func (o *videoOrm) Search(queryString string, count int, offset int) (result []d
 		{{"$match", bson.D{{"$text", bson.D{{"$search", queryString}}}}}},
 		{{"$match", bson.D{{"resolutions", bson.D{{"$ne", 0}}}}}},
 		{{"$match", bson.D{{"is_live", true}}}},
+		{{"$match", bson.D{{"unlisted", false}}}},
 		{{"$sort", bson.D{{"views", -1}, {"created_at", -1}, {"_id", 1}}}},
 		{{"$skip", offset}},
 		{{"$limit", count}},
@@ -397,6 +402,7 @@ func (o *videoOrm) EditVideo(video datatransfers.VideoInsert) (err error) {
 			{"title", video.Title},
 			{"description", video.Description},
 			{"tags", video.Tags},
+			{"unlisted", video.Unlisted},
 		}}},
 	).Err()
 }

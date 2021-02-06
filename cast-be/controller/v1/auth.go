@@ -15,7 +15,7 @@ type AuthControllerAuth struct {
 	Handler handlers.Handler
 }
 
-// @Title Register user from OID, skip if already exists
+// @Title Register user from OID, skip if exists, update if required
 // @Param   idToken    body	{datatransfers.UserRegister}	true	"registration info"
 // @Success 200 success
 // @router /check [post]

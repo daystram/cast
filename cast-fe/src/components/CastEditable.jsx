@@ -41,6 +41,7 @@ class CastEditable extends Component {
         : [],
       description: this.props.video.description,
       thumbnail: api.cdn.thumbnail(this.props.video.hash),
+      unlisted: this.props.video.unlisted,
       error_title: "",
       error_tags: "",
       error_description: "",
@@ -93,6 +94,7 @@ class CastEditable extends Component {
         before: {
           title: this.state.title,
           tags: this.state.tags,
+          unlisted: this.state.unlisted,
           description: this.state.description,
           thumbnail: this.state.thumbnail,
         },
@@ -253,6 +255,7 @@ class CastEditable extends Component {
     form.append("title", this.state.title);
     form.append("description", this.state.description);
     form.append("tags", this.state.tags.map((tag) => tag.text).join(","));
+    form.append("unlisted", this.state.unlisted);
     if (this.state.new_thumbnail)
       form.append("thumbnail", this.state.new_thumbnail);
     api.cast
@@ -402,13 +405,18 @@ class CastEditable extends Component {
               <div style={style.thumbnail_container}>
                 <Image
                   src={this.state.thumbnail}
-                  style={style.thumbnail}
+                  style={{
+                    ...style.thumbnail,
+                    cursor: this.props.video.resolutions
+                      ? "pointer"
+                      : "not-allowed",
+                  }}
                   onClick={this.openVideo}
                 />
               </div>
             )}
           </Col>
-          <Col md sm={12} style={{ marginTop: 4 }}>
+          <Col md sm={12} style={{ marginTop: 4, width: 0 }}>
             {this.state.error_edit && (
               <Alert variant={"danger"}>{this.state.error_edit}</Alert>
             )}
@@ -461,42 +469,75 @@ class CastEditable extends Component {
                 </div>
               </>
             )}
-            <div style={style.cast_tag_bar}>
+            <div>
               {this.state.editing ? (
-                <Form.Group style={{ width: "100%", marginBottom: 4 }}>
-                  <ReactTags
-                    classNames={{
-                      tags: this.state.error_tags
-                        ? "ReactTags__tags__error"
-                        : this.state.uploading
-                        ? "ReactTags__tags__disabled"
-                        : "ReactTags__tags",
-                      tagInput:
-                        this.state.tags.length === VIDEO_TAG_COUNT
-                          ? "ReactTags__tagInput__disabled"
-                          : "ReactTags__tagInput",
-                    }}
-                    tags={this.state.tags}
-                    autofocus={false}
-                    delimiters={[13, 32, 188]}
-                    maxLength={VIDEO_TAG_CHAR_LIMIT}
-                    placeholder={this.state.tags.length ? "" : "Tags"}
-                    readOnly={this.state.loading_edit}
-                    handleAddition={this.handleTagAdd}
-                    handleDelete={this.handleTagDelete}
-                    handleDrag={this.handleTagDrag}
-                    handleInputChange={() => this.setState({ error_tags: "" })}
-                    handleInputBlur={() =>
-                      this.validate("tags", this.state.tags)
-                    }
-                    handleTagClick={this.handleTagClick}
-                  />
-                  {this.state.error_tags && (
-                    <div style={style.invalidText}>{this.state.error_tags}</div>
-                  )}
-                </Form.Group>
+                <>
+                  <div style={{ marginBottom: 8 }}>
+                    <Form.Check
+                      id={`editable-unlisted-${this.props.video.hash}`}
+                      type={"switch"}
+                      className={"form-label"}
+                      checked={this.state.unlisted}
+                      onChange={() =>
+                        this.setState({ unlisted: !this.state.unlisted })
+                      }
+                      label={
+                        <>
+                          <i className="fas fa-lock" /> Unlisted
+                          <span style={{ color: "gray", marginLeft: 8 }}>
+                            cast accessible only via direct link
+                          </span>
+                        </>
+                      }
+                    />
+                  </div>
+                  <Form.Group style={{ width: "100%", marginBottom: 8 }}>
+                    <ReactTags
+                      classNames={{
+                        tags: this.state.error_tags
+                          ? "ReactTags__tags__error"
+                          : this.state.uploading
+                          ? "ReactTags__tags__disabled"
+                          : "ReactTags__tags",
+                        tagInput:
+                          this.state.tags.length === VIDEO_TAG_COUNT
+                            ? "ReactTags__tagInput__disabled"
+                            : "ReactTags__tagInput",
+                      }}
+                      tags={this.state.tags}
+                      autofocus={false}
+                      delimiters={[13, 32, 188]}
+                      maxLength={VIDEO_TAG_CHAR_LIMIT}
+                      placeholder={this.state.tags.length ? "" : "Tags"}
+                      readOnly={this.state.loading_edit}
+                      handleAddition={this.handleTagAdd}
+                      handleDelete={this.handleTagDelete}
+                      handleDrag={this.handleTagDrag}
+                      handleInputChange={() =>
+                        this.setState({ error_tags: "" })
+                      }
+                      handleInputBlur={() =>
+                        this.validate("tags", this.state.tags)
+                      }
+                      handleTagClick={this.handleTagClick}
+                    />
+                    {this.state.error_tags && (
+                      <div style={style.invalidText}>
+                        {this.state.error_tags}
+                      </div>
+                    )}
+                  </Form.Group>
+                </>
               ) : (
                 <div>
+                  {this.state.unlisted && (
+                    <Badge
+                      pill
+                      style={{ ...style.cast_tag, ...style.cast_tag_unlisted }}
+                    >
+                      <i className="fas fa-lock" /> Unlisted
+                    </Badge>
+                  )}
                   {this.state.tags &&
                     Object.values(this.state.tags).map((tag) => (
                       <Badge pill style={style.cast_tag} key={tag.text}>
@@ -508,7 +549,7 @@ class CastEditable extends Component {
             </div>
             {this.state.editing ? (
               <Form autoComplete={"off"} onSubmit={(e) => e.preventDefault()}>
-                <Form.Group style={{ marginBottom: 4 }}>
+                <Form.Group style={{ marginBottom: 8 }}>
                   <Form.Control
                     name={"description"}
                     value={this.state.description}
@@ -541,6 +582,7 @@ class CastEditable extends Component {
                 this.state.before &&
                 this.state.title === this.state.before.title &&
                 this.state.tags === this.state.before.tags &&
+                this.state.unlisted === this.state.before.unlisted &&
                 this.state.description === this.state.before.description &&
                 !this.state.new_thumbnail
               }
@@ -621,6 +663,8 @@ let style = {
     fontSize: "2rem",
     fontWeight: 600,
     marginBottom: 4,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   thumbnail_upload: {
     background: "#f0f0f088",
@@ -660,7 +704,6 @@ let style = {
     width: "100%",
     height: "100%",
     position: "absolute",
-    cursor: "pointer",
   },
   created_at: {
     fontSize: 16,
@@ -686,6 +729,9 @@ let style = {
     marginRight: 8,
     marginBottom: 8,
   },
+  cast_tag_unlisted: {
+    background: "rgb(3,69,139)",
+  },
   cast_tag_resolution: {
     background: "#E84409",
     color: "white",
@@ -699,6 +745,7 @@ let style = {
     fontSize: 16,
     WebkitLineClamp: "3",
     overflow: "hidden",
+    textOverflow: "ellipsis",
     WebkitBoxOrient: "vertical",
     display: "-webkit-box",
   },

@@ -26,7 +26,7 @@ class Subscribed extends Component {
               <h1 style={style.h1}>Subscribed</h1>
               <List
                 variant={VIDEO_LIST_SUBSCRIBED}
-                emptyMessage={"You have not subscribed anyone!"}
+                emptyMessage={"No subscribed casts!"}
               />
             </Col>
           </Row>

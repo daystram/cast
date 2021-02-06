@@ -24,7 +24,11 @@ import queryString from "query-string";
 import Chat from "./Chat";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
-import { VIDEO_TYPE_LIVE, VIDEO_TYPE_VOD } from "../constants/video";
+import {
+  VIDEO_COMMENT_CHAR_LIMIT,
+  VIDEO_TYPE_LIVE,
+  VIDEO_TYPE_VOD,
+} from "../constants/video";
 import logo from "../components/logo.svg";
 import api from "../apis/api";
 
@@ -127,8 +131,13 @@ class Scene extends Component {
             liked: data.liked,
             subscribed: data.subscribed,
             comments: data.comments,
-            [data.type]: { ...this.state[data.type], [data.hash]: data },
           });
+          // refresh lists of not unlisted
+          if (!data.unlisted) {
+            this.setState({
+              [data.type]: { ...this.state[data.type], [data.hash]: data },
+            });
+          }
           document.title = `${data.title} - ${data.author.name} | cast`;
           if ("mediaSession" in navigator) {
             // eslint-disable-next-line no-undef
@@ -202,14 +211,23 @@ class Scene extends Component {
       error_comment: "",
       error_submit: "",
     });
+    if (this.state.comment.trim().length > VIDEO_COMMENT_CHAR_LIMIT) {
+      this.setState({ error_comment: "Comment too long" });
+    } else {
+      this.setState({ error_comment: "" });
+    }
   }
 
   handleComment(e) {
     e.preventDefault();
     if (this.state.loading.current) return;
     if (authManager.isAuthenticated()) {
-      if (!this.state.comment.trim() || this.state.error_comment) {
+      if (!this.state.comment.trim()) {
         this.setState({ error_comment: "Please enter your comment" });
+        return;
+      }
+      if (this.state.comment.trim().length > VIDEO_COMMENT_CHAR_LIMIT) {
+        this.setState({ error_comment: "Comment too long" });
         return;
       }
       if (this.state.loading.comment) return;
@@ -327,6 +345,17 @@ class Scene extends Component {
                 />
                 <Row noGutters style={style.cast_tag_bar}>
                   <Col md={true}>
+                    {this.state.video?.unlisted && (
+                      <Badge
+                        pill
+                        style={{
+                          ...style.cast_tag,
+                          ...style.cast_tag_unlisted,
+                        }}
+                      >
+                        <i className="fas fa-lock" /> Unlisted
+                      </Badge>
+                    )}
                     {this.state.video?.tags &&
                       Object.values(this.state.video?.tags).map((tag) => (
                         <Badge pill key={tag} style={style.cast_tag}>
@@ -362,7 +391,9 @@ class Scene extends Component {
                       >
                         thumb_up
                       </i>{" "}
-                      {abbreviate().number(this.state.likes) || 0} likes
+                      {`${abbreviate().number(this.state.likes) || 0} like${
+                        this.state.likes === 1 ? "" : "s"
+                      }`}
                     </span>
                     <span style={style.cast_attrib}>
                       <i className="material-icons">remove_red_eye</i>{" "}
@@ -424,14 +455,14 @@ class Scene extends Component {
                   style={{ marginTop: 28 }}
                 >
                   <Col xl={10} xs={12}>
-                    <Form noValidate onSubmit={this.handleComment}>
+                    <Form onSubmit={this.handleComment}>
                       {this.state.error_submit && (
                         <Alert variant={"danger"}>
                           {this.state.error_submit}
                         </Alert>
                       )}
                       <Form.Group>
-                        <InputGroup style={style.comment_input}>
+                        <InputGroup>
                           <Form.Control
                             type="text"
                             placeholder="Comment"
@@ -440,10 +471,17 @@ class Scene extends Component {
                             isInvalid={!!this.state.error_comment}
                           />
                           <InputGroup.Append>
-                            <Button variant="outline-primary" type="submit">
+                            <Button
+                              variant="outline-primary"
+                              type="submit"
+                              style={{ borderRadius: "0px 4px 4px 0px" }}
+                            >
                               <i className="material-icons">send</i>
                             </Button>
                           </InputGroup.Append>
+                          <Form.Control.Feedback type={"invalid"}>
+                            {this.state.error_comment}
+                          </Form.Control.Feedback>
                         </InputGroup>
                       </Form.Group>
                     </Form>
@@ -461,7 +499,10 @@ class Scene extends Component {
                               <ProfileImage
                                 size={42}
                                 name={comment.author.name}
-                                style={style.profile_image}
+                                style={{
+                                  ...style.profile_image,
+                                  alignSelf: "flex-start",
+                                }}
                               />
                               <div
                                 style={{
@@ -592,29 +633,37 @@ class Scene extends Component {
         >
           <Modal.Header closeButton>
             <Modal.Title id="contained-modal-title-vcenter">
-              Join today!
+              Join Today!
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <p>
               You need to be logged in to like, comment, chat, download, and
-              subscribe. By signing in, you can start sharing your own videos
-              and livestream too!
+              subscribe. Join today and you can start sharing your own videos
+              and stream live too!
             </p>
-            <p>Log In or Sign Up today!</p>
           </Modal.Body>
           <Modal.Footer>
             <Button
-              variant={"outline-primary"}
-              onClick={() => this.props.history.push("/login")}
+              variant="primary"
+              onClick={() => {
+                this.props.history.push("/login");
+              }}
             >
-              Log In
-            </Button>
-            <Button
-              variant={"primary"}
-              onClick={() => this.props.history.push("/signup")}
-            >
-              Sign Up
+              Login with{" "}
+              <span>
+                <i
+                  className="material-icons"
+                  style={{
+                    fontSize: 16,
+                    lineHeight: "22px",
+                    verticalAlign: "text-top",
+                  }}
+                >
+                  lock
+                </i>
+                Ratify
+              </span>
             </Button>
           </Modal.Footer>
         </Modal>
@@ -725,6 +774,8 @@ let style = {
   title: {
     color: "#EEE",
     margin: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   content_container: {},
   spinner: {
@@ -741,13 +792,13 @@ let style = {
     background: "#8B2803AA",
     color: "#DDD",
     borderRadius: 8,
-    // borderWidth: 1,
-    // borderColor: "lightgray",
-    // borderStyle: "solid",
     fontSize: 16,
     fontWeight: 400,
     marginRight: 8,
     marginBottom: 8,
+  },
+  cast_tag_unlisted: {
+    background: "rgb(3,69,139)",
   },
   cast_attrib: {
     color: "#DDD",
@@ -787,14 +838,11 @@ let style = {
     width: 128,
   },
   description: {
-    // marginLeft: 48,
     color: "#DDD",
     marginTop: 16,
     marginBottom: 16,
-    // width: "80%"
-  },
-  comment_input: {
-    borderRadius: "8px 48px 8px 8px",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   comment_list: {
     marginTop: 32,

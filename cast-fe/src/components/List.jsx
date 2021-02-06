@@ -105,7 +105,7 @@ class List extends Component {
           {!!this.state.casts.length && this.state.finished && (
             <div style={{ width: "100%", margin: "32px 64px" }}>
               <h5 style={{ ...style.h5, textAlign: "center" }}>
-                {this.props.finishedMessage || "No more casts!"}
+                {this.props.finishedMessage}
               </h5>
             </div>
           )}

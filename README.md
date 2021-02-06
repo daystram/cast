@@ -57,6 +57,16 @@ $ go mod tidy
 $ bee run
 ```
 
+### cast-is
+`cast-is` uses [Go Modules](https://blog.golang.org/using-go-modules) module/dependency manager, hence at least Go 1.11 is required. To ease development, [comstrek/air](https://github.com/cosmtrek/air) is used to live-reload the application. Install the tool as documented.
+
+To begin developing, simply enter the sub-directory and run the development server:
+```shell
+$ cd cast-is
+$ go mod tidy
+$ air
+```
+
 ### cast-fe
 Populate `.env.development` with the required credentials. 
 

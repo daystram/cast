@@ -116,11 +116,15 @@ let style = {
     fontSize: 18,
     fontWeight: 600,
     margin: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   cast_author: {
     fontSize: 16,
     fontWeight: 400,
     margin: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   cast_duration: {
     fontSize: 16,
