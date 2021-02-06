@@ -38,6 +38,7 @@ class Manage extends Component {
       title: "",
       description: "",
       tags: [],
+      unlisted: false,
       thumbnail: "",
       video: "",
       error_title: "",
@@ -235,6 +236,7 @@ class Manage extends Component {
     form.append("title", this.state.title);
     form.append("description", this.state.description);
     form.append("tags", this.state.tags.map((tag) => tag.text).join(","));
+    form.append("unlisted", this.state.unlisted);
     form.append("thumbnail", this.state.thumbnail);
     form.append("video", this.state.video);
     api.cast
@@ -324,7 +326,7 @@ class Manage extends Component {
                         onBlur={this.handleChange}
                         onChange={this.handleChange}
                         as={"textarea"}
-                        rows={7}
+                        rows={8}
                         isInvalid={!!this.state.error_description}
                         disabled={this.state.uploading}
                       />
@@ -419,10 +421,30 @@ class Manage extends Component {
                         </Form.Label>
                       </div>
                     </Form.Group>
+                    <Form.Group>
+                      <Form.Check
+                        id={"manage-unlisted"}
+                        type={"switch"}
+                        className={"form-label"}
+                        checked={this.state.unlisted}
+                        onChange={() =>
+                          this.setState({ unlisted: !this.state.unlisted })
+                        }
+                        label={
+                          <>
+                            <i className="fas fa-lock" /> Unlisted{" "}
+                            <span style={{ color: "gray", marginLeft: 8 }}>
+                              cast accessible only via direct link
+                            </span>
+                          </>
+                        }
+                      />
+                    </Form.Group>
                     <ProgressBar
                       animated
                       now={this.state.progress}
                       style={style.progress}
+                      variant={"success"}
                     />
                     <Button
                       variant="primary"
