@@ -1,10 +1,11 @@
 import React, { Component } from "react";
-import { Card, Col, Container, Row } from "react-bootstrap";
+import { Alert, Button, Card, Col, Container, Row } from "react-bootstrap";
 import { ProfileImage, SidebarProfile } from "../components";
 import { authManager } from "../helper/auth";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
 import api from "../apis/api";
+import logo from "../components/logo.svg";
 
 class Profile extends Component {
   constructor(props) {
@@ -73,6 +74,40 @@ class Profile extends Component {
                       </h3>
                     </div>
                   </div>
+                  <Alert variant="banner">
+                    <Alert.Heading>Update Profile</Alert.Heading>
+                    <p>
+                      To update your <b>cast</b> user profile, you need to go to{" "}
+                      <b>Ratify</b>'s manage profile page and change it there.
+                    </p>
+                    <p>
+                      Once you're done, logout and log back into <b>cast</b> to
+                      apply the changes.
+                    </p>
+                    <hr />
+                    <div className="d-flex justify-content-end">
+                      <Button
+                        href={"https://ratify.daystram.com/manage/profile"}
+                        target={"_blank"}
+                        variant="outline-primary"
+                      >
+                        Manage Profile at{" "}
+                        <span>
+                          <i
+                            className="material-icons"
+                            style={{
+                              fontSize: 16,
+                              lineHeight: "22px",
+                              verticalAlign: "text-top",
+                            }}
+                          >
+                            lock
+                          </i>
+                          Ratify
+                        </span>
+                      </Button>
+                    </div>
+                  </Alert>
                   <h1 style={style.h1}>Showcase</h1>
                   <Card body style={style.profile_detail}>
                     <Row>
