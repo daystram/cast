@@ -592,29 +592,37 @@ class Scene extends Component {
         >
           <Modal.Header closeButton>
             <Modal.Title id="contained-modal-title-vcenter">
-              Join today!
+              Join Today!
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <p>
               You need to be logged in to like, comment, chat, download, and
-              subscribe. By signing in, you can start sharing your own videos
-              and livestream too!
+              subscribe. Join today and you can start sharing your own videos
+              and stream live too!
             </p>
-            <p>Log In or Sign Up today!</p>
           </Modal.Body>
           <Modal.Footer>
             <Button
-              variant={"outline-primary"}
-              onClick={() => this.props.history.push("/login")}
+              variant="primary"
+              onClick={() => {
+                this.props.history.push("/login");
+              }}
             >
-              Log In
-            </Button>
-            <Button
-              variant={"primary"}
-              onClick={() => this.props.history.push("/signup")}
-            >
-              Sign Up
+              Login with{" "}
+              <span>
+                <i
+                  className="material-icons"
+                  style={{
+                    fontSize: 16,
+                    lineHeight: "22px",
+                    verticalAlign: "text-top",
+                  }}
+                >
+                  lock
+                </i>
+                Ratify
+              </span>
             </Button>
           </Modal.Footer>
         </Modal>
