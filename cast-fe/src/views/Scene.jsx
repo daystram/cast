@@ -131,8 +131,13 @@ class Scene extends Component {
             liked: data.liked,
             subscribed: data.subscribed,
             comments: data.comments,
-            [data.type]: { ...this.state[data.type], [data.hash]: data },
           });
+          // refresh lists of not unlisted
+          if (!data.unlisted) {
+            this.setState({
+              [data.type]: { ...this.state[data.type], [data.hash]: data },
+            });
+          }
           document.title = `${data.title} - ${data.author.name} | cast`;
           if ("mediaSession" in navigator) {
             // eslint-disable-next-line no-undef
@@ -340,6 +345,17 @@ class Scene extends Component {
                 />
                 <Row noGutters style={style.cast_tag_bar}>
                   <Col md={true}>
+                    {this.state.video?.unlisted && (
+                      <Badge
+                        pill
+                        style={{
+                          ...style.cast_tag,
+                          ...style.cast_tag_unlisted,
+                        }}
+                      >
+                        <i className="fas fa-lock" /> Unlisted
+                      </Badge>
+                    )}
                     {this.state.video?.tags &&
                       Object.values(this.state.video?.tags).map((tag) => (
                         <Badge pill key={tag} style={style.cast_tag}>
@@ -375,7 +391,9 @@ class Scene extends Component {
                       >
                         thumb_up
                       </i>{" "}
-                      {abbreviate().number(this.state.likes) || 0} likes
+                      {`${abbreviate().number(this.state.likes) || 0} like${
+                        this.state.likes === 1 ? "" : "s"
+                      }`}
                     </span>
                     <span style={style.cast_attrib}>
                       <i className="material-icons">remove_red_eye</i>{" "}
@@ -774,13 +792,13 @@ let style = {
     background: "#8B2803AA",
     color: "#DDD",
     borderRadius: 8,
-    // borderWidth: 1,
-    // borderColor: "lightgray",
-    // borderStyle: "solid",
     fontSize: 16,
     fontWeight: 400,
     marginRight: 8,
     marginBottom: 8,
+  },
+  cast_tag_unlisted: {
+    background: "rgb(3,69,139)",
   },
   cast_attrib: {
     color: "#DDD",
