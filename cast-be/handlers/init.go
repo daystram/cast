@@ -69,6 +69,7 @@ type Handler interface {
 	Register(idToken data.UserRegister) (err error)
 
 	UserDetails(userID string) (detail data.UserDetail, err error)
+	UserGetOneByID(userID string) (user data.User, err error)
 
 	CastList(variant string, count, offset int, userID ...string) (videos []data.Video, err error)
 	AuthorList(author string, withUnlisted bool, count, offset int) (videos []data.Video, err error)

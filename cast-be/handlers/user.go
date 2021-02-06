@@ -34,3 +34,10 @@ func (m *module) UserDetails(userID string) (detail data.UserDetail, err error) 
 	}
 	return
 }
+
+func (m *module) UserGetOneByID(userID string) (user data.User, err error) {
+	if user, err = m.db.userOrm.GetOneByID(userID); err != nil {
+		return data.User{}, fmt.Errorf("[UserGetOneByID] user not found. %+v\n", err)
+	}
+	return
+}
