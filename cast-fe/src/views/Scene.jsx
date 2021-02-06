@@ -448,7 +448,7 @@ class Scene extends Component {
                   </Col>
                 </Row>
                 <hr />
-                <h3>Comments</h3>
+                <h3 style={{ fontFamily: "Comfortaa" }}>Comments</h3>
                 <Row
                   className="justify-content-center"
                   noGutters
