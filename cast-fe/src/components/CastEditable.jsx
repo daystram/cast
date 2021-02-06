@@ -408,7 +408,7 @@ class CastEditable extends Component {
               </div>
             )}
           </Col>
-          <Col md sm={12} style={{ marginTop: 4 }}>
+          <Col md sm={12} style={{ marginTop: 4, width: 0 }}>
             {this.state.error_edit && (
               <Alert variant={"danger"}>{this.state.error_edit}</Alert>
             )}
@@ -621,6 +621,8 @@ let style = {
     fontSize: "2rem",
     fontWeight: 600,
     marginBottom: 4,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   thumbnail_upload: {
     background: "#f0f0f088",
@@ -699,6 +701,7 @@ let style = {
     fontSize: 16,
     WebkitLineClamp: "3",
     overflow: "hidden",
+    textOverflow: "ellipsis",
     WebkitBoxOrient: "vertical",
     display: "-webkit-box",
   },

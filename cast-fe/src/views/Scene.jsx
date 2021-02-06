@@ -733,6 +733,8 @@ let style = {
   title: {
     color: "#EEE",
     margin: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   content_container: {},
   spinner: {
@@ -795,11 +797,11 @@ let style = {
     width: 128,
   },
   description: {
-    // marginLeft: 48,
     color: "#DDD",
     marginTop: 16,
     marginBottom: 16,
-    // width: "80%"
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   comment_input: {
     borderRadius: "8px 48px 8px 8px",
