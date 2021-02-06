@@ -143,6 +143,7 @@ func (c *VideoControllerAuth) EditVideo(_ string) datatransfers.Response {
 		Title:       video.Title,
 		Description: video.Description,
 		Tags:        strings.Split(video.Tags, ","),
+		Unlisted:    video.Unlisted,
 	}, c.Controller, c.userID)
 	if err != nil {
 		fmt.Printf("[VideoControllerAuth::EditVideo] failed editing video. %+v\n", err)
@@ -190,6 +191,7 @@ func (c *VideoControllerAuth) UploadVideo(_ string) datatransfers.Response {
 		Title:       upload.Title,
 		Description: upload.Description,
 		Tags:        strings.Split(upload.Tags, ","),
+		Unlisted:    upload.Unlisted,
 	}, c.Controller, c.userID)
 	if err != nil {
 		fmt.Printf("[VideoControllerAuth::UploadVideo] failed creating video. %+v\n", err)

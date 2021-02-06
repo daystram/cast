@@ -17,6 +17,7 @@ type Video struct {
 	Views       int                `json:"views" bson:"views"`
 	Duration    int64              `json:"duration,omitempty" bson:"duration"` // only for VODs
 	IsLive      bool               `json:"is_live" bson:"is_live"`             // only for Live
+	Unlisted    bool               `json:"unlisted" bson:"unlisted"`
 	Pending     bool               `json:"pending" bson:"pending"`
 	Resolutions int                `json:"resolutions" bson:"resolutions"` // 0:None, 1:180p, 2:360p, 3:480p, 4:720p, 5:1080p, only for VODs
 	Likes       int                `json:"likes" bson:"likes"`
@@ -35,8 +36,8 @@ type VideoInsert struct {
 	Description string             `bson:"description"`
 	Tags        []string           `bson:"tags"`
 	Views       int                `json:"views" bson:"views"`
-	Duration    int64              `bson:"duration"`    // only for VODs
-	IsLive      bool               `bson:"is_live"`     // only for Live
+	IsLive      bool               `bson:"is_live"` // only for Live, always set to true for VODs
+	Unlisted    bool               `bson:"unlisted"`
 	Resolutions int                `bson:"resolutions"` // 0:None, 1:180p, 2:360p, 3:480p, 4:720p, 5:1080p, only for VODs
 	CreatedAt   time.Time          `bson:"created_at"`
 }
@@ -45,12 +46,14 @@ type VideoUploadForm struct {
 	Title       string `form:"title"`
 	Description string `form:"description"`
 	Tags        string `form:"tags"`
+	Unlisted    bool   `form:"unlisted"`
 }
 
 type VideoUpload struct {
 	Title       string
 	Description string
 	Tags        []string
+	Unlisted    bool
 }
 
 type VideoEditForm struct {
@@ -58,6 +61,7 @@ type VideoEditForm struct {
 	Title       string `form:"title"`
 	Description string `form:"description"`
 	Tags        string `form:"tags"`
+	Unlisted    bool   `form:"unlisted"`
 }
 
 type VideoEdit struct {
@@ -65,6 +69,7 @@ type VideoEdit struct {
 	Title       string
 	Description string
 	Tags        []string
+	Unlisted    bool
 }
 
 type Comment struct {

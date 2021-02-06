@@ -47,6 +47,7 @@ func (m *module) Register(idToken datatransfers.UserRegister) (err error) {
 			Description: "Welcome to my stream!",
 			Resolutions: -1,
 			IsLive:      false,
+			Unlisted:    false,
 		}); err != nil {
 			_ = m.db.userOrm.DeleteOneByID(user.ID)
 			fmt.Printf("[Register] Failed adding %s live video entry. %+v\n", user.Username, err)
