@@ -9,4 +9,6 @@ export const VIDEO_TAG_COUNT = 5;
 export const VIDEO_TAG_CHAR_LIMIT = 12;
 export const VIDEO_DESC_CHAR_LIMIT = 1000;
 
+export const VIDEO_COMMENT_CHAR_LIMIT = 512;
+
 export const VIDEO_LIST_PAGE_SIZE = 8;

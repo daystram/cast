@@ -24,7 +24,11 @@ import queryString from "query-string";
 import Chat from "./Chat";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
-import { VIDEO_TYPE_LIVE, VIDEO_TYPE_VOD } from "../constants/video";
+import {
+  VIDEO_COMMENT_CHAR_LIMIT,
+  VIDEO_TYPE_LIVE,
+  VIDEO_TYPE_VOD,
+} from "../constants/video";
 import logo from "../components/logo.svg";
 import api from "../apis/api";
 
@@ -202,14 +206,23 @@ class Scene extends Component {
       error_comment: "",
       error_submit: "",
     });
+    if (this.state.comment.trim().length > VIDEO_COMMENT_CHAR_LIMIT) {
+      this.setState({ error_comment: "Comment too long" });
+    } else {
+      this.setState({ error_comment: "" });
+    }
   }
 
   handleComment(e) {
     e.preventDefault();
     if (this.state.loading.current) return;
     if (authManager.isAuthenticated()) {
-      if (!this.state.comment.trim() || this.state.error_comment) {
+      if (!this.state.comment.trim()) {
         this.setState({ error_comment: "Please enter your comment" });
+        return;
+      }
+      if (this.state.comment.trim().length > VIDEO_COMMENT_CHAR_LIMIT) {
+        this.setState({ error_comment: "Comment too long" });
         return;
       }
       if (this.state.loading.comment) return;
@@ -424,14 +437,14 @@ class Scene extends Component {
                   style={{ marginTop: 28 }}
                 >
                   <Col xl={10} xs={12}>
-                    <Form noValidate onSubmit={this.handleComment}>
+                    <Form onSubmit={this.handleComment}>
                       {this.state.error_submit && (
                         <Alert variant={"danger"}>
                           {this.state.error_submit}
                         </Alert>
                       )}
                       <Form.Group>
-                        <InputGroup style={style.comment_input}>
+                        <InputGroup>
                           <Form.Control
                             type="text"
                             placeholder="Comment"
@@ -440,10 +453,17 @@ class Scene extends Component {
                             isInvalid={!!this.state.error_comment}
                           />
                           <InputGroup.Append>
-                            <Button variant="outline-primary" type="submit">
+                            <Button
+                              variant="outline-primary"
+                              type="submit"
+                              style={{ borderRadius: "0px 4px 4px 0px" }}
+                            >
                               <i className="material-icons">send</i>
                             </Button>
                           </InputGroup.Append>
+                          <Form.Control.Feedback type={"invalid"}>
+                            {this.state.error_comment}
+                          </Form.Control.Feedback>
                         </InputGroup>
                       </Form.Group>
                     </Form>
@@ -802,9 +822,6 @@ let style = {
     marginBottom: 16,
     overflow: "hidden",
     textOverflow: "ellipsis",
-  },
-  comment_input: {
-    borderRadius: "8px 48px 8px 8px",
   },
   comment_list: {
     marginTop: 32,
