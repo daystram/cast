@@ -28,15 +28,6 @@ Uploaded videos are ingested by __cast__'s transcoding nodes (`cast-is`) powered
 
 With GPU acceleration, `h264_nvenc` encoder is used. On environments without GPU, `cast-is` can also be started to use CPU encoding only using `libx264` encoder.
 
-## Services
-The application comes in three parts:
-
-|Name|Code Name|Stack|
-|----|:-------:|-----|
-|Back-end|`cast-be`|[Go](https://golang.org/), [BeeGo](https://beego.me/), [MongoDB](https://www.mongodb.com/), [RabbitMQ](https://www.rabbitmq.com/), S3|
-|Transcoder|`cast-is`|[Go](https://golang.org/), [FFMpeg](https://ffmpeg.org/), [RabbitMQ](https://www.rabbitmq.com/), S3|
-|Front-end|`cast-fe`|JavaScript, [ReactJS](https://beego.me/)|
-
 ## Test Stream
 You can use FFmpeg to create a test livestream. Use the following command:
 
@@ -46,6 +37,35 @@ $ ffmpeg -f lavfi -re -i testsrc2=s=1920x1080:r=60,format=yuv420p -f lavfi -i si
 
 This will create a sample 1080p 60 FPS stream with a 440 Hz sine wave sound. Ensure the stream key is provided correctly and stream window has been opened in the Dashboard.
 
+## Services
+The application comes in three parts:
+
+|Name|Code Name|Stack|
+|----|:-------:|-----|
+|Back-end|`cast-be`|[Go](https://golang.org/), [BeeGo](https://beego.me/), [MongoDB](https://www.mongodb.com/), [RabbitMQ](https://www.rabbitmq.com/), [S3](https://aws.amazon.com/s3/)|
+|Transcoder|`cast-is`|[Go](https://golang.org/), [FFmpeg](https://ffmpeg.org/), [RabbitMQ](https://www.rabbitmq.com/), [S3](https://aws.amazon.com/s3/)|
+|Front-end|`cast-fe`|JavaScript, [React](https://reactjs.org/)|
+
+## Develop
+### cast-be
+`cast-be` uses [Go Modules](https://blog.golang.org/using-go-modules) module/dependency manager, hence at least Go 1.11 is required. BeeGo provides [Bee](https://beego.me/docs/install/bee.md) development tool which live-reloads the application. Install the tool as documented.
+
+To begin developing, simply enter the sub-directory and run the development server:
+```shell
+$ cd cast-be
+$ go mod tidy
+$ bee run
+```
+
+### cast-fe
+Populate `.env.development` with the required credentials. 
+
+To begin developing, simply enter the sub-directory and run the development server:
+```shell
+$ cd cast-fe
+$ yarn
+$ yarn serve
+```
 ## Deploy
 `cast-be`, `cast-is`, and `cast-fe` are containerized and pushed to [Docker Hub](https://hub.docker.com/r/daystram/cast). They are tagged based on their application name and version, e.g. `daystram/cast:be` or `daystram/cast:be-v2.0.1`.
 
@@ -76,7 +96,7 @@ The following are required for `cast-is` to function properly:
 
 Their credentials must be provided in their respective services' configuration file.
 
-Any S3 storage provider such as [AWS S3](https://aws.amazon.com/s3/ are supported. For this particular deployment for [cast.daystram.com](https://cast.daystram.com/), a self-hosted [MinIO](https://min.io/) is used.
+Any S3 storage provider such as [AWS S3](https://aws.amazon.com/s3/) are supported. For this particular deployment for [cast.daystram.com](https://cast.daystram.com/), a self-hosted [MinIO](https://min.io/) is used.
 
 ### Docker Compose
 For ease of deployment, the following `docker-compose.yml` file can be used to orchestrate the stack deployment:
@@ -109,7 +129,7 @@ services:
     expose:
       - 27017
     volumes:
-      - cast-mongodb:/data/db
+      - /path_to_mongo_data:/data/db
     restart: unless-stopped
   rabbitmq:
     image: rabbitmq:3.8-alpine
