@@ -69,9 +69,10 @@ type Handler interface {
 	Register(idToken data.UserRegister) (err error)
 
 	UserDetails(userID string) (detail data.UserDetail, err error)
+	UserGetOneByID(userID string) (user data.User, err error)
 
 	CastList(variant string, count, offset int, userID ...string) (videos []data.Video, err error)
-	AuthorList(author string, count, offset int) (videos []data.Video, err error)
+	AuthorList(author string, withUnlisted bool, count, offset int) (videos []data.Video, err error)
 	SearchVideo(query string, tags []string, count, offset int) (videos []data.Video, err error)
 	VideoDetails(hash string) (video data.Video, err error)
 	CreateVOD(upload data.VideoUpload, controller beego.Controller, userID string) (ID primitive.ObjectID, err error)

@@ -68,9 +68,9 @@ class Manage extends Component {
 
   fetchVideos() {
     api.cast
-      .list({
+      .listCurated({
         author: authManager.getUser().preferred_username,
-        count: 8,
+        count: 512,
         offset: 0,
       })
       .then((response) => {
@@ -482,7 +482,7 @@ class Manage extends Component {
                       </Row>
                     ))
                   ) : (
-                    <h5 style={style.h5}>No videos uploaded yet!</h5>
+                    <h5 style={style.h5}>No casts uploaded yet!</h5>
                   ))}
                 {this.state.loading && (
                   <Spinner

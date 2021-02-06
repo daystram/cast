@@ -15,7 +15,7 @@ func (m *module) UserDetails(userID string) (detail data.UserDetail, err error) 
 	if user, err = m.db.userOrm.GetOneByID(userID); err != nil {
 		return data.UserDetail{}, errors.New(fmt.Sprintf("[UserDetails] user not found. %+v\n", err))
 	}
-	if videos, err = m.db.videoOrm.GetAllVODByAuthor(userID); err != nil {
+	if videos, err = m.db.videoOrm.GetAllVODByAuthor(userID, true); err != nil {
 		return data.UserDetail{}, errors.New(fmt.Sprintf("[UserDetails] cannot retrieve all user videos. %+v\n", err))
 	}
 	if subscriberCount, err = m.db.subscriptionOrm.GetCountByAuthorID(user.ID); err != nil {
@@ -31,6 +31,13 @@ func (m *module) UserDetails(userID string) (detail data.UserDetail, err error) 
 		Subscribers: subscriberCount,
 		Views:       views,
 		Uploads:     len(videos),
+	}
+	return
+}
+
+func (m *module) UserGetOneByID(userID string) (user data.User, err error) {
+	if user, err = m.db.userOrm.GetOneByID(userID); err != nil {
+		return data.User{}, fmt.Errorf("[UserGetOneByID] user not found. %+v\n", err)
 	}
 	return
 }

@@ -20,8 +20,8 @@ type VideoOrmer interface {
 	GetTrending(count int, offset int) (videos []datatransfers.Video, err error)
 	GetLiked(userID string, count int, offset int) (videos []datatransfers.Video, err error)
 	GetSubscribed(userID string, count int, offset int) (videos []datatransfers.Video, err error)
-	GetAllVODByAuthor(author string) (videos []datatransfers.Video, err error)
-	GetAllVODByAuthorPaginated(author string, count int, offset int) (videos []datatransfers.Video, err error)
+	GetAllVODByAuthor(author string, withUnlisted bool) (videos []datatransfers.Video, err error)
+	GetAllVODByAuthorPaginated(author string, withUnlisted bool, count int, offset int) (videos []datatransfers.Video, err error)
 	Search(query string, count, offset int) (videos []datatransfers.Video, err error)
 	GetLiveByAuthor(userID string) (datatransfers.Video, error)
 	GetOneByHash(hash string) (datatransfers.Video, error)
@@ -187,7 +187,7 @@ func (o *videoOrm) GetTrending(count int, offset int) (result []datatransfers.Vi
 	return
 }
 
-func (o *videoOrm) GetAllVODByAuthor(author string) (videos []datatransfers.Video, err error) {
+func (o *videoOrm) GetAllVODByAuthor(author string, withUnlisted bool) (videos []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{ // unlisted VODs included
 		{{"$match", bson.D{{"author", author}}}},
@@ -207,12 +207,14 @@ func (o *videoOrm) GetAllVODByAuthor(author string) (videos []datatransfers.Vide
 		if err = query.Decode(&video); err != nil {
 			return
 		}
-		videos = append(videos, video)
+		if withUnlisted || !video.Unlisted {
+			videos = append(videos, video)
+		}
 	}
 	return
 }
 
-func (o *videoOrm) GetAllVODByAuthorPaginated(author string, count int, offset int) (videos []datatransfers.Video, err error) {
+func (o *videoOrm) GetAllVODByAuthorPaginated(author string, withUnlisted bool, count int, offset int) (videos []datatransfers.Video, err error) {
 	query := &mongo.Cursor{}
 	if query, err = o.collection.Aggregate(context.Background(), mongo.Pipeline{ // unlisted VODs included
 		{{"$match", bson.D{{"author", author}}}},
@@ -244,7 +246,9 @@ func (o *videoOrm) GetAllVODByAuthorPaginated(author string, count int, offset i
 		if err = query.Decode(&video); err != nil {
 			return
 		}
-		videos = append(videos, video)
+		if withUnlisted || !video.Unlisted {
+			videos = append(videos, video)
+		}
 	}
 	return
 }

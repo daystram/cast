@@ -172,6 +172,7 @@ func init() {
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(
 				param.New("variant"),
+				param.New("author"),
 				param.New("count", param.Default("false")),
 				param.New("offset", param.Default("false")),
 			),

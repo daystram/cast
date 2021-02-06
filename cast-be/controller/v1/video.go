@@ -33,7 +33,7 @@ func (c *VideoController) GetList(variant, author string, count, offset int) dat
 	if author == "" {
 		videos, err = c.Handler.CastList(variant, count, offset)
 	} else {
-		videos, err = c.Handler.AuthorList(author, count, offset)
+		videos, err = c.Handler.AuthorList(author, false, count, offset)
 	}
 	if err != nil {
 		fmt.Printf("[VideoController::GetList] failed retrieving video list. %+v\n", err)
@@ -91,13 +91,23 @@ func (c *VideoControllerAuth) Prepare() {
 // @Title Get List
 // @Success 200 {object} models.Object
 // @Param   variant		query	string	false	"variant"
+// @Param   author		query	string	false	"author"
 // @Param   count		query   int 	false 8	"count"
 // @Param   offset		query   int 	false 0	"offset"
 // @router /list [get]
-func (c *VideoControllerAuth) GetList(variant string, count, offset int) datatransfers.Response {
+func (c *VideoControllerAuth) GetList(variant, author string, count, offset int) datatransfers.Response {
 	var videos []datatransfers.Video
 	var err error
 	videos, err = c.Handler.CastList(variant, count, offset, c.userID)
+	if author == "" {
+		videos, err = c.Handler.CastList(variant, count, offset)
+	} else {
+		// var user datatransfers.User
+		if _, err = c.Handler.UserGetOneByID(c.userID); err != nil {
+			return datatransfers.Response{Error: "Failed retrieving user info", Code: http.StatusInternalServerError}
+		}
+		// videos, err = c.Handler.AuthorList(author, author == user.Username, count, offset)
+	}
 	if err != nil {
 		fmt.Printf("[VideoControllerAuth::GetList] failed retrieving video list. %+v\n", err)
 		return datatransfers.Response{Error: "Failed retrieving video list", Code: http.StatusInternalServerError}

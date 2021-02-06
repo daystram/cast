@@ -33,7 +33,12 @@ function Cast(props) {
             LIVE
           </Badge>
         )}
-        <Badge pill style={style.cast_viewer_tag}>
+        {props.video.unlisted && (
+          <Badge pill style={{ ...style.cast_tag, ...style.cast_tag_unlisted }}>
+            <i className="fas fa-lock" /> Unlisted
+          </Badge>
+        )}
+        <Badge pill style={style.cast_tag}>
           {abbreviate().number(props.video.views)}{" "}
           {props.video.type === "live" ? "viewers" : "views"}
         </Badge>
@@ -94,7 +99,7 @@ let style = {
     fontSize: 16,
     fontWeight: 400,
   },
-  cast_viewer_tag: {
+  cast_tag: {
     background: "#8B2803AA",
     color: "#DDD",
     borderRadius: 8,
@@ -105,6 +110,9 @@ let style = {
     fontWeight: 400,
     marginRight: 8,
     marginBottom: 8,
+  },
+  cast_tag_unlisted: {
+    background: "rgb(3,69,139)",
   },
   cast_detail: {
     display: "flex",
