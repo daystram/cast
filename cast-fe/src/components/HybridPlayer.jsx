@@ -65,10 +65,10 @@ class HybridPlayer extends React.Component {
       src: this.props.url,
       type: this.props.live ? "video/x-flv" : "application/dash+xml",
     });
+    this.player.load();
     this.player.autoplay(this.props.live);
     if (this.props.live) this.player.play();
     this.player.poster(this.props.thumbnail);
-    this.player.load();
   }
 
   render() {
