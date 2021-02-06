@@ -49,12 +49,12 @@ func (m *module) CastList(variant string, count int, offset int, userID ...strin
 	}
 	return
 }
-func (m *module) AuthorList(username string, count, offset int) (videos []data.Video, err error) {
+func (m *module) AuthorList(username string, withUnlisted bool, count, offset int) (videos []data.Video, err error) {
 	var author data.User
 	if author, err = m.db.userOrm.GetOneByUsername(username); err != nil {
 		return nil, errors.New(fmt.Sprintf("[AuthorList] author not found. %+v", err))
 	}
-	if videos, err = m.db.videoOrm.GetAllVODByAuthorPaginated(author.ID, count, offset); err != nil {
+	if videos, err = m.db.videoOrm.GetAllVODByAuthorPaginated(author.ID, withUnlisted, count, offset); err != nil {
 		return nil, errors.New(fmt.Sprintf("[AuthorList] error retrieving VODs. %+v", err))
 	}
 	return

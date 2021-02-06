@@ -33,7 +33,7 @@ func (c *VideoController) GetList(variant, author string, count, offset int) dat
 	if author == "" {
 		videos, err = c.Handler.CastList(variant, count, offset)
 	} else {
-		videos, err = c.Handler.AuthorList(author, count, offset)
+		videos, err = c.Handler.AuthorList(author, false, count, offset)
 	}
 	if err != nil {
 		fmt.Printf("[VideoController::GetList] failed retrieving video list. %+v\n", err)
