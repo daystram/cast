@@ -103,7 +103,7 @@ func (c *VideoControllerAuth) GetList(variant, author string, count, offset int)
 		videos, err = c.Handler.CastList(variant, count, offset)
 	} else {
 		var user datatransfers.User
-		if videos, err = c.Handler.UserGetOneByID(c.userID); err != nil {
+		if user, err = c.Handler.UserGetOneByID(c.userID); err != nil {
 			return datatransfers.Response{Error: "Failed retrieving user info", Code: http.StatusInternalServerError}
 		}
 		videos, err = c.Handler.AuthorList(author, author == user.Username, count, offset)
