@@ -5,7 +5,6 @@ import { authManager } from "../helper/auth";
 import MediaQuery from "react-responsive";
 import { MOBILE_BP } from "../constants/breakpoint";
 import api from "../apis/api";
-import logo from "../components/logo.svg";
 
 class Profile extends Component {
   constructor(props) {
