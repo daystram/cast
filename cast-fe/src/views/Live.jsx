@@ -26,7 +26,7 @@ class Live extends Component {
               <h1 style={style.h1}>Live Casts</h1>
               <List
                 variant={VIDEO_TYPE_LIVE}
-                emptyMessage={"No creators are live now!"}
+                emptyMessage={"No live casts today!"}
               />
             </Col>
           </Row>
