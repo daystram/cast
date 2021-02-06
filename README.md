@@ -23,6 +23,11 @@ With DASH streaming, videos uploaded to __cast__ are first re-encoded by the Tra
 ### RTMP
 RTMP streaming allows the users to stream live to their viewers via a direct uplink to __cast__'s servers. Users can use clients such as [OBS Studio](https://obsproject.com/) or [Streamlabs](https://streamlabs.com/).
 
+### GPU Hardware Acceleration
+Uploaded videos are ingested by __cast__'s transcoding nodes (`cast-is`) powered with NVIDIA CUDA GPU hardware acceleration. These transcoders are highly scalable and can be deployed with a high number of replica either on- or off-premise.
+
+With GPU acceleration, `h264_nvenc` encoder is used. On environments without GPU, `cast-is` can also be started to use CPU encoding only using `libx264` encoder.
+
 ## Services
 The application comes in three parts:
 
@@ -31,6 +36,15 @@ The application comes in three parts:
 |Back-end|`cast-be`|[Go](https://golang.org/), [BeeGo](https://beego.me/), [MongoDB](https://www.mongodb.com/), [RabbitMQ](https://www.rabbitmq.com/), S3|
 |Transcoder|`cast-is`|[Go](https://golang.org/), [FFMpeg](https://ffmpeg.org/), [RabbitMQ](https://www.rabbitmq.com/), S3|
 |Front-end|`cast-fe`|JavaScript, [ReactJS](https://beego.me/)|
+
+## Test Stream
+You can use FFmpeg to create a test livestream. Use the following command:
+
+```shell
+$ ffmpeg -f lavfi -re -i testsrc2=s=1920x1080:r=60,format=yuv420p -f lavfi -i sine=f=440:b=4 -ac 2 -c:a pcm_s16le -c:v libx264 -f flv rtmp://cast.daystram.com/live/STREAM_KEY
+```
+
+This will create a sample 1080p 60 FPS stream with a 440 Hz sine wave sound. Ensure the stream key is provided correctly and stream window has been opened in the Dashboard.
 
 ## Deploy
 `cast-be`, `cast-is`, and `cast-fe` are containerized and pushed to [Docker Hub](https://hub.docker.com/r/daystram/cast). They are tagged based on their application name and version, e.g. `daystram/cast:be` or `daystram/cast:be-v2.0.1`.
@@ -142,10 +156,11 @@ services:
 This image is built on top of [NVIDIA's CUDA images](https://hub.docker.com/r/nvidia/cuda/) to enable FFmpeg harware acceleration on supported hosts. MP4Box is built from source, as seen on the [Dockerfile](https://github.com/daystram/cast/blob/master/cast-is/ingest-base.Dockerfile).
 
 ### MongoDB Indexes
-For features to work properly, some indexes needs to be created in the MongoDB instance. Use the following command in `mongo` CLI to create indexes for `video` collection:
+For features to work properly, some indexes needs to be created in the MongoDB instance. Use the following command in `mongo` CLI to create indexes for the collated `video` collection:
 
 ```
 use MONGODB_NAME;
+db.createCollection("video", {collation: {locale: "en", strength: 2}})
 db.video.createIndex({title: "text", description: "text"}, {collation: {locale: "simple"}});
 db.video.createIndex({hash: "hashed"});
 ```

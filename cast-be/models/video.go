@@ -330,7 +330,10 @@ func (o *videoOrm) IncrementViews(hash string, decrement ...bool) error {
 	if len(decrement) > 0 && decrement[0] {
 		delta = -1
 	}
-	return o.collection.FindOneAndUpdate(context.Background(), bson.M{"hash": hash}, bson.M{"$inc": bson.M{"views": delta}}).Err()
+	if err := o.collection.FindOneAndUpdate(context.Background(), bson.M{"hash": hash}, bson.M{"$inc": bson.M{"views": delta}}).Err(); err != nil {
+		return err
+	}
+	return o.collection.FindOneAndUpdate(context.Background(), bson.M{"hash": hash}, bson.M{"$max": bson.M{"views": 0}}).Err()
 }
 
 func (o *videoOrm) SetLive(authorID string, pending, live bool) (err error) {

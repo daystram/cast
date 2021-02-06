@@ -51,7 +51,7 @@ func (m *module) ConnectChatWS(ctx *context.Context, hash string, userID ...stri
 			return
 		}
 	}
-	go m.ChatReaderWorker(ws, hash, user, video.Type == constants.VideoTypeLive && video.Author.ID != user.ID)
+	go m.ChatReaderWorker(ws, hash, user, video.Type == constants.VideoTypeLive)
 	return
 }
 
