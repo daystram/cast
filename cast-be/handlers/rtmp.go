@@ -64,13 +64,15 @@ func (m *module) CreateRTMPUpLink() {
 				return
 			}
 			fmt.Printf("[RTMPUpLink] UpLink for %s connected\n", username)
-			m.BroadcastNotificationSubscriber(video.Author.ID, datatransfers.NotificationOutgoing{
-				Message:   fmt.Sprintf("%s just went live! Watch now!", video.Author.Name),
-				Name:      video.Author.Name,
-				Username:  video.Author.Username,
-				Hash:      video.Hash,
-				CreatedAt: time.Now(),
-			})
+			if !video.Unlisted {
+				m.BroadcastNotificationSubscriber(video.Author.ID, datatransfers.NotificationOutgoing{
+					Message:   fmt.Sprintf("%s just went live! Watch now!", video.Author.Name),
+					Name:      video.Author.Name,
+					Username:  video.Author.Username,
+					Hash:      video.Hash,
+					CreatedAt: time.Now(),
+				})
+			}
 			m.live.mutex.Unlock()
 		} else {
 			fmt.Printf("[RTMPUpLink] UpLink for %s already exists\n", username)
