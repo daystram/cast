@@ -1,77 +1,65 @@
 import React from "react";
 import { Badge, Image } from "react-bootstrap";
-import { useHistory } from "react-router-dom";
-import abbreviate from "../helper/abbreviate";
-import { currentHash } from "../helper/url";
-import TimeAgo from "react-timeago";
-import api from "../apis/api";
+import { Link } from "react-router-dom";
 import { ProfileImage } from "./index";
+import TimeAgo from "react-timeago";
+import abbreviate from "../helper/abbreviate";
+import api from "../apis/api";
 
 function Cast(props) {
-  const history = useHistory();
-
-  function playVideo() {
-    // if (props.onClick) props.onClick(props.video.type, props.video.hash);
-    if (props.video.hash !== currentHash())
-      history.push(`/w/${props.video.hash}`);
-  }
-
-  function viewAuthor(e) {
-    e.stopPropagation();
-    console.log(`View: ${props.video.author.name}`);
-  }
-
   return (
-    <div style={style.cast_card} onClick={playVideo}>
-      <Image
-        src={api.cdn.thumbnail(props.video.hash)}
-        style={style.cast_thumbnail}
-      />
-      <div style={style.cast_tag_bar}>
-        {props.video.type === "live" && (
-          <Badge pill style={style.cast_live_tag}>
-            LIVE
-          </Badge>
-        )}
-        {props.video.unlisted && (
-          <Badge pill style={{ ...style.cast_tag, ...style.cast_tag_unlisted }}>
-            <i className="fas fa-lock" /> Unlisted
-          </Badge>
-        )}
-        <Badge pill style={style.cast_tag}>
-          {abbreviate().number(props.video.views)}{" "}
-          {props.video.type === "live" ? "viewers" : "views"}
-        </Badge>
-      </div>
-      <div style={style.cast_detail}>
-        <ProfileImage
-          size={42}
-          name={props.video.author.name}
-          style={style.profile_image}
-          onClick={viewAuthor}
+    <Link to={`/w/${props.video.hash}`} style={{ textDecoration: "none" }}>
+      <div style={style.cast_card}>
+        <Image
+          src={api.cdn.thumbnail(props.video.hash)}
+          style={style.cast_thumbnail}
         />
-        <div style={style.cast_author_details}>
-          <p style={style.cast_title}>{props.video.title}</p>
-          <p style={style.cast_author} onClick={viewAuthor}>
-            {props.video.author.name}
-          </p>
-          <p style={style.cast_duration}>
-            {props.video.type === "live" ? (
-              <TimeAgo
-                date={props.video.created_at}
-                formatter={(value, unit, _) => {
-                  return `Streaming for ${value} ${unit}${
-                    value === 1 ? "" : "s"
-                  }`;
-                }}
-              />
-            ) : (
-              <TimeAgo date={props.video.created_at} />
-            )}
-          </p>
+        <div style={style.cast_tag_bar}>
+          {props.video.type === "live" && (
+            <Badge pill style={style.cast_live_tag}>
+              LIVE
+            </Badge>
+          )}
+          {props.video.unlisted && (
+            <Badge
+              pill
+              style={{ ...style.cast_tag, ...style.cast_tag_unlisted }}
+            >
+              <i className="fas fa-lock" /> Unlisted
+            </Badge>
+          )}
+          <Badge pill style={style.cast_tag}>
+            {abbreviate().number(props.video.views)}{" "}
+            {props.video.type === "live" ? "viewers" : "views"}
+          </Badge>
+        </div>
+        <div style={style.cast_detail}>
+          <ProfileImage
+            size={42}
+            name={props.video.author.name}
+            style={style.profile_image}
+          />
+          <div style={style.cast_author_details}>
+            <p style={style.cast_title}>{props.video.title}</p>
+            <p style={style.cast_author}>{props.video.author.name}</p>
+            <p style={style.cast_duration}>
+              {props.video.type === "live" ? (
+                <TimeAgo
+                  date={props.video.created_at}
+                  formatter={(value, unit, _) => {
+                    return `Streaming for ${value} ${unit}${
+                      value === 1 ? "" : "s"
+                    }`;
+                  }}
+                />
+              ) : (
+                <TimeAgo date={props.video.created_at} />
+              )}
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

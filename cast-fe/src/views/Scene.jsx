@@ -17,7 +17,6 @@ import {
 import { Cast, HybridPlayer, ProfileImage, Sidebar } from "../components";
 import abbreviate from "../helper/abbreviate";
 import format from "../helper/format";
-import { withRouter } from "react-router-dom";
 import { authManager } from "../helper/auth";
 import TimeAgo from "react-timeago";
 import queryString from "query-string";
@@ -661,12 +660,7 @@ class Scene extends Component {
             </p>
           </Modal.Body>
           <Modal.Footer>
-            <Button
-              variant="primary"
-              onClick={() => {
-                this.props.history.push("/login");
-              }}
-            >
+            <Button variant="primary" href={"/login"}>
               Login with{" "}
               <span>
                 <i
@@ -885,4 +879,4 @@ let style = {
   },
 };
 
-export default withRouter(Scene);
+export default Scene;

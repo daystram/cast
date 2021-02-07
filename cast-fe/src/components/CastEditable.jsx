@@ -12,9 +12,8 @@ import {
   Spinner,
 } from "react-bootstrap";
 import Dropzone from "react-dropzone";
-import { currentHash } from "../helper/url";
 import format from "../helper/format";
-import { Prompt, withRouter } from "react-router-dom";
+import { Link, Prompt } from "react-router-dom";
 import { WithContext as ReactTags } from "react-tag-input";
 import "../styles/tags.css";
 import { THUMBNAIL_MAX_SIZE } from "../constants/file";
@@ -63,7 +62,6 @@ class CastEditable extends Component {
     this.handleTagDrag = this.handleTagDrag.bind(this);
     this.submitForm = this.submitForm.bind(this);
     this.deleteVideo = this.deleteVideo.bind(this);
-    this.openVideo = this.openVideo.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -318,24 +316,6 @@ class CastEditable extends Component {
       });
   }
 
-  openVideo() {
-    switch (this.props.video.type) {
-      case "live":
-        if (this.props.video.is_live && this.props.video.hash !== currentHash())
-          this.props.history.push(`/w/${this.props.video.hash}`);
-        break;
-      case "vod":
-        if (
-          this.props.video.resolutions &&
-          this.props.video.hash !== currentHash()
-        )
-          this.props.history.push(`/w/${this.props.video.hash}`);
-        break;
-      default:
-        console.log("Cannot open cast!");
-    }
-  }
-
   render() {
     return (
       <Card body style={style.card}>
@@ -402,18 +382,24 @@ class CastEditable extends Component {
                 </div>
               </>
             ) : (
-              <div style={style.thumbnail_container}>
-                <Image
-                  src={this.state.thumbnail}
-                  style={{
-                    ...style.thumbnail,
-                    cursor: this.props.video.resolutions
-                      ? "pointer"
-                      : "not-allowed",
-                  }}
-                  onClick={this.openVideo}
-                />
-              </div>
+              <Link
+                to={`/w/${this.props.video.hash}`}
+                style={{
+                  pointerEvents:
+                    this.props.video.resolutions && this.props.video.is_live
+                      ? "auto"
+                      : "none",
+                }}
+              >
+                <div style={style.thumbnail_container}>
+                  <Image
+                    src={this.state.thumbnail}
+                    style={{
+                      ...style.thumbnail,
+                    }}
+                  />
+                </div>
+              </Link>
             )}
           </Col>
           <Col md sm={12} style={{ marginTop: 4, minWidth: 0 }}>
@@ -775,4 +761,4 @@ let style = {
   },
 };
 
-export default withRouter(CastEditable);
+export default CastEditable;
