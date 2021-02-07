@@ -351,7 +351,7 @@ class CastEditable extends Component {
                     this.setState({ new_thumbnail: files[0] });
                     this.validate("thumbnail", files[0]);
                   }}
-                  disabled={false}
+                  disabled={this.state.loading_edit}
                 >
                   {({ getRootProps, getInputProps }) => (
                     <section
@@ -426,13 +426,14 @@ class CastEditable extends Component {
                   <Form.Control
                     name={"title"}
                     value={this.state.title}
-                    onBlur={this.handleChange}
-                    onChange={this.handleChange}
                     type={"text"}
+                    placeholder={"Title"}
                     size={"lg"}
                     style={style.title}
+                    onBlur={this.handleChange}
+                    onChange={this.handleChange}
+                    disabled={this.state.loading_edit}
                     isInvalid={this.state.error_title}
-                    placeholder={"Title"}
                   />
                   <Form.Control.Feedback type={"invalid"}>
                     {this.state.error_title}
@@ -481,6 +482,7 @@ class CastEditable extends Component {
                       onChange={() =>
                         this.setState({ unlisted: !this.state.unlisted })
                       }
+                      disabled={this.state.loading_edit}
                       label={
                         <>
                           <i className="fas fa-lock" /> Unlisted
@@ -552,15 +554,16 @@ class CastEditable extends Component {
                 <Form.Group style={{ marginBottom: 8 }}>
                   <Form.Control
                     name={"description"}
-                    value={this.state.description}
-                    onBlur={this.handleChange}
-                    onChange={this.handleChange}
                     as={"textarea"}
+                    value={this.state.description}
+                    rows={5}
                     size={"lg"}
                     style={style.description}
-                    isInvalid={this.state.error_description}
-                    rows={5}
                     placeholder={"Description"}
+                    onBlur={this.handleChange}
+                    onChange={this.handleChange}
+                    disabled={this.state.loading_edit}
+                    isInvalid={this.state.error_description}
                   />
                   <Form.Control.Feedback type={"invalid"}>
                     {this.state.error_description}
@@ -728,9 +731,6 @@ let style = {
     fontWeight: 400,
     marginRight: 8,
     marginBottom: 8,
-  },
-  cast_tag_unlisted: {
-    background: "rgb(3,69,139)",
   },
   cast_tag_resolution: {
     background: "#E84409",
