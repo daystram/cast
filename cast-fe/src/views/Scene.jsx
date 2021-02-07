@@ -82,14 +82,6 @@ class Scene extends Component {
     this.fetchVideos(VIDEO_TYPE_VOD);
   }
 
-  incrementView(variant, hash) {
-    if (this.props.match.params.hash !== hash && variant === VIDEO_TYPE_VOD) {
-      let updated = this.state[variant][hash];
-      updated.views++;
-      this.setState({ [variant]: { ...this.state[variant], [hash]: updated } });
-    }
-  }
-
   fetchVideos(variant) {
     api.cast
       .list({
@@ -316,10 +308,7 @@ class Scene extends Component {
                           noGutters
                           style={{ padding: "0 0 16px 0" }}
                         >
-                          <Cast
-                            video={video}
-                            onClick={(a, b) => this.incrementView(a, b)}
-                          />
+                          <Cast video={video} />
                         </Row>
                       ))}
                     {this.state.loading.live && (
@@ -563,10 +552,7 @@ class Scene extends Component {
                           noGutters
                           style={{ padding: "0 0 16px 0" }}
                         >
-                          <Cast
-                            video={video}
-                            onClick={(a, b) => this.incrementView(a, b)}
-                          />
+                          <Cast video={video} />
                         </Row>
                       ))}
                     {this.state.loading.vod && (

@@ -11,7 +11,7 @@ function Cast(props) {
   const history = useHistory();
 
   function playVideo() {
-    if (props.onClick) props.onClick(props.video.type, props.video.hash);
+    // if (props.onClick) props.onClick(props.video.type, props.video.hash);
     if (props.video.hash !== currentHash())
       history.push(`/w/${props.video.hash}`);
   }
