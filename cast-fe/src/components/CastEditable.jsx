@@ -661,7 +661,7 @@ let style = {
     width: "100%",
   },
   title: {
-    lineHeight: 1.2,
+    lineHeight: "inherit",
     margin: 0,
     fontSize: "2rem",
     fontWeight: 600,

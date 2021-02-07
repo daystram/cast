@@ -789,6 +789,7 @@ class Scene extends Component {
 
 let style = {
   title: {
+    lineHeight: "inherit",
     color: "#EEE",
     margin: 0,
     overflow: "hidden",
