@@ -15,6 +15,10 @@ function ProfileImage(props) {
         lineHeight: `${props.size}px`,
         textAlign: "center",
         textTransform: "capitalize",
+        WebkitTouchCallout: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        userSelect: "none",
         ...props.style,
       }}
       onClick={props.onClick}

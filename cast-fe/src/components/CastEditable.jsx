@@ -416,7 +416,7 @@ class CastEditable extends Component {
               </div>
             )}
           </Col>
-          <Col md sm={12} style={{ marginTop: 4, width: 0 }}>
+          <Col md sm={12} style={{ marginTop: 4, minWidth: 0 }}>
             {this.state.error_edit && (
               <Alert variant={"danger"}>{this.state.error_edit}</Alert>
             )}
