@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Route, useHistory, useLocation } from "react-router-dom";
+import { Link, Route, useHistory, useLocation } from "react-router-dom";
 import {
   Button,
   Col,
@@ -26,22 +26,15 @@ function Navigation() {
   const history = useHistory();
   const user = authManager.getUser();
   let profileButton = authManager.isAuthenticated() ? (
-    <ProfileImage
-      size={38}
-      name={`${user.given_name} ${user.family_name}`}
-      style={style.profile_image}
-      onClick={() => {
-        history.push("/profile");
-      }}
-    />
+    <Link to={"/profile"} style={{ textDecoration: "none" }}>
+      <ProfileImage
+        size={38}
+        name={`${user.given_name} ${user.family_name}`}
+        style={style.profile_image}
+      />
+    </Link>
   ) : (
-    <Button
-      variant="primary"
-      onClick={() => {
-        setExpanded(false);
-        history.push("/login");
-      }}
-    >
+    <Button variant="primary" href={"/login"}>
       Login with{" "}
       <span>
         <i
@@ -91,19 +84,16 @@ function Navigation() {
   return (
     <Navbar style={style.navbar} sticky="top" expanded={expanded} expand="xl">
       <Row style={{ width: "100%" }} noGutters>
-        <Col xs={3}>
-          <Navbar.Brand
-            onClick={() => {
-              setExpanded(false);
-              history.push("/");
-            }}
-          >
-            <img
-              src={logo}
-              height="30"
-              className="d-inline-block align-top cast-logo"
-              alt="cast"
-            />
+        <Col xs={"auto"}>
+          <Navbar.Brand>
+            <Link to={"/"}>
+              <img
+                src={logo}
+                height="30"
+                className="d-inline-block align-top cast-logo"
+                alt="cast"
+              />
+            </Link>
           </Navbar.Brand>
         </Col>
         <Col style={{ display: "flex", justifyContent: "center" }}>
@@ -112,7 +102,7 @@ function Navigation() {
           </MediaQuery>
         </Col>
         <Col
-          xs={3}
+          xs={"auto"}
           style={{
             display: "flex",
             justifyContent: "flex-end",

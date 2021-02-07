@@ -65,14 +65,12 @@ let style = {
   nav_item: {
     padding: "8px 6px",
     fontFamily: "Open Sans",
-    fontSize: 18,
     color: "#FFFFFFBB",
     textDecoration: "none",
     whiteSpace: "nowrap",
   },
   nav_item_current: {
     color: "#E84409",
-    fontSize: 18,
     textDecoration: "none",
     whiteSpace: "nowrap",
   },

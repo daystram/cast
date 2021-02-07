@@ -427,6 +427,7 @@ class Manage extends Component {
                         type={"switch"}
                         className={"form-label"}
                         checked={this.state.unlisted}
+                        disabled={this.state.uploading}
                         onChange={() =>
                           this.setState({ unlisted: !this.state.unlisted })
                         }

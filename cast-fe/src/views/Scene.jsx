@@ -17,7 +17,6 @@ import {
 import { Cast, HybridPlayer, ProfileImage, Sidebar } from "../components";
 import abbreviate from "../helper/abbreviate";
 import format from "../helper/format";
-import { withRouter } from "react-router-dom";
 import { authManager } from "../helper/auth";
 import TimeAgo from "react-timeago";
 import queryString from "query-string";
@@ -80,14 +79,6 @@ class Scene extends Component {
     window.scroll({ top: 0, left: 0, behavior: "smooth" });
     this.fetchVideos(VIDEO_TYPE_LIVE);
     this.fetchVideos(VIDEO_TYPE_VOD);
-  }
-
-  incrementView(variant, hash) {
-    if (this.props.match.params.hash !== hash && variant === VIDEO_TYPE_VOD) {
-      let updated = this.state[variant][hash];
-      updated.views++;
-      this.setState({ [variant]: { ...this.state[variant], [hash]: updated } });
-    }
   }
 
   fetchVideos(variant) {
@@ -316,10 +307,7 @@ class Scene extends Component {
                           noGutters
                           style={{ padding: "0 0 16px 0" }}
                         >
-                          <Cast
-                            video={video}
-                            onClick={(a, b) => this.incrementView(a, b)}
-                          />
+                          <Cast video={video} />
                         </Row>
                       ))}
                     {this.state.loading.live && (
@@ -563,10 +551,7 @@ class Scene extends Component {
                           noGutters
                           style={{ padding: "0 0 16px 0" }}
                         >
-                          <Cast
-                            video={video}
-                            onClick={(a, b) => this.incrementView(a, b)}
-                          />
+                          <Cast video={video} />
                         </Row>
                       ))}
                     {this.state.loading.vod && (
@@ -675,12 +660,7 @@ class Scene extends Component {
             </p>
           </Modal.Body>
           <Modal.Footer>
-            <Button
-              variant="primary"
-              onClick={() => {
-                this.props.history.push("/login");
-              }}
-            >
+            <Button variant="primary" href={"/login"}>
               Login with{" "}
               <span>
                 <i
@@ -803,6 +783,7 @@ class Scene extends Component {
 
 let style = {
   title: {
+    lineHeight: "inherit",
     color: "#EEE",
     margin: 0,
     overflow: "hidden",
@@ -898,4 +879,4 @@ let style = {
   },
 };
 
-export default withRouter(Scene);
+export default Scene;

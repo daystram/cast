@@ -12,9 +12,8 @@ import {
   Spinner,
 } from "react-bootstrap";
 import Dropzone from "react-dropzone";
-import { currentHash } from "../helper/url";
 import format from "../helper/format";
-import { Prompt, withRouter } from "react-router-dom";
+import { Link, Prompt } from "react-router-dom";
 import { WithContext as ReactTags } from "react-tag-input";
 import "../styles/tags.css";
 import { THUMBNAIL_MAX_SIZE } from "../constants/file";
@@ -63,7 +62,6 @@ class CastEditable extends Component {
     this.handleTagDrag = this.handleTagDrag.bind(this);
     this.submitForm = this.submitForm.bind(this);
     this.deleteVideo = this.deleteVideo.bind(this);
-    this.openVideo = this.openVideo.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -318,24 +316,6 @@ class CastEditable extends Component {
       });
   }
 
-  openVideo() {
-    switch (this.props.video.type) {
-      case "live":
-        if (this.props.video.is_live && this.props.video.hash !== currentHash())
-          this.props.history.push(`/w/${this.props.video.hash}`);
-        break;
-      case "vod":
-        if (
-          this.props.video.resolutions &&
-          this.props.video.hash !== currentHash()
-        )
-          this.props.history.push(`/w/${this.props.video.hash}`);
-        break;
-      default:
-        console.log("Cannot open cast!");
-    }
-  }
-
   render() {
     return (
       <Card body style={style.card}>
@@ -351,7 +331,7 @@ class CastEditable extends Component {
                     this.setState({ new_thumbnail: files[0] });
                     this.validate("thumbnail", files[0]);
                   }}
-                  disabled={false}
+                  disabled={this.state.loading_edit}
                 >
                   {({ getRootProps, getInputProps }) => (
                     <section
@@ -402,21 +382,27 @@ class CastEditable extends Component {
                 </div>
               </>
             ) : (
-              <div style={style.thumbnail_container}>
-                <Image
-                  src={this.state.thumbnail}
-                  style={{
-                    ...style.thumbnail,
-                    cursor: this.props.video.resolutions
-                      ? "pointer"
-                      : "not-allowed",
-                  }}
-                  onClick={this.openVideo}
-                />
-              </div>
+              <Link
+                to={`/w/${this.props.video.hash}`}
+                style={{
+                  pointerEvents:
+                    this.props.video.resolutions && this.props.video.is_live
+                      ? "auto"
+                      : "none",
+                }}
+              >
+                <div style={style.thumbnail_container}>
+                  <Image
+                    src={this.state.thumbnail}
+                    style={{
+                      ...style.thumbnail,
+                    }}
+                  />
+                </div>
+              </Link>
             )}
           </Col>
-          <Col md sm={12} style={{ marginTop: 4, width: 0 }}>
+          <Col md sm={12} style={{ marginTop: 4, minWidth: 0 }}>
             {this.state.error_edit && (
               <Alert variant={"danger"}>{this.state.error_edit}</Alert>
             )}
@@ -426,13 +412,14 @@ class CastEditable extends Component {
                   <Form.Control
                     name={"title"}
                     value={this.state.title}
-                    onBlur={this.handleChange}
-                    onChange={this.handleChange}
                     type={"text"}
+                    placeholder={"Title"}
                     size={"lg"}
                     style={style.title}
+                    onBlur={this.handleChange}
+                    onChange={this.handleChange}
+                    disabled={this.state.loading_edit}
                     isInvalid={this.state.error_title}
-                    placeholder={"Title"}
                   />
                   <Form.Control.Feedback type={"invalid"}>
                     {this.state.error_title}
@@ -481,6 +468,7 @@ class CastEditable extends Component {
                       onChange={() =>
                         this.setState({ unlisted: !this.state.unlisted })
                       }
+                      disabled={this.state.loading_edit}
                       label={
                         <>
                           <i className="fas fa-lock" /> Unlisted
@@ -552,15 +540,16 @@ class CastEditable extends Component {
                 <Form.Group style={{ marginBottom: 8 }}>
                   <Form.Control
                     name={"description"}
-                    value={this.state.description}
-                    onBlur={this.handleChange}
-                    onChange={this.handleChange}
                     as={"textarea"}
+                    value={this.state.description}
+                    rows={5}
                     size={"lg"}
                     style={style.description}
-                    isInvalid={this.state.error_description}
-                    rows={5}
                     placeholder={"Description"}
+                    onBlur={this.handleChange}
+                    onChange={this.handleChange}
+                    disabled={this.state.loading_edit}
+                    isInvalid={this.state.error_description}
                   />
                   <Form.Control.Feedback type={"invalid"}>
                     {this.state.error_description}
@@ -658,7 +647,7 @@ let style = {
     width: "100%",
   },
   title: {
-    lineHeight: 1.2,
+    lineHeight: "inherit",
     margin: 0,
     fontSize: "2rem",
     fontWeight: 600,
@@ -772,4 +761,4 @@ let style = {
   },
 };
 
-export default withRouter(CastEditable);
+export default CastEditable;
