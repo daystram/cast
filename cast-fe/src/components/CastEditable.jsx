@@ -732,6 +732,9 @@ let style = {
     marginRight: 8,
     marginBottom: 8,
   },
+  cast_tag_unlisted: {
+    background: "rgb(3,69,139)",
+  },
   cast_tag_resolution: {
     background: "#E84409",
     color: "white",
