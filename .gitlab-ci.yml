@@ -1,6 +1,7 @@
 stages:
   - build
-  - deploy
+  - image
+  - chart
 
 # ------------------------ cast-be
 build cast-be:
@@ -14,8 +15,8 @@ build cast-be:
     paths:
       - cast-be/app
 
-deploy dev cast-be:
-  stage: deploy
+image dev cast-be:
+  stage: image
   image: docker:19.03.12
   needs: ["build cast-be"]
   environment:
@@ -36,8 +37,8 @@ deploy dev cast-be:
   except:
     - master
 
-deploy prod cast-be:
-  stage: deploy
+image prod cast-be:
+  stage: image
   image: docker:19.03.12
   needs: ["build cast-be"]
   environment:
@@ -69,8 +70,8 @@ build cast-is:
     paths:
       - cast-is/app
 
-deploy dev cast-is:
-  stage: deploy
+image dev cast-is:
+  stage: image
   image: docker:19.03.12
   needs: ["build cast-is"]
   environment:
@@ -91,8 +92,8 @@ deploy dev cast-is:
   except:
     - master
 
-deploy prod cast-is:
-  stage: deploy
+image prod cast-is:
+  stage: image
   image: docker:19.03.12
   needs: ["build cast-is"]
   environment:
@@ -124,8 +125,8 @@ build cast-fe:
     paths:
       - cast-fe/dist/
 
-deploy dev cast-fe:
-  stage: deploy
+image dev cast-fe:
+  stage: image
   image: docker:19.03.12
   needs: ["build cast-fe"]
   environment:
@@ -147,8 +148,8 @@ deploy dev cast-fe:
   except:
     - master
 
-deploy prod cast-fe:
-  stage: deploy
+image prod cast-fe:
+  stage: image
   image: docker:19.03.12
   needs: ["build cast-fe"]
   environment:
@@ -165,6 +166,61 @@ deploy prod cast-fe:
     - docker build -t $CI_REGISTRY_IMAGE:fe -t $CI_REGISTRY_IMAGE:fe-$CI_COMMIT_TAG .
     - docker push $CI_REGISTRY_IMAGE:fe
     - docker push $CI_REGISTRY_IMAGE:fe-$CI_COMMIT_TAG
+  when: on_success
+  only:
+    - tags
+
+# ------------------------ chart
+chart dev cast:
+  stage: chart
+  image: daystram/k8s-tools:latest
+  needs: ["image dev cast-be", "image dev cast-is", "image dev cast-fe"]
+  variables:
+    APPLICATION_NAME: "cast"
+    APPLICATION_VERSION: "v0.0.0-development"
+  before_script:
+    - git config --global user.name "$BOTDAYSTRAM_NAME"
+    - git config --global user.email "$BOTDAYSTRAM_EMAIL"
+    - mkdir -p ~/.ssh && eval `ssh-agent -s` && ssh-keyscan github.com >> ~/.ssh/known_hosts
+    - cat $BOTDAYSTRAM_KEY_FILE | ssh-add -
+    - cat $KUBECONFIG_FILE > $KUBECONFIG && chmod 700 $KUBECONFIG
+  script:
+    - git clone git@github.com:daystram/helm-charts.git
+    - cp -r .daystram helm-charts/docs/
+    - cd helm-charts/docs/
+    - curl -sfL https://charts.daystram.com/build.sh | sh -s - $APPLICATION_NAME $APPLICATION_VERSION
+    - rm -rf .daystram/
+    - git add .
+    - 'git commit -m "feat: added chart for ${APPLICATION_NAME}@${APPLICATION_VERSION}"'
+    - git push
+  when: on_success
+  only:
+    - branches
+  except:
+    - master
+
+chart prod cast:
+  stage: chart
+  image: daystram/k8s-tools:latest
+  needs: ["image prod cast-be", "image prod cast-is", "image prod cast-fe"]
+  variables:
+    APPLICATION_NAME: "cast"
+    APPLICATION_VERSION: "$CI_COMMIT_TAG"
+  before_script:
+    - git config --global user.name "$BOTDAYSTRAM_NAME"
+    - git config --global user.email "$BOTDAYSTRAM_EMAIL"
+    - mkdir -p ~/.ssh && eval `ssh-agent -s` && ssh-keyscan github.com >> ~/.ssh/known_hosts
+    - cat $BOTDAYSTRAM_KEY_FILE | ssh-add -
+    - cat $KUBECONFIG_FILE > $KUBECONFIG && chmod 700 $KUBECONFIG
+  script:
+    - git clone git@github.com:daystram/helm-charts.git
+    - cp -r .daystram helm-charts/docs/
+    - cd helm-charts/docs/
+    - curl -sfL https://charts.daystram.com/build.sh | sh -s - $APPLICATION_NAME $APPLICATION_VERSION
+    - rm -rf .daystram/
+    - git add .
+    - 'git commit -m "feat: added chart for ${APPLICATION_NAME}@${APPLICATION_VERSION}"'
+    - git push
   when: on_success
   only:
     - tags
