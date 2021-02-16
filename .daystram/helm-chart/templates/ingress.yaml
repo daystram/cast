@@ -69,6 +69,7 @@ spec:
   secretName: cert-{{ include "cast.fullname" . }}
   dnsNames:
     - {{ .Values.ingress.host }}
-     kind: {{ .Values.ingress.certificate.issuerRef.kind }}
+  issuerRef:
+    kind: {{ .Values.ingress.certificate.issuerRef.kind }}
     name: {{ .Values.ingress.certificate.issuerRef.name }}
 {{- end }}
