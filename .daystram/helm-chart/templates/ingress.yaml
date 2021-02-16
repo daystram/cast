@@ -34,6 +34,26 @@ spec:
 
 ---
 apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: {{ include "cast.fullname" . }}
+  labels:
+    {{- include "cast.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  entryPoints:
+    - rtmp
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: {{ include "cast.fullname" . }}-be
+          port: 1935
+
+---
+apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: gzip

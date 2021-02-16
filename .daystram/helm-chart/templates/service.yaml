@@ -31,6 +31,10 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    - port: 1935
+      targetPort: rtmp
+      protocol: TCP
+      name: rtmp
   selector:
     {{- include "cast.selectorLabels" . | nindent 4 }}
     tier: be

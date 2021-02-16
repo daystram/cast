@@ -43,6 +43,9 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+            - name: rtmp
+              containerPort: 1935
+              protocol: TCP
           resources:
             {{- toYaml .Values.cast.be.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
