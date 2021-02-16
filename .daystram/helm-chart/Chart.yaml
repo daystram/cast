@@ -1,6 +1,6 @@
 apiVersion: v2
 name: cast
-description: A Helm chart for Kubernetes
+description: DASH video-streaming and RTMP live-streaming platform
 
 # A chart can be either an 'application' or a 'library' chart.
 #
