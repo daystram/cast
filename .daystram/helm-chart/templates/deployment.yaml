@@ -100,6 +100,9 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:is-{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.cast.is.envFrom.secretRef }}
           resources:
             {{- toYaml .Values.cast.is.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
